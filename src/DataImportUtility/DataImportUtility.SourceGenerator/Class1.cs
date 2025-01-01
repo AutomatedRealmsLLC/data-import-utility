@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DataImportUtility
+namespace DataImportUtility.SourceGenerator
 {
     public class Class1
     {
