@@ -4,7 +4,7 @@ using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Models;
 
-namespace DataImportUtility.Components.FieldMappingComponents.FieldTransformationComponents;
+namespace DataImportUtility.Components.FieldMappingComponents.ValueTransformationComponents;
 
 /// <summary>
 /// Displays the configuration <see cref="ValueTransformationBase" /> to transform a value using.

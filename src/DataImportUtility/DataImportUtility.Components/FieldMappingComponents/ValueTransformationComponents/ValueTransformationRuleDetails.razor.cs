@@ -5,7 +5,7 @@ using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Models;
 using DataImportUtility.TransformOperations;
 
-namespace DataImportUtility.Components.FieldMappingComponents.FieldTransformationComponents;
+namespace DataImportUtility.Components.FieldMappingComponents.ValueTransformationComponents;
 
 /// <summary>
 /// Displays the detail input for a <see cref="ValueTransformationBase" /> rule.
