@@ -1,0 +1,14 @@
+﻿.page {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  --rma-upload-area-bg-color: var(--primary-button-bg-color);
+  --rma-upload-area-bg-hover-color: var(--primary-button-hover-bg-color);
+  --rma-upload-area-border-color: var(--primary-button-border-color);
+  --rma-upload-area-border-hover-color: var(--primary-button-hover-border-color);
+  --rma-upload-area-text-color: var(--primary-button-text-color);
+  --rma-upload-area-text-hover-color: var(--primary-button-text-hover-color);
+}
+.page h1 {
+  padding: 0 1rem;
+}
