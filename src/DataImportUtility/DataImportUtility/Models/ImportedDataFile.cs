@@ -205,7 +205,7 @@ public class ImportedDataFile
 
         foreach (var curTable in DataSet.Tables.OfType<DataTable>().Where(x => forTable is null || forTable == x.TableName) ?? [])
         {
-            if (onlyIfNotExists && TableDefinitions.TryGetFieldDescriptors(curTable.TableName, out var existDescriptors) && existDescriptors.Count > 0)
+            if (onlyIfNotExists && TableDefinitions.TryGetFieldDescriptors(curTable.TableName, out var existDescriptors) && (existDescriptors?.Count ?? 0) > 0)
             {
                 continue;
             }
@@ -289,7 +289,7 @@ public class ImportedDataFile
         var table = DataSet.Tables[tableName]
             ?? throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
 
-        if (!TableDefinitions.TryGetFieldMappings(tableName, out var fieldMappings))
+        if (!TableDefinitions.TryGetFieldMappings(tableName, out var fieldMappings) || fieldMappings is null)
         {
             throw new ArgumentException($"The table '{tableName}' does not have any field mappings.");
         }
@@ -416,7 +416,7 @@ public class ImportedDataFile
         }
 
         RefreshFieldDescriptors(forTable: tableName);
-        if (!TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors))
+        if (!TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors) || fieldDescriptors is null)
         {
             throw new ArgumentException($"Failed to populate the field descriptors for the table '{tableName}'.");
         }
@@ -463,11 +463,11 @@ public class ImportedDataFile
             throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
         }
 
-        if (!TableDefinitions.TryGetTableDefinition(tableName, out var tableDef))
+        if (!TableDefinitions.TryGetTableDefinition(tableName, out var tableDef) || tableDef is null)
         {
             RefreshFieldDescriptors(forTable: tableName);
             RefreshFieldMappings();
-            if (!TableDefinitions.TryGetTableDefinition(tableName, out tableDef))
+            if (!TableDefinitions.TryGetTableDefinition(tableName, out tableDef) || tableDef is null)
             {
                 throw new InvalidOperationException($"Failed to populate the field descriptors for the table '{tableName}'.");
             }

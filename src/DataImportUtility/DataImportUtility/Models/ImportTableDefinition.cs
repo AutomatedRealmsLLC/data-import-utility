@@ -10,7 +10,7 @@ public class ImportTableDefinition
     /// <summary>
     /// The name of the table.
     /// </summary>
-    public /*required*/ string TableName { get; set; }
+    public /*required*/ string TableName { get; set; } = string.Empty;
     /// <summary>
     /// The fields in the table.
     /// </summary>

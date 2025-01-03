@@ -8,7 +8,7 @@ public class ValueMap
     /// <summary>
     /// The imported field name.
     /// </summary>
-    public /*required*/ string ImportedFieldName { get; set; }
+    public /*required*/ string ImportedFieldName { get; set; } = string.Empty;
 
     /// <summary>
     /// The value to map from.

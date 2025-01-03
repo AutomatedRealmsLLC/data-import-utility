@@ -30,7 +30,7 @@ public class ImportedRecordFieldDescriptor
     /// <summary>
     /// The imported field name.
     /// </summary>
-    public /*required*/ string FieldName { get; set; }
+    public /*required*/ string FieldName { get; set; } = string.Empty;
 
     /// <summary>
     /// The value type for the source field.

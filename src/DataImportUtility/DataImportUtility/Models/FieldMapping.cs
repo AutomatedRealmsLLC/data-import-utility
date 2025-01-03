@@ -18,7 +18,7 @@ public class FieldMapping
     /// <summary>
     /// The name of the field.
     /// </summary>
-    public /*required*/ string FieldName { get; /*init*/ set; }
+    public /*required*/ string FieldName { get; /*init*/ set; } = string.Empty;
 
     /// <summary>
     /// The type of the field.
@@ -191,7 +191,7 @@ public class FieldMapping
             return;
         }
 
-        var results = await MappingRule.Apply();
+        var results = await (MappingRule?.Apply() ?? Task.FromResult(Enumerable.Empty<TransformationResult>()));
         foreach (var result in results)
         {
             Validate(result, out _, false);
