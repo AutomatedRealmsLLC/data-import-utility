@@ -1,0 +1,91 @@
+@import 'AnimationMixins';
+@import 'ColorVariables';
+
+@mixin flyout-defaults {
+    --o1l-use-primary-flyout-background: var(--o1l-primary-flyout-background, #{$default-translucent-dark});
+    --o1l-use-primary-flyout-content-background: var(--o1l-primary-flyout-content-background, #{$default-dark1});
+    --o1l-use-primary-flyout-content-border: var(--o1l-primary-flyout-content-border, #{$default-border-light});
+    --o1l-use-primary-flyout-content-box-shadow: var(--o1l-primary-flyout-content-box-shadow, #{$default-box-shadow-dark});
+    --o1l-use-primary-flyout-header-border: var(--o1l-primary-flyout-header-border, #{$default-border-light});
+    --o1l-use-primary-flyout-footer-border: var(--o1l-primary-flyout-footer-border, #{$default-border-light});
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: flex-end;
+    background-color: var(--o1l-use-primary-flyout-background);
+    z-index: 10;
+    animation: fadeOut .2s forwards;
+
+    .o1l-flyout-panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--o1l-use-primary-flyout-content-background);
+        z-index: 2;
+        overflow: hidden;
+        animation: flyOutToRight .2 forwards;
+        border: var(--o1l-use-primary-flyout-content-border);
+
+        .o1l-flyout-content {
+            border-radius: 5px;
+            box-shadow: var(--o1l-use-primary-flyout-content-box-shadow);
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            height: 100%;
+
+            .o1l-flyout-header {
+                position: relative;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: var(--o1l-use-primary-flyout-header-border);
+                padding: 0 1em;
+
+                .o1l-flyout-title {
+                    font-size: 1.5em;
+                    margin: 0;
+                    padding: .4em 0;
+                }
+
+                .close {
+                    position: absolute;
+                    top: .4rem;
+                    right: .4rem;
+                    cursor: pointer;
+                    color: white;
+                    background: none;
+                    background-color: transparent;
+                    border: none;
+                }
+            }
+
+            .o1l-flyout-body {
+                padding: 1em;
+                overflow: auto;
+            }
+
+            .o1l-flyout-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: 1em;
+                padding: 1em;
+                border-top: var(--o1l-use-primary-flyout-footer-border);
+            }
+        }
+    }
+
+
+    &.show {
+        animation: fadeIn .2s forwards;
+
+        .o1l-flyout-panel {
+            animation: flyInFromRight .2s forwards;
+        }
+    }
+
+    @include fade-in-animation-frames;
+    @include fade-out-animation-frames;
+    @include fly-in-animation-frames;
+    @include fly-out-animation-frames;
+}

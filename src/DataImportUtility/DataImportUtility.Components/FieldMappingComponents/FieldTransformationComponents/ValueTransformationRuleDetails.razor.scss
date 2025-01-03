@@ -1,0 +1,10 @@
+@import '../../Sass/ButtonMixins';
+@import '../../Sass/TableMixins';
+
+table.o1l-library-style {
+    @include table-defaults;
+
+    button {
+        @include button-base-style;
+    }
+}

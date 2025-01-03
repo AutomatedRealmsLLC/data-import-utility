@@ -1,0 +1,289 @@
+﻿.o1l-modal.o1l-library-style {
+  --o1l-use-primary-modal-background: var(--o1l-primary-modal-background, rgba(0, 0, 0, 0.2));
+  --o1l-use-primary-modal-dialog-background: var(--o1l-primary-modal-dialog-background, #222);
+  --o1l-use-primary-modal-dialog-box-shadow: var(--o1l-primary-modal-dialog-box-shadow, 0 0 10px rgba(0, 0, 0, 0.2));
+  --o1l-use-primary-modal-header-border: var(--o1l-primary-modal-header-border, 1px solid rgba(255, 255, 255, 0.2));
+  /* Styles */
+  position: fixed;
+  inset: 0;
+  background: var(--o1l-use-primary-modal-background);
+  z-index: 1;
+  animation: fadeOut 0.2s forwards;
+}
+.o1l-modal.o1l-library-style button {
+  --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);
+  --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #004578);
+  --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #0078d4);
+  --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #004578);
+  --o1l-use-button-primary-text: var(--o1l-button-primary-text, #f0f0f0);
+  --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+  --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+  --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+  --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+  --o1l-use-link-color: var(--o1l-link-color, #2196f3);
+  --o1l-use-success-color: var(--o1l-success-color, #26b050);
+  --o1l-use-warning-color: var(--o1l-warning-color, #e88a00);
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  background: var(--o1l-use-button-primary-background);
+  border: var(--o1l-use-button-primary-border);
+  color: var(--o1l-use-button-primary-text);
+  padding: var(--o1l-use-button-padding);
+  border-radius: var(--o1l-use-button-border-radius);
+  cursor: pointer;
+}
+.o1l-modal.o1l-library-style button:hover {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-sm {
+  padding: var(--o1l-use-button-padding-small);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-cancel {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-cancel:hover, .o1l-modal.o1l-library-style button.o1l-btn-cancel:focus {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-remove {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-danger-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-remove:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-add {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-success-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-add:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-edit {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-warning-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-edit:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-link {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+  padding: 0;
+}
+.o1l-modal.o1l-library-style button.o1l-btn-link:hover, .o1l-modal.o1l-library-style button.o1l-btn-link:focus {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style.show {
+  animation: fadeIn 0.2s forwards;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--o1l-use-primary-modal-dialog-background);
+  border: var(--o1l-use-primary-modal-header-border);
+  border-radius: 0.4rem;
+  overflow: clip;
+  z-index: 2;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content {
+  box-shadow: 0 0 10px var(--o1l-use-primary-modal-dialog-box-shadow);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 30ch;
+  max-width: 80vw;
+  min-height: 10rem;
+  max-height: 80vh;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: var(--o1l-use-primary-modal-header-border);
+  padding: 1em;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-header .o1l-modal-title {
+  font-size: 1.25em;
+  white-space: nowrap;
+  padding-right: 1rem;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-header .o1l-btn-close {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
+  cursor: pointer;
+  color: white;
+  background: transparent;
+  border: none;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-body {
+  padding: 1em;
+  overflow: auto;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1em;
+  padding: 1em;
+}
+@keyframes fadeIn {
+  from {
+    display: block;
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fadeOut {
+  0% {
+    display: block;
+    opacity: 1;
+  }
+  99% {
+    display: block;
+    opacity: 0;
+  }
+  100% {
+    display: none;
+  }
+}
+.o1l-modal.o1l-library-style button {
+  --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);
+  --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #004578);
+  --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #0078d4);
+  --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #004578);
+  --o1l-use-button-primary-text: var(--o1l-button-primary-text, #f0f0f0);
+  --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+  --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+  --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+  --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+  --o1l-use-link-color: var(--o1l-link-color, #2196f3);
+  --o1l-use-success-color: var(--o1l-success-color, #26b050);
+  --o1l-use-warning-color: var(--o1l-warning-color, #e88a00);
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  background: var(--o1l-use-button-primary-background);
+  border: var(--o1l-use-button-primary-border);
+  color: var(--o1l-use-button-primary-text);
+  padding: var(--o1l-use-button-padding);
+  border-radius: var(--o1l-use-button-border-radius);
+  cursor: pointer;
+}
+.o1l-modal.o1l-library-style button:hover {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-sm {
+  padding: var(--o1l-use-button-padding-small);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-cancel {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-cancel:hover, .o1l-modal.o1l-library-style button.o1l-btn-cancel:focus {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-remove {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-danger-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-remove:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-add {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-success-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-add:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-edit {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-warning-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-edit:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-link {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+  padding: 0;
+}
+.o1l-modal.o1l-library-style button.o1l-btn-link:hover, .o1l-modal.o1l-library-style button.o1l-btn-link:focus {
+  text-decoration: underline;
+  filter: brightness(110%);
+}

@@ -1,0 +1,165 @@
+@typeparam TTargetType where TTargetType : class, new()
+
+@using DataImportUtility.Components.Abstractions
+@using DataImportUtility.Components.FieldMappingComponents.Wrappers
+@using DataImportUtility.Models
+@using DataImportUtility.Components.DataSetComponents
+@using DataImportUtility.Components.FilePickerComponent
+
+@using System.Data
+@using System.Collections.Immutable
+
+@inherits FileImportUtilityComponentBase
+
+<CascadingValue Value="_myDataFileMapperState">
+    @if (UseWrappingDiv)
+    {
+        @WrappedContent
+    }
+    else
+    {
+        @MainContent
+    }
+</CascadingValue>
+
+@code {
+    private RenderFragment MainContent => @<text>
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="error-diplay@(DefaultCssClass)"
+                 data-from-component="@nameof(DataFileMapper<TTargetType>)"
+                 data-component-instance="@InstanceId"
+                 data-mapper-state="@_myDataFileMapperState.MapperStateId">
+                @((MarkupString)_errorMessage)
+            </div>
+        }
+
+        <DataFilePicker OnFileRequestChanged=HandleFilePicked
+                        ApplyDefaultCss=ApplyDefaultCss />
+
+        <DataSetDisplay OnSelectedDataTableChanged=HandleSelectedDataTableChanged
+                        ApplyDefaultCss=ApplyDefaultCss>
+            <OverrideHeaderRow Context="dataTable">
+                <tr class="header-controls@(DefaultCssClass)"
+                    data-from-component="@nameof(DataFileMapper<TTargetType>)"
+                    data-component-instance="@InstanceId"
+                    data-mapper-state="@_myDataFileMapperState.MapperStateId">
+                    <td colspan="@dataTable.Columns.Count">
+                        <div class="table-title-wrapper">
+                            <span class="table-title">Data Table: @dataTable.TableName</span>
+                            <div class="main-controls">
+                                <button type="button" class="o1l-btn-field-mapper o1l-btn-icon-only o1l-btn-sm@(DefaultCssClass)" @onclick="_ => HandleShowFieldMapperDialog(dataTable)">
+                                    @Icons.List()
+                                </button>
+                                <button type="button" class="o1l-btn-field-mapper o1l-btn-icon-only o1l-btn-sm@(DefaultCssClass)" @onclick="_ => HandleTogglePreviewOutput(dataTable)" title="@($"Show {(_myDataFileMapperState.ShowTransformPreview ? "Incoming Data" : "Output Preview")}")">
+                                    @Icons.Preview()
+                                    <span class="o1l-sr-only">@($"Show {(_myDataFileMapperState.ShowTransformPreview ? "Incoming Data" : "Output Preview")}")</span>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="header-row@(DefaultCssClass)"
+                    data-from-component="@nameof(DataFileMapper<TTargetType>)"
+                    data-component-instance="@InstanceId"
+                    data-mapper-state="@_myDataFileMapperState.MapperStateId">
+                    @foreach (DataColumn curCol in dataTable.Columns)
+                    {
+                        <th>
+                            @curCol.ColumnName
+                        </th>
+                    }
+                </tr>
+            </OverrideHeaderRow>
+        </DataSetDisplay>
+
+        @if (_myDataFileMapperState.ShowTransformPreview)
+        {
+            <div class="preview-data-table-wrapper">
+            @if(_previewOutput is null)
+            {
+                <p>Loading... @Icons.PreLoader()</p>
+            }
+            else
+            {
+                <DataTableDisplay DataTable=_previewOutput
+                                  ApplyDefaultCss=ApplyDefaultCss>
+                    <OverrideHeaderRow Context="dataTable">
+                        <tr class="header-controls@(DefaultCssClass)"
+                            data-from-component="@nameof(DataFileMapper<TTargetType>)"
+                            data-component-instance="@InstanceId"
+                            data-mapper-state="@_myDataFileMapperState.MapperStateId">
+                            <td colspan="@dataTable.Columns.Count">
+                                <div class="table-title-wrapper">
+                                    <div class="main-controls">
+                                        <button type="button" class="o1l-btn-field-mapper@(DefaultCssClass)" @onclick="_ => HandleTogglePreviewOutput(dataTable)" title="@($"Show {(_myDataFileMapperState.ShowTransformPreview ? "Incoming Data" : "Output Preview")}")">
+                                            @Icons.Preview()
+                                            <span class="o1l-sr-only">@($"Show {(_myDataFileMapperState.ShowTransformPreview ? "Incoming Data" : "Output Preview")}")</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="header-row@(DefaultCssClass)"
+                            data-from-component="@nameof(DataFileMapper<TTargetType>)"
+                            data-component-instance="@InstanceId"
+                            data-mapper-state="@_myDataFileMapperState.MapperStateId">
+                             @foreach (DataColumn curCol in dataTable.Columns)
+                             {
+                                var hasError = dataTable.Rows.OfType<DataRow>().Any(row => !string.IsNullOrWhiteSpace(row.GetColumnError(curCol)));
+                                var errorMessage = hasError ? "One or more rows contain an invalid value for this field." : null;
+
+                                <th>
+                                    <div class="col-header-wrapper" title="@errorMessage">
+                                        <span class="header-text">
+                                            @curCol.ColumnName
+                                        </span>
+                                        @if (hasError)
+                                        {
+                                            <i class="error-indicator">
+                                                <span class="o1l-sr-only">@errorMessage</span>
+                                                @Icons.Caution(new() { { "fill", "red" } })
+                                            </i>
+                                        }
+                                    </div>
+                                </th>
+                             }
+                        </tr>
+                    </OverrideHeaderRow>
+                </DataTableDisplay>
+            }
+            </div>
+        }
+
+        @if (_myDataFileMapperState.ActiveDataTable is not null && (_myDataFileMapperState.DataFile?.TableDefinitions.TryGetTableDefinition(_myDataFileMapperState.ActiveDataTable.TableName, out var activeTableDefinition) ?? false) && activeTableDefinition is not null)
+        {
+            switch (_myDataFileMapperState.FieldMapperDisplayMode)
+            {
+                case FieldMapperDisplayMode.Flyout:
+                    <FieldMapperFlyout ShowChanged=HandleShowFieldMapperChanged
+                                       FieldMappings=activeTableDefinition.FieldMappings.ToImmutableArray()
+                                       FieldDescriptors=activeTableDefinition.FieldDescriptors.ToImmutableArray()
+                                       OnCommitClicked=HandleFieldMappingsChangesCommitted
+                                       ApplyDefaultCss=ApplyDefaultCss />
+                    break;
+                case FieldMapperDisplayMode.Modal:
+                    <FieldMapperDialog ShowChanged=HandleShowFieldMapperChanged
+                                       FieldMappings=activeTableDefinition.FieldMappings.ToImmutableArray()
+                                       FieldDescriptors=activeTableDefinition.FieldDescriptors.ToImmutableArray()
+                                       OnCommitClicked=HandleFieldMappingsChangesCommitted
+                                       ApplyDefaultCss=ApplyDefaultCss />
+                    break;
+                default:
+                    break;
+            }
+        }
+    </text>;
+
+    private RenderFragment WrappedContent =>
+    @<div class="data-file-mapper-wrapper@(DefaultCssClass)"
+              data-from-component="@nameof(DataFileMapper<TTargetType>)"
+              data-component-instance="@InstanceId"
+              data-mapper-state="@_myDataFileMapperState.MapperStateId">
+        @MainContent
+    </div>;
+}

@@ -1,0 +1,38 @@
+﻿[
+  {
+    "outputFile": "DataFileMapper.razor.css",
+    "inputFile": "DataFileMapper.razor.scss"
+  },
+  {
+    "outputFile": "DataSetComponents/DataSetDisplay.razor.css",
+    "inputFile": "DataSetComponents/DataSetDisplay.razor.scss"
+  },
+  {
+    "outputFile": "DataSetComponents/DataTableDisplay.razor.css",
+    "inputFile": "DataSetComponents/DataTableDisplay.razor.scss"
+  },
+  {
+    "outputFile": "FieldMappingComponents/Wrappers/FieldMapperDialog.razor.css",
+    "inputFile": "FieldMappingComponents/Wrappers/FieldMapperDialog.razor.scss"
+  },
+  {
+    "outputFile": "FieldMappingComponents/Wrappers/FieldMapperFlyout.razor.css",
+    "inputFile": "FieldMappingComponents/Wrappers/FieldMapperFlyout.razor.scss"
+  },
+  {
+    "outputFile": "FilePickerComponent/DataFilePicker.razor.css",
+    "inputFile": "FilePickerComponent/DataFilePicker.razor.scss"
+  },
+  {
+    "outputFile": "FieldMappingComponents/FieldMapperEditor.razor.css",
+    "inputFile": "FieldMappingComponents/FieldMapperEditor.razor.scss"
+  },
+  {
+    "outputFile": "FieldMappingComponents/FieldTransformationComponents/FieldTransformationConfiguration.razor.css",
+    "inputFile": "FieldMappingComponents/FieldTransformationComponents/FieldTransformationConfiguration.razor.scss"
+  },
+  {
+    "outputFile": "FieldMappingComponents/FieldTransformationComponents/ValueTransformationRuleDetails.razor.css",
+    "inputFile": "FieldMappingComponents/FieldTransformationComponents/ValueTransformationRuleDetails.razor.scss"
+  }
+]

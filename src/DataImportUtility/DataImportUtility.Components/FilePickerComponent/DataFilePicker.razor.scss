@@ -1,0 +1,69 @@
+@import '../Sass/ColorVariables';
+
+.data-file-picker.o1l-library-style {
+    --o1l-use-upload-area-bg-color: var(--o1l-upload-area-bg-color, #{$default-blue-light});
+    --o1l-use-upload-area-bg-hover-color: var(--o1l-upload-area-bg-hover-color, #{$default-blue-dark});
+    --o1l-use-upload-area-border-color: var(--o1l-upload-area-border-color, #{$default-blue-light});
+    --o1l-use-upload-area-border-hover-color: var(--o1l-upload-area-border-hover-color, #{$default-blue-dark});
+    --o1l-use-upload-area-text-color: var(--o1l-upload-area-text-color, #{$default-light2});
+    --o1l-use-upload-area-text-hover-color: var(--o1l-upload-area-text-hover-color, var(--o1l-use-upload-area-text-color));
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    align-items: flex-start;
+
+    label {
+        &.upload-wrapper {
+            position: relative;
+            cursor: pointer;
+            display: grid;
+            align-items: stretch;
+            justify-content: stretch;
+            overflow: hidden;
+            padding: 0.5rem 1rem;
+            border-radius: .4rem;
+            border: 3px solid transparent;
+            outline: 1px solid var(--o1l-use-upload-area-border-color);
+            background-color: var(--o1l-use-upload-area-bg-color);
+            color: var(--o1l-use-upload-area-text-color);
+
+            &.has-hover {
+                background-color: var(--o1l-use-upload-area-bg-hover-color);
+                outline: 3px dashed var(--o1l-use-upload-area-border-hover-color);
+                color: var(--o1l-use-upload-area-text-hover-color);
+            }
+
+            .label-text {
+                display: grid;
+                grid-row: 1;
+                grid-column: 1;
+                z-index: 1;
+                cursor: pointer;
+                pointer-events: none;
+                margin: 0;
+            }
+
+            ::deep {
+                input[type="file"] {
+                    // Move the input to the top left corner and make the font-size massive
+                    // so that the file name is not visible and the button takes up the entire
+                    // space of the wrapper
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    font-size: 10rem;
+                    opacity: 0;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+
+    p {
+        margin: 0;
+
+        &.file-display {
+            font-size: .8em;
+        }
+    }
+}

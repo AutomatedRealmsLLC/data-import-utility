@@ -1,0 +1,11 @@
+@import "../../Sass/ButtonMixins";
+@import '../../Sass/ModalMixins';
+
+.o1l-modal.o1l-library-style
+{
+    @include modal-defaults;
+
+    button {
+        @include button-base-style;
+    }
+}

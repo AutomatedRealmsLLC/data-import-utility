@@ -1,0 +1,52 @@
+@inherits FileImportUtilityComponentBase
+
+<ErrorBoundary Context="errorContext">
+    <ErrorContent>
+        <DefaultErrorContextContent ErrorContext=errorContext
+                                    ApplyDefaultCss=ApplyDefaultCss />
+        @RenderMainContent
+    </ErrorContent>
+    <ChildContent>
+        @RenderMainContent
+    </ChildContent>
+</ErrorBoundary>
+
+@code {
+    private RenderFragment RenderMainContent =>
+    @<div class="data-file-picker@(DefaultCssClass)"
+          data-from-component="@nameof(DataFilePicker)"
+          data-component-instance="@InstanceId"
+          data-mapper-state="@MapperStateId">
+        <label class="upload-wrapper@($"{(_fileHovered ? " has-hover" : string.Empty)}{DefaultCssClass}")">
+            <InputFile OnChange=HandleFileSelected
+                       class="@DefaultCssClass"
+                       disabled="@DisableFilePicker"
+                       @ondragenter="_ => _fileHovered = true"
+                       @ondragleave="_ => _fileHovered = false"
+                       @ondragend="_ => _fileHovered = false"
+                       @ondrop="_ => _fileHovered = false" />
+            <span class="label-text">
+                @UploadAreaLabelText
+            </span>
+        </label>
+        <div class="file-display">
+            @if (!string.IsNullOrWhiteSpace(_selectedFileRequest?.Name))
+            {
+                <text>Selected File: @_selectedFileRequest.Name</text>
+            }
+            else
+            {
+                <text>&nbsp;</text>
+            }
+        </div>
+        <label class="header-row-option">
+            <input type="checkbox"
+                   class="@DefaultCssClass"
+                   checked="@_hasHeaderRow"
+                   disabled="@DisableFilePicker"
+                   @onclick=HandleToggleHeaderRow
+                   @onclick:preventDefault=true />
+            <span class="label-text">Data has header row</span>
+        </label>
+    </div>;
+}

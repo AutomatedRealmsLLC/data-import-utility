@@ -1,0 +1,86 @@
+@import 'AnimationMixins';
+@import 'ButtonMixins';
+@import 'ColorVariables';
+
+@mixin modal-defaults {
+    --o1l-use-primary-modal-background: var(--o1l-primary-modal-background, #{$default-translucent-dark});
+    --o1l-use-primary-modal-dialog-background: var(--o1l-primary-modal-dialog-background, #{$default-dark1});
+    --o1l-use-primary-modal-dialog-box-shadow: var(--o1l-primary-modal-dialog-box-shadow, #{$default-box-shadow-dark});
+    --o1l-use-primary-modal-header-border: var(--o1l-primary-modal-header-border, #{$default-border-light});
+    /* Styles */
+    position: fixed;
+    inset: 0;
+    background: var(--o1l-use-primary-modal-background);
+    z-index: 1;
+    animation: fadeOut .2s forwards;
+
+    button {
+        @include button-base-style;
+    }
+
+    &.show {
+        animation: fadeIn .2s forwards;
+    }
+
+    .o1l-modal-dialog {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--o1l-use-primary-modal-dialog-background);
+        border: var(--o1l-use-primary-modal-header-border);
+        border-radius: .4rem;
+        overflow: clip;
+        z-index: 2;
+
+        .o1l-modal-content {
+            box-shadow: 0 0 10px var(--o1l-use-primary-modal-dialog-box-shadow);
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            min-width: 30ch;
+            max-width: 80vw;
+            min-height: 10rem;
+            max-height: 80vh;
+
+            .o1l-modal-header {
+                position: relative;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: var(--o1l-use-primary-modal-header-border);
+                padding: 1em;
+
+                .o1l-modal-title {
+                    font-size: 1.25em;
+                    white-space: nowrap;
+                    padding-right: 1rem;
+                }
+
+                .o1l-btn-close {
+                    position: absolute;
+                    top: .2rem;
+                    right: .2rem;
+                    cursor: pointer;
+                    color: white;
+                    background: transparent;
+                    border: none;
+                }
+            }
+
+            .o1l-modal-body {
+                padding: 1em;
+                overflow: auto;
+            }
+
+            .o1l-modal-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: 1em;
+                padding: 1em;
+            }
+        }
+    }
+
+    @include fade-in-animation-frames;
+    @include fade-out-animation-frames;
+}

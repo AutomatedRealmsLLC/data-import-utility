@@ -1,0 +1,11 @@
+@import '../../Sass/ButtonMixins';
+@import '../../Sass/FlyoutMixins';
+
+
+.o1l-flyout-wrapper.o1l-library-style {
+    @include flyout-defaults;
+
+    button {
+        @include button-base-style;
+    }
+}
