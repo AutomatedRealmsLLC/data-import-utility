@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-
-namespace DataImportUtility.Abstractions;
+﻿namespace DataImportUtility.Abstractions;
 
 /// <summary>
 /// Represents a request to import data from a file.

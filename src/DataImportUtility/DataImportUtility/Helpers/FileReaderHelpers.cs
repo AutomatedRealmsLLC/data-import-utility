@@ -1,10 +1,6 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 using ExcelDataReader;
 
@@ -47,7 +43,6 @@ public static class FileReaderHelpers
         try
         {
             using var memoryStream = new MemoryStream();
-            // TODO: Verify the .NET Standard 2.0 compatibility of this method.
             await stream.CopyToAsync(memoryStream, (int)stream.Length, ct);
             memoryStream.Position = 0;
 

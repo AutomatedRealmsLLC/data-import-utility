@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 using DataImportUtility.CustomConverters;
 using DataImportUtility.Models;
@@ -18,15 +16,15 @@ namespace DataImportUtility.Abstractions;
 public abstract partial class ValueTransformationBase : IDisposable
 {
     /// <summary>
-    /// The error _message when the operation failed.
+    /// The error message when the operation failed.
     /// </summary>
     public const string OperationFailedMessage = "The operation failed.";
     /// <summary>
-    /// The error _message when the operation is not supported for collections.
+    /// The error message when the operation is not supported for collections.
     /// </summary>
     public const string OperationInvalidForCollectionsMessage = "The operation cannot be applied to a collection of values.";
     /// <summary>
-    /// The error _message when an aggregation operation has an error in part of the chain.
+    /// The error message when an aggregation operation has an error in part of the chain.
     /// </summary>
     public const string AggregationOperationErrorMessage = "An error occurred in the aggregation operation. Check the configuration of the field transformations for more details.";
 
@@ -72,7 +70,7 @@ public abstract partial class ValueTransformationBase : IDisposable
     [JsonIgnore]
     public abstract string Description { get; }
     /// <summary>
-    /// The error _message if the operation failed.
+    /// The error message if the operation failed.
     /// </summary>
     [JsonIgnore]
     public string? ErrorMessage { get; protected set; }

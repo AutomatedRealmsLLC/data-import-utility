@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace DataImportUtility.Helpers;
 
@@ -30,7 +28,7 @@ public static partial class StringHelpers
     public static string? ToCamelCase(this string? val)
         => val is null or { Length: < 2 }
             ? val
-            : char.ToLowerInvariant(val[0]) + string.Join("", val.Skip(1));
+            : char.ToLowerInvariant(val[0]) + val.Substring(1);
 
     /// <summary>
     /// Determines if the rule or operation detail contains a placeholder.
@@ -41,7 +39,6 @@ public static partial class StringHelpers
     /// </returns>
     public static bool OperationHasPlaceholder(this string? operationDetail)
         => Regex.IsMatch(operationDetail ?? string.Empty, @"\$\{(\d+)\}");
-        //=> PlaceholderRegex().IsMatch(operationDetail ?? string.Empty);
 
     /// <summary>
     /// Gets the matches for the placeholders in the rule or operation detail.
@@ -52,7 +49,6 @@ public static partial class StringHelpers
     /// </returns>
     public static MatchCollection GetPlaceholderMatches(this string? operationDetail)
         => Regex.Matches(operationDetail ?? string.Empty, @"\$\{(\d+)\}");
-        //=> PlaceholderRegex().Matches(operationDetail ?? string.Empty);
 
     /// <summary>
     /// Tries to get the <see cref="MatchCollection"/> for the placeholders in the rule or operation detail.
@@ -64,8 +60,4 @@ public static partial class StringHelpers
     /// </returns>
     public static bool TryGetPlaceholderMatches(this string? operationDetail, out MatchCollection matches)
         => (matches = Regex.Matches(operationDetail ?? string.Empty, @"\$\{(\d+)\}")).Count > 0;
-        //=> (matches = PlaceholderRegex().Matches(operationDetail ?? string.Empty)).Count > 0;
-
-    //[GeneratedRegex(@"\$\{(\d+)\}")]
-    //public static partial Regex PlaceholderRegex();
 }

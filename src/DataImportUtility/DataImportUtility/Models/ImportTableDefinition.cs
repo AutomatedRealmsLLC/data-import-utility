@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace DataImportUtility.Models;
 
@@ -16,11 +14,11 @@ public class ImportTableDefinition
     /// <summary>
     /// The fields in the table.
     /// </summary>
-    public List<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = new();
+    public List<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = [];
     /// <summary>
     /// The mappings to the target type.
     /// </summary>
-    public List<FieldMapping> FieldMappings { get; set; } = new();
+    public List<FieldMapping> FieldMappings { get; set; } = [];
 }
 
 /// <summary>
@@ -95,8 +93,8 @@ public static class ImportTableDefinitionExtensions
         tableDefinitions.Add(new ImportTableDefinition
         {
             TableName = tableName,
-            FieldDescriptors = fieldDescriptors ?? new(),
-            FieldMappings = fieldMappings ?? new()
+            FieldDescriptors = fieldDescriptors ?? [],
+            FieldMappings = fieldMappings ?? []
         });
 
         return true;

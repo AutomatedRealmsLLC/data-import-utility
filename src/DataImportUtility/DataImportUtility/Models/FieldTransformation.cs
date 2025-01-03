@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Data;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 
 using DataImportUtility.Abstractions;
 using DataImportUtility.Helpers;
@@ -28,13 +23,13 @@ public class FieldTransformation : IDisposable
         if (field is not null)
         {
             Field = field;
-            TransformationResults = (field.ValueSet?
-                .Select(value => new TransformationResult()
-                {
-                    OriginalValue = value?.ToString(),
-                    Value = value?.ToString()
-                }) ?? Enumerable.Empty<TransformationResult>())
-                .ToImmutableList();
+            TransformationResults = [..
+                field.ValueSet?
+                    .Select(value => new TransformationResult()
+                    {
+                        OriginalValue = value?.ToString(),
+                        Value = value?.ToString()
+                    }) ?? []];
         }
     }
 
@@ -70,13 +65,13 @@ public class FieldTransformation : IDisposable
             UpdateTransformationResults();
         }
     }
-    private ImmutableList<ValueTransformationBase> _valueTransformations = ImmutableList.Create<ValueTransformationBase>();
+    private ImmutableList<ValueTransformationBase> _valueTransformations = [];
 
     /// <summary>
     /// Gets or sets the results of the transformations.
     /// </summary>
     [JsonIgnore]
-    public ImmutableList<TransformationResult> TransformationResults { get; private set; } = ImmutableList.Create<TransformationResult>();
+    public ImmutableList<TransformationResult> TransformationResults { get; private set; } = [];
 
     #region ValueTransformation Methods
     /// <summary>
@@ -87,7 +82,7 @@ public class FieldTransformation : IDisposable
     {
         var transformations = ValueTransformations.ToList();
         transformations.Add(transformation);
-        ValueTransformations = transformations.ToImmutableList();
+        ValueTransformations = [.. transformations];
     }
 
     /// <summary>
@@ -98,7 +93,7 @@ public class FieldTransformation : IDisposable
     {
         var transformations = ValueTransformations.ToList();
         transformations.Remove(transformation);
-        ValueTransformations = transformations.ToImmutableList();
+        ValueTransformations = [.. transformations];
     }
 
     /// <summary>
@@ -112,7 +107,7 @@ public class FieldTransformation : IDisposable
     {
         var transformations = ValueTransformations.ToList();
         transformations.RemoveAt(index);
-        ValueTransformations = transformations.ToImmutableList();
+        ValueTransformations = [.. transformations];
     }
 
     /// <summary>
@@ -124,7 +119,7 @@ public class FieldTransformation : IDisposable
     {
         var transformations = ValueTransformations.ToList();
         transformations[transformations.IndexOf(oldTransformation)] = newTransformation;
-        ValueTransformations = transformations.ToImmutableList();
+        ValueTransformations = [.. transformations];
     }
 
     /// <summary>
@@ -139,7 +134,7 @@ public class FieldTransformation : IDisposable
     {
         var transformations = ValueTransformations.ToList();
         transformations[index] = newTransformation;
-        ValueTransformations = transformations.ToImmutableList();
+        ValueTransformations = [.. transformations];
     }
 
     /// <summary>
@@ -150,7 +145,7 @@ public class FieldTransformation : IDisposable
     /// </param>
     public void SetTransformations(IEnumerable<ValueTransformationBase> transformations)
     {
-        ValueTransformations = transformations.ToImmutableList();
+        ValueTransformations = [.. transformations];
     }
     #endregion ValueTransformation Methods
 
@@ -207,25 +202,25 @@ public class FieldTransformation : IDisposable
             // Reinitialize the TransformationResults with the original values
             if (values is null)
             {
-                TransformationResults = ImmutableList.Create<TransformationResult>();
+                TransformationResults = [];
             }
             else
             {
-                TransformationResults = values
+                TransformationResults = [..
+                    values
                         .Select(x => new TransformationResult()
                         {
                             OriginalValue = x?.ToString(),
                             Value = x?.ToString()
-                        })
-                        .ToImmutableList();
+                        })];
             }
-            TransformationResults = (await Apply(TransformationResults, ct)).ToImmutableList();
+            TransformationResults = [.. (await Apply(TransformationResults, ct))];
 
             return TransformationResults;
         }
         catch (OperationCanceledException)
         {
-            return ImmutableList.Create<TransformationResult>();
+            return [];
         }
     }
 
@@ -267,7 +262,7 @@ public class FieldTransformation : IDisposable
             return new() { ErrorMessage = $"The field {Field.FieldName} does not exist in the data row." };
         }
 
-        return (await Apply(new[] { dataRow[Field.FieldName] }, ct)).FirstOrDefault()
+        return (await Apply([dataRow[Field.FieldName]], ct)).FirstOrDefault()
             ?? new()
             {
                 ErrorMessage = "The transformation produced no result.",
@@ -329,7 +324,7 @@ public class FieldTransformation : IDisposable
     public FieldTransformation Clone()
     {
         var forRet = (FieldTransformation)MemberwiseClone();
-        forRet.ValueTransformations = ValueTransformations.Select(x => x.Clone()).ToImmutableList();
+        forRet.ValueTransformations = [.. ValueTransformations.Select(x => x.Clone())];
         return forRet;
     }
     #endregion

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-using DataImportUtility.Abstractions;
+﻿using DataImportUtility.Abstractions;
 
 namespace DataImportUtility.Helpers;
 
@@ -19,5 +16,4 @@ public static class MappingRulesHelpers
             .OfType<MappingRuleType>()
             .Select(ruleType => $"{ruleType}: {ruleType.GetDescription()}")
     );
-
 }

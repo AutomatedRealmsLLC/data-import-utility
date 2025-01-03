@@ -18,7 +18,7 @@ public class CalculateOperation : ValueTransformationBase
     public override string EnumMemberName { get; } = nameof(CalculateOperation);
 
     /// <summary>
-    /// The error _message when the calculation syntax provided could not be parsed.
+    /// The error message when the calculation syntax provided could not be parsed.
     /// </summary>
     public const string InvalidFormatMessage = "The calculation format is invalid.";
 

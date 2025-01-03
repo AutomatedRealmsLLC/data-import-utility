@@ -19,7 +19,7 @@ public partial record TransformationResult
     /// </remarks>
     public string? Value { get; set; }
     /// <summary>
-    /// The error _message if the transformation failed.
+    /// The error message if the transformation failed.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? ErrorMessage { get; set; }

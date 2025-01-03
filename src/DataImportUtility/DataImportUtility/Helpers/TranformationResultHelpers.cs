@@ -75,12 +75,12 @@ public static class TranformationResultHelpers
 
     /// <summary>
     /// Checks if the value for the incoming result is a collection and returns a 
-    /// new result with an error _message if it is.
+    /// new result with an error message if it is.
     /// </summary>
     /// <param name="result">The result to check.</param>
-    /// <param name="errorMessage">The error _message to return if the value is a collection.</param>
+    /// <param name="errorMessage">The error message to return if the value is a collection.</param>
     /// <returns>
-    /// The result with an error _message if the value is a collection.
+    /// The result with an error message if the value is a collection.
     /// </returns>
     public static TransformationResult ErrorIfCollection(this TransformationResult result, string errorMessage)
     {

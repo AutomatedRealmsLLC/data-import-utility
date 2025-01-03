@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Data;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 using DataImportUtility.CustomConverters;
 using DataImportUtility.Helpers;
@@ -100,7 +96,7 @@ public abstract partial class MappingRuleBase : IDisposable
             OnDefinitionChanged?.Invoke();
         }
     }
-    private ImmutableList<FieldTransformation> _sourceFields = ImmutableList.Create<FieldTransformation>();
+    private ImmutableList<FieldTransformation> _sourceFields = [];
 
     /// <summary>
     /// The source fields that are in use. This is a subset of the <see cref="SourceFieldTranformations"/> that have a
@@ -178,7 +174,7 @@ public abstract partial class MappingRuleBase : IDisposable
 
         if (useFieldTransforms.Count == 0)
         {
-            return Enumerable.Empty<TransformationResult?>();
+            return [];
         }
 
         // Make sure that all of the fields in the field transformations are in the imported
@@ -207,7 +203,7 @@ public abstract partial class MappingRuleBase : IDisposable
 
         foreach (var fieldTransform in useFieldTransforms)
         {
-            var curResults = await fieldTransform.Apply(importedRecords) ?? Enumerable.Empty<TransformationResult?>();
+            var curResults = await fieldTransform.Apply(importedRecords) ?? [];
             var resultCount = curResults.Count();
             if (resultCount >= 0)
             {
@@ -215,13 +211,13 @@ public abstract partial class MappingRuleBase : IDisposable
                 {
                     throw new ArgumentException($"The number of values in the imported records does not match the number of values in the field transformations. The number of values in the imported records is {importedRecords.Rows.Count} and the number of values in the field transformations is {resultCount}.");
                 }
-                transformResults.Add(fieldTransform.Field!.FieldName, curResults!);
+                transformResults.Add(fieldTransform.Field!.FieldName, curResults);
             }
         }
 
         if (transformResults.Count == 0)
         {
-            return Enumerable.Empty<TransformationResult?>();
+            return [];
         }
 
         return CombineResultsByField(transformResults);
@@ -360,7 +356,7 @@ public abstract partial class MappingRuleBase : IDisposable
 
         var sourceFields = SourceFieldTranformations.ToList();
         sourceFields.Add(fieldTransformation);
-        SourceFieldTranformations = sourceFields.ToImmutableList();
+        SourceFieldTranformations = [.. sourceFields];
         return fieldTransformation;
     }
 
@@ -373,7 +369,7 @@ public abstract partial class MappingRuleBase : IDisposable
         var sourceFields = SourceFieldTranformations.ToList();
         var index = sourceFields.IndexOf(oldFieldTransformation);
         sourceFields[index] = newFieldTransformation;
-        SourceFieldTranformations = sourceFields.ToImmutableList();
+        SourceFieldTranformations = [.. sourceFields];
     }
 
     /// <summary>
@@ -397,7 +393,7 @@ public abstract partial class MappingRuleBase : IDisposable
 
         var sourceFields = SourceFieldTranformations.ToList();
         sourceFields[(int)index] = fieldTransformation;
-        SourceFieldTranformations = sourceFields.ToImmutableList();
+        SourceFieldTranformations = [.. sourceFields];
     }
 
     /// <summary>
@@ -408,7 +404,7 @@ public abstract partial class MappingRuleBase : IDisposable
     {
         var sourceFields = SourceFieldTranformations.ToList();
         sourceFields.Remove(fieldTransformation);
-        SourceFieldTranformations = sourceFields.ToImmutableList();
+        SourceFieldTranformations = [.. sourceFields];
     }
 
     /// <summary>
@@ -427,14 +423,14 @@ public abstract partial class MappingRuleBase : IDisposable
 
         var sourceFields = SourceFieldTranformations.ToList();
         sourceFields.RemoveAt(index);
-        SourceFieldTranformations = sourceFields.ToImmutableList();
+        SourceFieldTranformations = [.. sourceFields];
     }
 
     /// <summary>
     /// Removes all <see cref="FieldTransformation"/> from the <see cref="SourceFieldTranformations"/> collection.
     /// </summary>
     public virtual void ClearFieldTransformations()
-        => SourceFieldTranformations = ImmutableList.Create<FieldTransformation>();
+        => SourceFieldTranformations = [];
     #endregion SourceFields Methods
 
     /// <summary>

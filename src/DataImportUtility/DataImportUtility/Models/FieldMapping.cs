@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 using DataImportUtility.Abstractions;
 
@@ -18,7 +13,7 @@ namespace DataImportUtility.Models;
 /// </summary>
 public class FieldMapping
 {
-    private readonly Dictionary<string, List<ValidationResult>?> _valueValiationResults = new();
+    private readonly Dictionary<string, List<ValidationResult>?> _valueValiationResults = [];
 
     /// <summary>
     /// The name of the field.
@@ -66,7 +61,7 @@ public class FieldMapping
     /// The validation attributes for the field.
     /// </summary>
     [JsonIgnore]
-    internal ImmutableArray<ValidationAttribute> ValidationAttributes { get; set; } = ImmutableArray.Create<ValidationAttribute>();
+    internal ImmutableArray<ValidationAttribute> ValidationAttributes { get; set; } = [];
 
     /// <summary>
     /// The validation results for the distinct values.
@@ -128,7 +123,7 @@ public class FieldMapping
     /// <summary>
     /// The validation results for the Transformed values for this.
     /// </summary>
-    public Dictionary<ValidationContext, List<ValidationResult>> ValidationResults { get; set; } = new();
+    public Dictionary<ValidationContext, List<ValidationResult>> ValidationResults { get; set; } = [];
 
     /// <summary>
     /// Clones the <see cref="FieldMapping" />.
@@ -145,7 +140,7 @@ public class FieldMapping
     {
         if (transformedResult?.Value is null)
         {
-            validationResults = Required ? new() { new ValidationResult("The field is required.", new[] { FieldName }) } : null;
+            validationResults = Required ? [new ValidationResult("The field is required.", [FieldName])] : null;
             return validationResults is null;
         }
 
@@ -168,7 +163,7 @@ public class FieldMapping
             var isValid = validationAttribute.IsValid(transformedResult.Value);
             if (!isValid)
             {
-                valResults.Add(new ValidationResult(validationAttribute.FormatErrorMessage(FieldName), new[] { FieldName }));
+                valResults.Add(new ValidationResult(validationAttribute.FormatErrorMessage(FieldName), [FieldName]));
             }
         }
 
@@ -187,7 +182,7 @@ public class FieldMapping
         {
             if (Required)
             {
-                _valueValiationResults.Add("<null>", new() { new ValidationResult("A value for this field is required.", new[] { FieldName }) });
+                _valueValiationResults.Add("<null>", [new ValidationResult("A value for this field is required.", [FieldName])]);
             }
             else
             {

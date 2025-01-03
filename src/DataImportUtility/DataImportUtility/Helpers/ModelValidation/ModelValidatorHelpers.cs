@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
@@ -15,7 +13,7 @@ namespace DataImportUtility.Helpers.ModelValidation;
 public static class ModelValidatorHelpers
 {
     #region Context Cache
-    private static readonly Dictionary<object, ValidationContext> ContextCache = new();
+    private static readonly Dictionary<object, ValidationContext> ContextCache = [];
 
     private static ValidationContext GetOrCreateContext<TObjectType>(this TObjectType obj)
     {

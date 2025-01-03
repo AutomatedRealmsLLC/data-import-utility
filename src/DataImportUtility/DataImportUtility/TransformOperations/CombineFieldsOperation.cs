@@ -16,7 +16,7 @@ public partial class CombineFieldsOperation : ValueTransformationBase
     public override string EnumMemberName { get; } = nameof(CombineFieldsOperation);
 
     /// <summary>
-    /// The error _message when the number of values to combine does not match the number of field mappings.
+    /// The error message when the number of values to combine does not match the number of field mappings.
     /// </summary>
     public const string ValueTransformationCountMismatchmessage = "The number of values to combine does not match the number of field mappings.";
 

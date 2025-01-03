@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using DataImportUtility.Abstractions;
@@ -12,7 +11,7 @@ namespace DataImportUtility.CustomConverters;
 /// </summary>
 public class ValueTransformationBaseConverter : JsonConverter<ValueTransformationBase>
 {
-    private static readonly string _opNamePropCamelCase = nameof(ValueTransformationBase.EnumMemberName).ToCamelCase()!;
+    private static readonly string _opNamePropCamelCase = nameof(ValueTransformationBase.EnumMemberName).ToCamelCase();
 
     /// <inheritdoc />
     public override ValueTransformationBase Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

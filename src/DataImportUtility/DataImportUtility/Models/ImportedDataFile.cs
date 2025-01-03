@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 using DataImportUtility.Abstractions;
-using DataImportUtility.CustomExceptions;
 using DataImportUtility.Helpers;
 
 namespace DataImportUtility.Models;
@@ -74,7 +69,7 @@ public class ImportedDataFile
     /// This is updated when the <see cref="SetData(DataSet?, bool, bool)"/> or 
     /// <see cref="RefreshFieldDescriptors(bool, string?)"/> methods are called.
     /// </remarks>
-    public List<ImportTableDefinition> TableDefinitions { get; private set; } = new();
+    public List<ImportTableDefinition> TableDefinitions { get; private set; } = [];
 
     /// <summary>
     /// The number of records in the data.
@@ -481,7 +476,7 @@ public class ImportedDataFile
         tableDef.FieldMappings = incomingFieldMappings.ToList();
         var foundDescriptors = TableDefinitions.TryGetFieldDescriptors(tableName, out var fieldDescriptors);
 
-        foreach(var fieldMapping in tableDef.FieldMappings)
+        foreach (var fieldMapping in tableDef.FieldMappings)
         {
             fieldMapping.ValidationAttributes = _targetTypeFieldMappings!.First(x => x.FieldName == fieldMapping.FieldName).ValidationAttributes;
             foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTranformations ?? []).Where(sfd => sfd?.Field is not null))

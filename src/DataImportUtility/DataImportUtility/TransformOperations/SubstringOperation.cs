@@ -125,7 +125,7 @@ public static class SubstringOperationExtensions
         }
 
         // Negative start index means start X characters from the end of the string
-        var resultValue = result.Value.Skip(
+        var resultValue = result.Value?.Substring(
             Math.Min(
                 result.Value.Length,
                 Math.Max(
@@ -135,16 +135,16 @@ public static class SubstringOperationExtensions
             ));
 
         // Negative max length means take the length of the string minus the absolute value of the number
-        resultValue = resultValue.Take(
+        resultValue = resultValue?.Substring(0, 
             Math.Min(
-                resultValue.Count(),
+                resultValue.Length,
                 Math.Max(
-                    (maxLength < 0 ? result.Value.Length : 0) + maxLength,
+                    (maxLength < 0 ? (result.Value?.Length ?? 0) : 0) + maxLength,
                     0
                 )
             )
         );
 
-        return result with { Value = string.Join("", resultValue) };
+        return result with { Value = resultValue };
     }
 }
