@@ -1,0 +1,21 @@
+$default-dark1: #222 !default;
+$default-dark2: #333 !default;
+$default-light1: #fff !default;
+$default-light2: #f0f0f0 !default;
+$default-blue-dark: #004578 !default;
+$default-blue-light: #0078d4 !default;
+$default-translucent-dark: rgba(0, 0, 0, .2) !default;
+$default-translucent-light: rgba(255, 255, 255, .2) !default;
+$default-danger: #e50000 !default;
+$default-success: #26b050 !default;
+$default-warning: #e88a00 !default;
+$default-info: #2196f3 !default;
+$default-link: #{$default-info} !default;
+$default-muted: #6d6d6d !default;
+
+$default-border-dark: 1px solid #{$default-translucent-dark} !default;
+$default-border-light: 1px solid #{$default-translucent-light} !default;
+$default-box-shadow-dark: 0 0 10px #{$default-translucent-dark} !default;
+$default-box-shadow-light: 0 0 10px #{$default-translucent-light} !default;
+
+$default-cell-padding: .4rem .6rem !default;

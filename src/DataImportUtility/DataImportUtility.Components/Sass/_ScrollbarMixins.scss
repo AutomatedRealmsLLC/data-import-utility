@@ -1,0 +1,38 @@
+/* Add this to a specific element */
+@mixin ThinScrollbar($trackColor: transparent, $thumbColor: transparent, $trackColorHovered: transparent, $thumbColorHovered: #000, $width: 10px, $widthHovered: 10px) {
+    /* From https://developer.chrome.com/docs/css-ui/scrollbar-styling */
+    @supports selector(::-webkit-scrollbar) {
+        scrollbar-gutter: stable;
+
+        &::-webkit-scrollbar-thumb {
+            background: $thumbColor;
+            transition: background linear .2s;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: $trackColor;
+            transition: background linear .2s;
+        }
+
+        &::-webkit-scrollbar {
+            max-width: $width;
+            max-height: $width;
+            transition: width linear .2s;
+        }
+
+        &:hover {
+            &::-webkit-scrollbar-thumb {
+                background: $thumbColorHovered;
+
+                &::-webkit-scrollbar-track {
+                    background: $trackColorHovered;
+                }
+            }
+
+            &::-webkit-scrollbar {
+                max-width: $widthHovered;
+                max-height: $widthHovered;
+            }
+        }
+    }
+}

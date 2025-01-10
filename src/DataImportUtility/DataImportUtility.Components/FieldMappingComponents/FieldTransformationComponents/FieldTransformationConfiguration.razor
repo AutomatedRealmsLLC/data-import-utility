@@ -1,0 +1,157 @@
+@using DataImportUtility.Components.FieldMappingComponents.ValueTransformationComponents
+@using DataImportUtility.Helpers
+
+@inherits FileImportUtilityComponentBase
+
+@if (Show)
+{
+    <div class="field-transform-config-modal o1l-modal@($"{(Show ? " show" : null)}{(DefaultCssClass)}")"
+         tabindex="-1"
+         role="dialog"
+         data-from-component="@nameof(FieldTransformationConfiguration)"
+         data-component-instance="@InstanceId"
+         data-mapper-state="@MapperStateId">
+        <div class="o1l-modal-dialog"
+             role="document">
+            <div class="o1l-modal-content">
+                <div class="o1l-modal-header">
+                    <span class="o1l-modal-title">
+                        Configure Value Output
+                    </span>
+                    <button type="button"
+                            class="o1l-btn-close o1l-btn-sm o1l-btn-icon-only@(DefaultCssClass)"
+                            @onclick=CloseDialog>
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="o1l-modal-body">
+                    <section class="value-transforms-wrapper">
+                        <span class="section-title">
+                            Transformations
+                        </span>
+                        @if (_removingRec)
+                        {
+                            @Icons.PreLoader()
+                        }
+                        else
+                        {
+                            for (var i = 0; i < FieldTransformation.ValueTransformations.Count; i++)
+                            {
+                                var curIndex = i;
+                                var curTransform = ApplyTransformationsThrough(curIndex - 1).Result;
+                                <ValueTransformationConfiguration @bind-FieldTransformation=FieldTransformation
+                                                                  TransformationRuleIndex=curIndex
+                                                                  CurrentTransformationResult=curTransform
+                                                                  @bind-FieldTransformation:after=HandleTransformationRuleUpdated
+                                                                  ApplyDefaultCss=ApplyDefaultCss />
+                                if (FieldTransformation.ValueTransformations.Count > 0)
+                                {
+                                    <button type="button"
+                                            class="o1l-btn-remove o1l-btn-sm@(DefaultCssClass)"
+                                            @onclick="_ => RemoveTransformation(FieldTransformation.ValueTransformations[curIndex])">
+                                        <text>-</text>
+                                    </button>
+                                }
+                                <hr />
+                            }
+                        }
+                        <button type="button"
+                                class="o1l-btn-add o1l-btn-sm@(DefaultCssClass)"
+                                @onclick=AddTransformation>
+                            <text>+</text>
+                        </button>
+                        <hr />
+                    </section>
+
+                    <div class="transformed-value-display">
+                        <span class="results-preview-title">
+                            Results Preview
+                        </span>
+                        @if (DistinctValues.Length > 1)
+                        {
+                            <button type="button"
+                                    class="o1l-btn-link@(DefaultCssClass)"
+                                    @onclick="_ => _previewsExpanded = !_previewsExpanded">
+                                <text>@(_previewsExpanded ? "Collapse" : "Expand") Preview</text>
+                            </button>
+                        }
+
+                        <table class="output-preview@((_previewsExpanded && DistinctValues.Length > 1) ? " expanded" : null)">
+                            <thead>
+                                <tr>
+                                    <th class="column-title">
+                                        @Field?.FieldName
+                                    </th>
+                                    <th class="column-title">
+                                        Output Value
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (DistinctValues.Length == 0)
+                                {
+                                    <tr>
+                                        <td colspan="2">
+                                            No values set
+                                        </td>
+                                    </tr>
+                                }
+                                else if (!_previewsExpanded || DistinctValues.Length == 1)
+                                {
+                                    var thisTransformedValue = ApplyTransformationsThrough(resetOriginal: false).Result;
+                                    <tr>
+                                        <td class="value-display current-value">
+                                            @thisTransformedValue.GetOriginalValueDisplay()
+                                        </td>
+                                        <td class="value-display new-value">
+                                            @* TODO: Validate the value for this target field *@
+                                            @thisTransformedValue.GetCurrentValueDisplay()
+                                            @if (thisTransformedValue.WasFailure)
+                                            {
+                                                <span title="An error occurred while applying the transformations. See the transforms above for more information.">
+                                                    @Icons.Caution()
+                                                </span>
+                                            }
+                                            else if (!FieldMapping.Validate(thisTransformedValue, out var validationResults, false) && validationResults is not null)
+                                            {
+                                                <span title="@string.Join(Environment.NewLine, validationResults.Select(vr => vr.ErrorMessage))">@Icons.Caution()</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    for (var i = 0; i < DistinctValues.Length; i++)
+                                    {
+                                        var thisIndex = i;
+                                        var thisTransformedValue = ApplyTransformationsThrough(valueIndex: thisIndex, resetOriginal: false).Result;
+                                        <tr class="@(thisIndex == _previewIndex ? "active" : null)" @onclick="_ => UpdatePreviewIndex(thisIndex)">
+                                            <td class="value-display current-value">
+                                                @thisTransformedValue.GetOriginalValueDisplay()
+                                            </td>
+                                            <td class="value-display new-value">
+                                                @thisTransformedValue.GetCurrentValueDisplay()
+                                                @if (thisTransformedValue.WasFailure)
+                                                {
+                                                    <span title="An error occurred while applying the transformations. See the transforms above for more information.">@Icons.Caution()</span>
+                                                }
+                                                else if (!FieldMapping.Validate(thisTransformedValue, out var validationResults, false) && validationResults is not null)
+                                                {
+                                                    <span title="@string.Join(Environment.NewLine, validationResults.Select(vr => vr.ErrorMessage))">@Icons.Caution()</span>
+                                                }
+                                            </td>
+
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="o1l-modal-footer">
+                    <button type="button" class="o1l-btn-close@(DefaultCssClass)" @onclick=CloseDialog>Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,24 @@
+@import "../Sass/AccessibilityStyles";
+@import "../Sass/TableMixins";
+
+@include ScreenReaderOnly;
+
+table.o1l-library-style {
+    @include table-defaults;
+
+    .col-header-wrapper, .cell-value-wrapper, ::deep .col-header-wrapper, ::deep .cell-value-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    i, ::deep i {
+        &.error-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+    }
+}

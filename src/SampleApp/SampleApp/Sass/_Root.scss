@@ -1,0 +1,45 @@
+@import 'ColorVariables';
+
+/* Default dark mode */
+:root {
+    --primary: #{$shadow-white};
+    --success: #{$green-900};
+    --warning: #{$orange-500};
+    --danger: #{$red-500};
+    --muted: #{$dim-gray};
+    --info: #{$dodger-blue};
+    /* App General Colors */
+    --primary-bg-color: #{$charcoal};
+    --primary-text-color: var(--primary);
+    --text-success-color: var(--success);
+    --text-danger-color: var(--danger);
+    --text-muted-color: var(--muted);
+    --text-info-color: var(--info);
+    --text-disabled-color: var(--muted);
+    --link-text-color: var(--info);
+    /* Border Colors */
+    --border-color: #{$shadow-white};
+    --border-faded-color: #{$dim-gray};
+}
+
+/* Light mode */
+.light-mode {
+    --primary: #{$graphite-gray};
+    --success: #{$green-900};
+    --warning: #{$orange-600};
+    --danger: #{$red-600};
+    --muted: #{$dim-gray};
+    --info: #{$dodger-blue};
+    /* App General Colors */
+    --primary-bg-color: #{$white-smoke};
+    --primary-text-color: var(--primary);
+    --text-success-color: var(--success);
+    --text-danger-color: var(--danger);
+    --text-muted-color: var(--muted);
+    --text-info-color: var(--info);
+    --text-disabled-color: var(--muted);
+    --link-text-color: var(--info);
+    /* Border Colors */
+    --border-color: #{$shadow-white};
+    --border-faded-color: #{$dim-gray};
+}

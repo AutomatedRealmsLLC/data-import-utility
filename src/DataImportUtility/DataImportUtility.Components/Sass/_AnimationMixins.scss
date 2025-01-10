@@ -1,0 +1,114 @@
+@mixin fade-in-animation-frames {
+    @keyframes fadeIn {
+        from {
+            display: block;
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+}
+
+@mixin fade-out-animation-frames {
+    @keyframes fadeOut {
+        0% {
+            display: block;
+            opacity: 1;
+        }
+
+        99% {
+            display: block;
+            opacity: 0;
+        }
+
+        100% {
+            display: none;
+        }
+    }
+}
+
+@mixin fly-in-animation-frames {
+    @keyframes flyInFromRight {
+        from {
+            transform: translateX(100%);
+        }
+
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes flyInFromLeft {
+        from {
+            transform: translateX(-100%);
+        }
+
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes flyInFromTop {
+        from {
+            transform: translateY(-100%);
+        }
+
+        to {
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes flyInFromBottom {
+        from {
+            transform: translateY(100%);
+        }
+
+        to {
+            transform: translateY(0);
+        }
+    }
+}
+
+@mixin fly-out-animation-frames {
+    @keyframes flyOutToRight {
+        from {
+            transform: translateX(0);
+        }
+
+        to {
+            transform: translateX(100%);
+        }
+    }
+
+    @keyframes flyOutToLeft {
+        from {
+            transform: translateX(0);
+        }
+
+        to {
+            transform: translateX(-100%);
+        }
+    }
+
+    @keyframes flyOutToTop {
+        from {
+            transform: translateY(0);
+        }
+
+        to {
+            transform: translateY(-100%);
+        }
+    }
+
+    @keyframes flyOutToBottom {
+        from {
+            transform: translateY(0);
+        }
+
+        to {
+            transform: translateY(100%);
+        }
+    }
+}

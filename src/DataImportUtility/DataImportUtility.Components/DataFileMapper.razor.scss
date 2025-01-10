@@ -1,0 +1,69 @@
+@import 'Sass/AccessibilityStyles';
+@import 'Sass/ButtonMixins';
+@import 'Sass/TableMixins';
+
+.data-file-mapper-wrapper.o1l-library-style {
+    display: grid;
+    grid-template-areas:
+        'ed ed fm' 'fp fp fm' 'dso dso fm' 'dd dd fm';
+    grid-template-rows: repeat(3, auto) 1fr;
+    grid-template-columns: repeat(2, 1fr) auto;
+    overflow: hidden;
+
+    &:has(.preview-data-table-wrapper) {
+        grid-template-areas:
+            'ed  ed  fm' 'fp  fp  fm' 'dso dso fm' 'dd  pd  fm';
+    }
+
+    .error-display {
+        grid-area: ed;
+    }
+
+    .preview-data-table-wrapper {
+        grid-area: pd;
+        overflow: auto;
+    }
+
+    ::deep {
+        .data-file-picker {
+            grid-area: fp;
+            padding: 1rem;
+        }
+
+        .field-mapper-wrapper {
+            grid-area: fm;
+        }
+
+        .data-set-options {
+            grid-area: dso;
+        }
+
+        .data-table-display-wrapper {
+            grid-area: dd;
+            overflow: auto;
+        }
+
+        table.o1l-library-style {
+            thead {
+                tr {
+                    @include table-thead-tr-defaults;
+
+                    &.header-controls {
+                        td {
+                            .header-wrapper {
+                                flex-direction: column;
+                                align-items: flex-start;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    button {
+        @include button-base-style;
+    }
+}
+
+@include ScreenReaderOnly;

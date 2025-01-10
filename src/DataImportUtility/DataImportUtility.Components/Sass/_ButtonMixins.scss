@@ -1,0 +1,100 @@
+@import 'ColorVariables';
+
+@mixin button-base-style {
+    --o1l-use-button-primary-background: var(--o1l-button-primary-background, #{$default-blue-light});
+    --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #{$default-blue-dark});
+    --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #{$default-blue-light});
+    --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #{$default-blue-dark});
+    --o1l-use-button-primary-text: var(--o1l-button-primary-text, #{$default-light2});
+    --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+    --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+    --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+    --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+    --o1l-use-link-color: var(--o1l-link-color, #{$default-link});
+    --o1l-use-success-color: var(--o1l-success-color, #{$default-success});
+    --o1l-use-warning-color: var(--o1l-warning-color, #{$default-warning});
+    --o1l-use-danger-color: var(--o1l-danger-color, #{$default-danger});
+    // The basic button style
+    background: var(--o1l-use-button-primary-background);
+    border: var(--o1l-use-button-primary-border);
+    color: var(--o1l-use-button-primary-text);
+    padding: var(--o1l-use-button-padding);
+    border-radius: var(--o1l-use-button-border-radius);
+    cursor: pointer;
+
+    &:hover {
+        background: var(--o1l-use-button-primary-background-hover);
+        border: var(--o1l-use-button-primary-border-hover);
+        color: var(--o1l-use-button-primary-text-hover);
+    }
+
+    &.o1l-btn-sm {
+        padding: var(--o1l-use-button-padding-small);
+    }
+
+    &.o1l-btn-icon-only {
+    }
+
+    &.o1l-btn-cancel {
+        background: transparent;
+        border: none;
+        color: var(--o1l-use-link-color);
+
+        &:hover, &:focus {
+            text-decoration: underline;
+            filter: brightness(110%);
+        }
+    }
+
+    &.o1l-btn-close {
+        &.o1l-btn-icon-only {
+            @include button-no-background;
+
+            &:hover {
+                background: var(--o1l-use-button-primary-background-hover);
+                border: var(--o1l-use-button-primary-border-hover);
+                color: var(--o1l-use-button-primary-text-hover);
+            }
+        }
+    }
+
+    &.o1l-btn-remove {
+        @include button-no-background;
+        color: var(--o1l-use-danger-color);
+    }
+
+    &.o1l-btn-add {
+        @include button-no-background;
+        color: var(--o1l-use-success-color);
+    }
+
+    &.o1l-btn-edit {
+        @include button-no-background;
+        color: var(--o1l-use-warning-color);
+    }
+
+    &.o1l-btn-link {
+        background: transparent;
+        border: none;
+        color: var(--o1l-use-link-color);
+        padding: 0;
+
+        &:hover, &:focus {
+            text-decoration: underline;
+            filter: brightness(110%);
+        }
+    }
+}
+
+@mixin button-no-background {
+    background: transparent;
+    border: none;
+    color: var(--o1l-use-button-primary-text);
+
+    &:hover {
+        background: transparent;
+        border: none;
+        color: unset;
+        filter: brightness(110%);
+    }
+}

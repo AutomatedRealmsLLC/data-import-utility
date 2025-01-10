@@ -1,0 +1,34 @@
+@import '../../Sass/ModalMixins';
+@import '../../Sass/TableMixins';
+
+.field-transform-config-modal {
+    &.o1l-modal.o1l-library-style {
+        @include modal-defaults;
+        z-index: 4;
+
+        .o1l-modal-dialog {
+            inset: 0;
+            transform: unset;
+        }
+
+        table {
+            @include table-defaults;
+
+            tbody {
+                tr {
+                    cursor: pointer;
+
+                    &:not(.active) {
+                        &:hover, &:focus-within {
+                            filter: brightness(90%);
+                        }
+                    }
+
+                    &.active {
+                        filter: brightness(120%);
+                    }
+                }
+            }
+        }
+    }
+}
