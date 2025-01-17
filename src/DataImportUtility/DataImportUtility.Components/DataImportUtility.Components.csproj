@@ -1,22 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
+	<PropertyGroup>
+		<Product>AutomatedRealms.DataImportUtility.Components</Product>
+		<PackageId>AutomatedRealms.DataImportUtility.Components</PackageId>
+		<AssemblyName>DataImportUtility.Components</AssemblyName>
+		<RootNamespace>DataImportUtility.Components</RootNamespace>
+		<Description>The Blazor Component Library for the AutomatedRealms.DataImportUtility.</Description>
+		<PackageTags>Data Import, File Import, Utility, Blazor, Components, Excel, CSV</PackageTags>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <SupportedPlatform Include="browser" />
-  </ItemGroup>
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DataImportUtility\DataImportUtility.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\DataImportUtility\DataImportUtility.csproj" />
+	</ItemGroup>
 
 </Project>
