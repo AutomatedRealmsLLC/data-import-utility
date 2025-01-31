@@ -55,6 +55,10 @@ public interface IDataFileMapperState : INotifyPropertyChanged, INotifyPropertyC
     /// This is used to group together components that use the same <see cref="IDataFileMapperState" />
     /// </remarks>
     string MapperStateId { get; }
+    /// <summary>
+    /// The selected rows in the Import table.
+    /// </summary>
+    List<int> SelectedImportRows { get; }
 
     /// <summary>
     /// The callback for when the active data table is changed.

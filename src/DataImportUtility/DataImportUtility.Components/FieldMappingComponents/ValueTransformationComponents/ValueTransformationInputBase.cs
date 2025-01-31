@@ -47,5 +47,5 @@ public abstract class ValueTransformationInputBase<T> : ComponentBase
     /// <summary>
     /// Handles the operation detail changed event.
     /// </summary>
-    protected Task HandleOperationDetailChanged() => OnAfterInput.InvokeAsync();
+    protected virtual Task HandleOperationDetailChanged() => OnAfterInput.InvokeAsync();
 }

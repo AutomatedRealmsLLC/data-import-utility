@@ -29,13 +29,41 @@ public partial class DataSetDisplay : FileImportUtilityComponentBase
     /// </summary>
     [Parameter] public RenderFragment<DataRow>? OverrideDataRow { get; set; }
     /// <summary>
+    /// The row index to mark as hovered.
+    /// </summary>
+    [Parameter] public int? HoveredRow { get; set; }
+    /// <summary>
+    /// The callback for when the hovered row changes.
+    /// </summary>
+    [Parameter] public EventCallback<int?> HoveredRowChanged { get; set; }
+    /// <summary>
+    /// Whether to show the row select column.
+    /// </summary>
+    /// <remarks>
+    /// If you override the default data row, you will need to handle the header column
+    /// for the row select, as well as the row select logic.
+    /// </remarks>
+    [Parameter] public bool ShowRowSelect { get; set; }
+    /// <summary>
+    /// Rows to mark as selected.
+    /// </summary>
+    [Parameter] public List<int> SelectedRows { get; set; } = [];
+    /// <summary>
+    /// The callback for when the selected rows change.
+    /// </summary>
+    [Parameter] public EventCallback<List<int>> SelectedRowsChanged { get; set; }
+    /// <summary>
     /// The callback for when the selected data table changes.
     /// </summary>
-    [Parameter] public EventCallback<DataTable?> OnSelectedDataTableChanged { get; set; }
+    [Parameter] public EventCallback<DataTableDisplay?> OnSelectedDataTableChanged { get; set; }
     /// <summary>
     /// Whether to register this component to the <see cref="DataFileMapperState" /> (if one was provided).
     /// </summary>
     [Parameter] public bool RegisterSelfToState { get; set; } = true;
+    /// <summary>
+    /// Additional CSS classes to apply to the table element.
+    /// </summary>
+    [Parameter] public string? AdditionalTableCssClasses { get; set; }
 
     /// <summary>
     /// The callback for when the selected data table changes.
@@ -48,6 +76,8 @@ public partial class DataSetDisplay : FileImportUtilityComponentBase
 
     private DataSet? MyDataSet => DataSet ?? DataFileMapperState?.DataFile?.DataSet;
     private DataTable? _selectedDataTable;
+    private DataTableDisplay? _dataTableRef;
+    private string? _prevDataTableId;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -70,6 +100,18 @@ public partial class DataSetDisplay : FileImportUtilityComponentBase
         }
 
         return base.OnParametersSetAsync();
+    }
+
+    /// <inheritdoc />
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_dataTableRef?.Id != _prevDataTableId)
+        {
+            _prevDataTableId = _dataTableRef?.Id;
+            return NotifySelectedDataTableChanged();
+        }
+
+        return base.OnAfterRenderAsync(firstRender);
     }
 
     private Task HandleSelectedDataTableChanged(ChangeEventArgs e)
@@ -101,5 +143,5 @@ public partial class DataSetDisplay : FileImportUtilityComponentBase
     private Task NotifySelectedDataTableChanged()
         => Task.WhenAll(
             OnSelectedDataTableChangedInternal.InvokeAsync(_selectedDataTable),
-            OnSelectedDataTableChanged.InvokeAsync(_selectedDataTable));
+            OnSelectedDataTableChanged.InvokeAsync(_dataTableRef));
 }

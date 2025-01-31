@@ -7,6 +7,7 @@ using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Models;
 using DataImportUtility.Rules;
+using DataImportUtility.TransformOperations;
 
 namespace DataImportUtility.Components.FieldMappingComponents;
 
@@ -62,6 +63,14 @@ public partial class FieldMapperEditor : FileImportUtilityComponentBase
 
         // TODO: Cache the mapping rules so if the user changes between them, the values are not lost
         fieldMapping.MappingRule = selectedMappingRuleType.CreateNewInstance();
+
+        // Special rule for ConstantValueRule to set SourceFieldTranformations to the first imported field.
+        if (fieldMapping.MappingRule is ConstantValueRule cvr)
+        {
+            var newFieldTransform = new FieldTransformation(FieldDescriptors.First());
+            
+            cvr.SourceFieldTranformations = [newFieldTransform];
+        }
 
         return NotifyFieldMappingChanged(fieldMapping);
     }

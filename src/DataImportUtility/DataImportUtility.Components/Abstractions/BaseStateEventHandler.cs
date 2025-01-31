@@ -98,15 +98,17 @@ public abstract class BaseStateEventHandler : INotifyPropertyChanged, INotifyPro
     /// The name of the property that is changing. This value is optional and can be provided automatically 
     /// when calling the method.
     /// </param>
-    public virtual void SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = "")
+    /// <returns>False if the existing value matched. True if the property value was updated</returns>
+    public virtual bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = "")
     {
         if (Equals(storage, value))
         {
-            return;
+            return false;
         }
 
         NotifyPropertyChanging(propertyName);
         storage = value;
         NotifyPropertyChanged(propertyName);
+        return true;
     }
 }

@@ -30,6 +30,7 @@
   overflow: auto;
 }
 .data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr {
+  height: var(--o1l-use-table-tr-height);
   z-index: 3;
 }
 .data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr:last-of-type th, .data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr:last-of-type td {
@@ -38,7 +39,7 @@
 .data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr th, .data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr td {
   --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
   --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
-  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(255, 255, 255, 0.2));
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
   --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
   background: var(--o1l-use-table-head-background);
   color: var(--o1l-use-table-head-foreground);

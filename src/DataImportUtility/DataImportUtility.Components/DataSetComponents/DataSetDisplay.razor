@@ -44,7 +44,14 @@
             <DataTableDisplay DataTable=_selectedDataTable
                               OverrideHeaderRow=OverrideHeaderRow
                               OverrideDataRow=OverrideDataRow
-                              ApplyDefaultCss=ApplyDefaultCss />
+                              ApplyDefaultCss=ApplyDefaultCss
+                              AdditionalCssClasses=@AdditionalTableCssClasses
+                              HoveredRow=HoveredRow
+                              OnHoveredRowChanged=HoveredRowChanged
+                              ShowRowSelect=ShowRowSelect
+                              SelectedRows=SelectedRows
+                              SelectedRowsChanged=SelectedRowsChanged
+                              @ref=_dataTableRef />
             {
 #pragma warning restore CS8601
             }

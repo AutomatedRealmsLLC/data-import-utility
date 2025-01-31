@@ -1,10 +1,10 @@
 ﻿.o1l-flyout-wrapper.o1l-library-style {
-  --o1l-use-primary-flyout-background: var(--o1l-primary-flyout-background, rgba(0, 0, 0, 0.2));
+  --o1l-use-primary-flyout-background: var(--o1l-primary-flyout-background, rgba(33, 33, 33, 0.2));
   --o1l-use-primary-flyout-content-background: var(--o1l-primary-flyout-content-background, #222);
-  --o1l-use-primary-flyout-content-border: var(--o1l-primary-flyout-content-border, 1px solid rgba(255, 255, 255, 0.2));
-  --o1l-use-primary-flyout-content-box-shadow: var(--o1l-primary-flyout-content-box-shadow, 0 0 10px rgba(0, 0, 0, 0.2));
-  --o1l-use-primary-flyout-header-border: var(--o1l-primary-flyout-header-border, 1px solid rgba(255, 255, 255, 0.2));
-  --o1l-use-primary-flyout-footer-border: var(--o1l-primary-flyout-footer-border, 1px solid rgba(255, 255, 255, 0.2));
+  --o1l-use-primary-flyout-content-border: var(--o1l-primary-flyout-content-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-primary-flyout-content-box-shadow: var(--o1l-primary-flyout-content-box-shadow, 0 0 10px rgba(33, 33, 33, 0.2));
+  --o1l-use-primary-flyout-header-border: var(--o1l-primary-flyout-header-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-primary-flyout-footer-border: var(--o1l-primary-flyout-footer-border, 1px solid rgba(200, 200, 200, 0.1));
   position: fixed;
   inset: 0;
   display: flex;

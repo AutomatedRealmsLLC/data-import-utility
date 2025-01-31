@@ -26,9 +26,6 @@
                 </div>
                 <div class="o1l-modal-body">
                     <section class="value-transforms-wrapper">
-                        <span class="section-title">
-                            Transformations
-                        </span>
                         @if (_removingRec)
                         {
                             @Icons.PreLoader()
@@ -112,7 +109,7 @@
                                                     @Icons.Caution()
                                                 </span>
                                             }
-                                            else if (!FieldMapping.Validate(thisTransformedValue, out var validationResults, false) && validationResults is not null)
+                                            else if (!FieldMapping.Validate(thisTransformedValue, out var validationResults, false))
                                             {
                                                 <span title="@string.Join(Environment.NewLine, validationResults.Select(vr => vr.ErrorMessage))">@Icons.Caution()</span>
                                             }
@@ -135,7 +132,7 @@
                                                 {
                                                     <span title="An error occurred while applying the transformations. See the transforms above for more information.">@Icons.Caution()</span>
                                                 }
-                                                else if (!FieldMapping.Validate(thisTransformedValue, out var validationResults, false) && validationResults is not null)
+                                                else if (!FieldMapping.Validate(thisTransformedValue, out var validationResults, false))
                                                 {
                                                     <span title="@string.Join(Environment.NewLine, validationResults.Select(vr => vr.ErrorMessage))">@Icons.Caution()</span>
                                                 }
