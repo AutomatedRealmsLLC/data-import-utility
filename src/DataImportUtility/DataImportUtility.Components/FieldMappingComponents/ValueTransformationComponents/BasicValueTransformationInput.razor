@@ -1,11 +1,14 @@
 @inherits ValueTransformationInputBase<ValueTransformationBase>
 
-<label for="@($"input_{Id}")">
-    Detail:
-</label>
-<input id="@($"input_{Id}")"
-       type="text"
-       class="@DefaultCssClass"
-       @bind=ValueTransformation.OperationDetail
-       @bind:event="oninput"
-       @bind:after=HandleOperationDetailChanged />
+
+<div class="transformation-input">
+    <label for="@($"input_{Id}")">
+        Detail:
+    </label>
+    <input id="@($"input_{Id}")"
+           type="text"
+           class="@DefaultCssClass"
+           @bind=ValueTransformation.OperationDetail
+           @bind:event="oninput"
+           @bind:after=HandleOperationDetailChanged />
+</div>

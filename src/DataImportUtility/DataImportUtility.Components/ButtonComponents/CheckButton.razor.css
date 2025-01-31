@@ -1,0 +1,14 @@
+﻿button.check-button {
+  background: none;
+  padding: 0;
+  height: auto;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #0078d4;
+}
+button.check-button.unchecked svg {
+  fill: #fff;
+}

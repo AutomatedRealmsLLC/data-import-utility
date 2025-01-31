@@ -39,9 +39,13 @@ data-mapper-state="@MapperStateId">
                         @if (thisField.HasValidationErrors)
                         {
                             var message = thisField.Required && (thisField.MappingRule is null || thisField.MappingRule.SourceFieldTranformations.Count(x => !string.IsNullOrWhiteSpace(x.Field?.FieldName)) == 0)
-                            // Special case for required, but no field selected
+                                // Special case for required, but no field selected
                                 ? "This field requires a source value."
-                                : "The output value for one or more of the source fields is not valid for this field.";
+                                : thisField.MappingRule switch
+                                {
+                                    ConstantValueRule cvr => thisField.GetValidationErrors(cvr.RuleDetail ?? "<null>").First().ErrorMessage,
+                                    _ => "The output value for one or more of the source fields is not valid for this field."
+                                };
                             <span title="@message">@Icons.Caution()</span>
                         }
                     </div>
@@ -62,11 +66,11 @@ data-mapper-state="@MapperStateId">
                                     <label for="@($"input_{curField.FieldName}-{InstanceId}")">Rule Detail</label>
                                 </legend>
                                 <input id="@($"input_{curField.FieldName}-{InstanceId}")"
-                                       type="div"
-                                       class="@DefaultCssClass"
-                                       @bind=curMappingRule.RuleDetail
-                                       @bind:event="oninput"
-                                       @bind:after=@(() => NotifyFieldMappingChanged(curField))>
+                                type="div"
+                                class="@DefaultCssClass"
+                                @bind=curMappingRule.RuleDetail
+                                @bind:event="oninput"
+                                @bind:after=@(() => NotifyFieldMappingChanged(curField))>
                             </fieldset>
                         }
                     </div>
@@ -78,8 +82,8 @@ data-mapper-state="@MapperStateId">
                             {
                                 var sourceFieldTransform = curMappingRule.SourceFieldTranformations.FirstOrDefault();
                                 @RenderFieldPicker(curField, sourceFieldTransform)
-                                break;
                             }
+                            break;
                         case MappingRuleType.CombineFieldsRule:
                             <div class="combine-fields-wrapper">
                                 @foreach (var sourceFieldTransform in curMappingRule.SourceFieldTranformations)
@@ -89,8 +93,8 @@ data-mapper-state="@MapperStateId">
                                         @if (curMappingRule.SourceFieldTranformations.Count > 1)
                                         {
                                             <button type="button"
-                                                    class="o1l-btn-remove o1l-btn-sm@(DefaultCssClass)"
-                                                    @onclick="_ => HandleRemoveSourceFieldTransformClicked(curField, sourceFieldTransform)">
+                                            class="o1l-btn-remove o1l-btn-sm@(DefaultCssClass)"
+                                            @onclick="_ => HandleRemoveSourceFieldTransformClicked(curField, sourceFieldTransform)">
                                                 <div>-</div>
                                             </button>
                                         }
@@ -105,11 +109,18 @@ data-mapper-state="@MapperStateId">
                                 }
 
                                 <button type="button"
-                                        class="o1l-btn-add o1l-btn-sm@(DefaultCssClass)"
-                                        @onclick="_ => HandleAddSourceFieldTransformClicked(curField)">
+                                class="o1l-btn-add o1l-btn-sm@(DefaultCssClass)"
+                                @onclick="_ => HandleAddSourceFieldTransformClicked(curField)">
                                     <div>+</div>
                                 </button>
                             </div>
+                            break;
+                        case MappingRuleType.ConstantValueRule:
+                            {
+                                curField.MappingRule ??= new ConstantValueRule();
+                                var mappingRule = curField.MappingRule as ConstantValueRule;
+                                <input type="text" @bind=@curField.MappingRule.RuleDetail @bind:event="oninput" @bind:after="() => NotifyFieldMappingChanged(curField)"  />
+                            }
                             break;
                     }
                 </td>
@@ -127,7 +138,7 @@ data-mapper-state="@MapperStateId">
         <FieldTransformationConfiguration @bind-Show=_showConfigureTransform
                                           FieldMapping=_editFieldTransformOptions.FieldMapping
                                           @bind-FieldTransformation=_editFieldTransformOptions.FieldTransform
-                                          @bind-FieldTransformation:after=@(() => NotifyFieldMappingChanged(_editFieldTransformOptions.FieldMapping))
+                                          @bind-FieldTransformation:after="() => NotifyFieldMappingChanged(_editFieldTransformOptions.FieldMapping)"
                                           ApplyDefaultCss=ApplyDefaultCss />
     </div>
 }

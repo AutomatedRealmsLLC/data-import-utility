@@ -1,11 +1,11 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
-using Jace;
-
 using DataImportUtility.Abstractions;
 using DataImportUtility.Helpers;
 using DataImportUtility.Models;
+
+using Jace;
 
 namespace DataImportUtility.TransformOperations;
 
@@ -72,10 +72,14 @@ public static class CalculateOperationExtensions
     /// The operation detail that contains the calculation to perform.
     /// </param>
     /// <param name="decimalPlaces">
-    /// The number of decimal places to round the result to.
+    /// The number of decimal places to round the result to. 
     /// </param>
     /// <returns>The calculated value.</returns>
     /// <remarks>
+    /// This value must be between -1 and 15 for the <see cref="Math.Round(double)"/> method. A 
+    /// value of -1 will not perform any rounding and use the value returned from the calculation
+    /// engine.<br/>
+    /// <br/>
     /// If the input value is null or empty, the placeholders for the operation detail will default
     /// to 0. This will also happen for any placeholders that are not found in the input value.
     /// </remarks>
@@ -112,13 +116,20 @@ public static class CalculateOperationExtensions
             }
         }
 
+        decimalPlaces = Math.Max(-1, Math.Min(decimalPlaces, 15));
+
+        var val = _calculationEngine.Calculate(resultValue);
+        if (decimalPlaces >= 0)
+        {
+            val = Math.Round(
+                val,
+                decimalPlaces
+            );
+        }
+
         return result with
         {
-            Value = Math.Round(
-                _calculationEngine.Calculate(resultValue),
-                decimalPlaces
-            ).ToString($"F{decimalPlaces}")
+            Value = val.ToString($"{(decimalPlaces >= 0 ? $"F{decimalPlaces}" : null)}")
         };
     }
 }
-

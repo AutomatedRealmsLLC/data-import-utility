@@ -2,22 +2,29 @@
 
 @inherits ValueTransformationInputBase<SubstringOperation>
 
-<label for="@($"startVal_{Id}")">
-    Start Value:
-</label>
-<input id="@($"startVal_{Id}")"
-       type="number"
-       class="@DefaultCssClass"
-       @bind=ValueTransformation.StartIndex
-       @bind:event="oninput" 
-       @bind:after=HandleOperationDetailChanged />
-<label for="@($"maxChar_{Id}")">
-    Max Characters:
-</label>
-<input id="@($"maxChar_{Id}")"
-       type="number"
-       class="@DefaultCssClass"
-       @bind=ValueTransformation.MaxLength
-       @bind:event="oninput"
-       min="0"
-       @bind:after=HandleOperationDetailChanged />
+
+<div class="substring-transformation-input">
+    <div class="transformation-input">
+        <label for="@($"startVal_{Id}")">
+            Start Value:
+        </label>
+        <input id="@($"startVal_{Id}")"
+               type="number"
+               class="@DefaultCssClass"
+               @bind=ValueTransformation.StartIndex
+               @bind:event="oninput"
+               @bind:after=HandleOperationDetailChanged />
+    </div>
+    <div class="transformation-input">
+        <label for="@($"maxChar_{Id}")">
+            Max Characters:
+        </label>
+        <input id="@($"maxChar_{Id}")"
+               type="number"
+               class="@DefaultCssClass"
+               @bind=ValueTransformation.MaxLength
+               @bind:event="oninput"
+               min="0"
+               @bind:after=HandleOperationDetailChanged />
+    </div>
+</div>

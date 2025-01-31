@@ -3,7 +3,7 @@
 
 @inherits FileImportUtilityComponentBase
 
-<div class="value-tranform-details@(DefaultCssClass)"
+<div class="value-transform-details@(DefaultCssClass)"
      data-from-component="@nameof(FieldTransformationConfiguration)"
      data-component-instance="@InstanceId"
      data-mapper-state="@MapperStateId">
@@ -34,6 +34,13 @@
                                     OnAfterInput=HandleOperationDetailChanged />
 
             break;
+
+        case CalculateOperation calculateOperation:
+            <CalculateValueTransformationInput ValueTransformation=calculateOperation
+                                               Id=_id
+                                               ApplyDefaultCss=ApplyDefaultCss
+                                               OnAfterInput=HandleOperationDetailChanged />
+            break;
         case RegexMatchOperation regexMatchOperation:
         case InterpolateOperation interpolateOperation:
         // If the thing we are doing the interpolation on is a single string, we will only display items relevant to a placeholder for
@@ -45,30 +52,31 @@
                                            OnAfterInput=HandleOperationDetailChanged />
             break;
     }
+
+    <table class="@(DefaultCssClass)">
+        <thead>
+            <tr>
+                <th>In Value</th>
+                <th>Out Value</th>
+                <th>&nbsp;</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@_myTransformationResult.OriginalValue</td>
+                <td>@_myTransformationResult.Value</td>
+                <td>
+                    @if (_myTransformationResult.WasFailure)
+                    {
+                        <span title="@_myTransformationResult.ErrorMessage">@Icons.Caution()</span>
+                    }
+                    else
+                    {
+                        <span>&nbsp;</span>
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 
-<table class="@(DefaultCssClass)">
-    <thead>
-        <tr>
-            <th>In Value</th>
-            <th>Out Value</th>
-            <th>&nbsp;</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>@_myTransformationResult.OriginalValue</td>
-            <td>@_myTransformationResult.Value</td>
-            <td>
-                @if (_myTransformationResult.WasFailure)
-                {
-                    <span title="@_myTransformationResult.ErrorMessage">@Icons.Caution()</span>
-                }
-                else
-                {
-                    <span>&nbsp;</span>
-                }
-            </td>
-        </tr>
-    </tbody>
-</table>

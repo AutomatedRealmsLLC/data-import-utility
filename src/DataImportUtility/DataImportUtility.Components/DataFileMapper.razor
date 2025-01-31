@@ -1,6 +1,7 @@
 @typeparam TTargetType where TTargetType : class, new()
 
 @using DataImportUtility.Components.Abstractions
+@using DataImportUtility.Components.ButtonComponents
 @using DataImportUtility.Components.FieldMappingComponents.Wrappers
 @using DataImportUtility.Models
 @using DataImportUtility.Components.DataSetComponents
@@ -38,13 +39,19 @@
                         ApplyDefaultCss=ApplyDefaultCss />
 
         <DataSetDisplay OnSelectedDataTableChanged=HandleSelectedDataTableChanged
-                        ApplyDefaultCss=ApplyDefaultCss>
+                        ApplyDefaultCss=ApplyDefaultCss
+                        AdditionalTableCssClasses="imported-data-table"
+                        HoveredRow=_hoveredRowIndex
+                        HoveredRowChanged=HandleHoveredRowChanged
+                        SelectedRows=_myDataFileMapperState.SelectedImportRows
+                        SelectedRowsChanged=HandleSelectedRowsChanged
+                        ShowRowSelect=true>
             <OverrideHeaderRow Context="dataTable">
                 <tr class="header-controls@(DefaultCssClass)"
                     data-from-component="@nameof(DataFileMapper<TTargetType>)"
                     data-component-instance="@InstanceId"
                     data-mapper-state="@_myDataFileMapperState.MapperStateId">
-                    <td colspan="@dataTable.Columns.Count">
+                    <td colspan="@(dataTable.Columns.Count + 1)">
                         <div class="table-title-wrapper">
                             <span class="table-title">Data Table: @dataTable.TableName</span>
                             <div class="main-controls">
@@ -63,6 +70,9 @@
                     data-from-component="@nameof(DataFileMapper<TTargetType>)"
                     data-component-instance="@InstanceId"
                     data-mapper-state="@_myDataFileMapperState.MapperStateId">
+                    <th>
+                        <CheckButton Checked=@(_myDataFileMapperState.SelectedImportRows.Count == dataTable.Rows.Count) OnClick="_ => HandleToggleAllSelected()" />
+                    </th>
                     @foreach (DataColumn curCol in dataTable.Columns)
                     {
                         <th>
@@ -83,7 +93,12 @@
             else
             {
                 <DataTableDisplay DataTable=_previewOutput
-                                  ApplyDefaultCss=ApplyDefaultCss>
+                                  ApplyDefaultCss=ApplyDefaultCss
+                                  AdditionalCssClasses="preview-output-table"
+                                  HoveredRow=_hoveredRowIndex
+                                  OnHoveredRowChanged=HandleHoveredRowChanged
+                                  SelectedRows=_myDataFileMapperState.SelectedImportRows
+                                  @ref=_previewOutputTableRef>
                     <OverrideHeaderRow Context="dataTable">
                         <tr class="header-controls@(DefaultCssClass)"
                             data-from-component="@nameof(DataFileMapper<TTargetType>)"
@@ -131,7 +146,7 @@
             </div>
         }
 
-        @if (_myDataFileMapperState.ActiveDataTable is not null && (_myDataFileMapperState.DataFile?.TableDefinitions.TryGetTableDefinition(_myDataFileMapperState.ActiveDataTable.TableName, out var activeTableDefinition) ?? false) && activeTableDefinition is not null)
+        @if (_myDataFileMapperState.ActiveDataTable is not null && (_myDataFileMapperState.DataFile?.TableDefinitions.TryGetTableDefinition(_myDataFileMapperState.ActiveDataTable.TableName, out var activeTableDefinition) ?? false))
         {
             switch (_myDataFileMapperState.FieldMapperDisplayMode)
             {

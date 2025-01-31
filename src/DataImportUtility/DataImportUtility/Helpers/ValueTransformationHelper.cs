@@ -35,17 +35,25 @@ public static partial class ValueTransformationHelper
     /// <typeparam name="TTargetType">The type of object to transform the data into.</typeparam>
     /// <param name="table">The table to apply the transformation to.</param>
     /// <param name="fieldMapping">The field mapping to use for the transformation.</param>
+    /// <param name="selectedRecords">The records to select from the table.</param>
     /// <returns>A list of objects of the specified type.</returns>
-    public static async Task<List<TTargetType>> ApplyTransformation<TTargetType>(this DataTable table, List<FieldMapping> fieldMapping) where TTargetType : new()
-        => (await table.ApplyTransformation(fieldMapping)).ToObject<TTargetType>();
+    /// <remarks>
+    /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
+    /// </remarks>
+    public static async Task<List<TTargetType>> ApplyTransformation<TTargetType>(this DataTable table, List<FieldMapping> fieldMapping, List<int>? selectedRecords = null) where TTargetType : new()
+        => (await table.ApplyTransformation(fieldMapping, selectedRecords)).ToObject<TTargetType>();
 
     /// <summary>
     /// Applies a transformation rule to a Data Table.
     /// </summary>
     /// <param name="table">The table to apply the transformation to.</param>
     /// <param name="fieldMapping">The field mapping to use for the transformation.</param>
+    /// <param name="selectedRecords">The records to select from the table.</param>
     /// <returns>A new DataTable with the transformation applied.</returns>
-    public static async Task<DataTable> ApplyTransformation(this DataTable table, List<FieldMapping> fieldMapping)
+    /// <remarks>
+    /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
+    /// </remarks>
+    public static async Task<DataTable> ApplyTransformation(this DataTable table, List<FieldMapping> fieldMapping, List<int>? selectedRecords = null)
     {
         var destTable = new DataTable();
 
@@ -58,7 +66,7 @@ public static partial class ValueTransformationHelper
         }
 
         // Add rows to the destination table
-        foreach (DataRow row in table.Rows)
+        foreach (var row in table.Rows.OfType<DataRow>().Where((_, i) => selectedRecords is null || selectedRecords.Contains(i)))
         {
             await row.TransformAndAdd(destTable, fieldMapping);
         }
@@ -120,10 +128,15 @@ public static partial class ValueTransformationHelper
     /// </summary>
     /// <typeparam name="TTargetType">The type of object to convert the data into.</typeparam>
     /// <param name="table">The table to convert to objects.</param>
+    /// <param name="selectedRecords">The records to select from the table.</param>
     /// <returns>A list of objects of the specified type.</returns>
-    public static List<TTargetType> ToObject<TTargetType>(this DataTable table) where TTargetType : new()
+    /// <remarks>
+    /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
+    /// </remarks>
+    public static List<TTargetType> ToObject<TTargetType>(this DataTable table, List<int>? selectedRecords = null) where TTargetType : new()
         => table.Rows
             .OfType<DataRow>()
+            .Where((x, i) => selectedRecords is null || selectedRecords.Contains(i))
             .Select(x => x.ToObject<TTargetType>())
             .ToList();
 

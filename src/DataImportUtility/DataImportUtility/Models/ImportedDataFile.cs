@@ -200,12 +200,11 @@ public class ImportedDataFile
     /// </remarks>
     public virtual void RefreshFieldDescriptors(bool onlyIfNotExists = true, string? forTable = null)
     {
-
         if (DataSet is null) { return; }
 
         foreach (var curTable in DataSet.Tables.OfType<DataTable>().Where(x => forTable is null || forTable == x.TableName) ?? [])
         {
-            if (onlyIfNotExists && TableDefinitions.TryGetFieldDescriptors(curTable.TableName, out var existDescriptors) && (existDescriptors?.Count ?? 0) > 0)
+            if (onlyIfNotExists && TableDefinitions.TryGetFieldDescriptors(curTable.TableName, out var existDescriptors) && existDescriptors.Count > 0)
             {
                 continue;
             }
@@ -276,26 +275,30 @@ public class ImportedDataFile
     /// <see cref="DataTable"/>.
     /// </summary>
     /// <param name="tableName">The name of the table to apply the transformation to.</param>
+    /// <param name="selectedRecords">The records to select from the table.</param>
     /// <returns>
     /// The transformed data as a <see cref="DataTable"/>.
     /// </returns>
+    /// <remarks>
+    /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
+    /// </remarks>
     /// <exception cref="ArgumentException">
     /// Thrown when the table does not exist in the data set.
     /// </exception>
-    public async Task<DataTable?> GenerateOutputDataTable(string tableName)
+    public async Task<DataTable?> GenerateOutputDataTable(string tableName, List<int>? selectedRecords = null)
     {
         if (DataSet is null) { return null; }
 
         var table = DataSet.Tables[tableName]
             ?? throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
 
-        if (!TableDefinitions.TryGetFieldMappings(tableName, out var fieldMappings) || fieldMappings is null)
+        if (!TableDefinitions.TryGetFieldMappings(tableName, out var fieldMappings))
         {
             throw new ArgumentException($"The table '{tableName}' does not have any field mappings.");
         }
 
         // Uses the helper/extension method to apply the transformation
-        return await table.ApplyTransformation(fieldMappings);
+        return await table.ApplyTransformation(fieldMappings, selectedRecords);
     }
 
     /// <summary>
@@ -304,23 +307,30 @@ public class ImportedDataFile
     /// </summary>
     /// <typeparam name="TTargetType">The type of the target object to map to.</typeparam>
     /// <param name="tableName">The name of the table to apply the transformation to.</param>
+    /// <param name="selectedRecords">The records to select from the table.</param>
     /// <returns>A list of objects of the specified type.</returns>
     /// <remarks>
     /// Uses the helper/extension method to apply the transformation, which also applies validation
     /// to the data.  They can be found in the <see cref="ImportedDataFile.TableDefinitions"/>.<see cref="ImportTableDefinition.FieldMappings"/>
     /// objects.
+    /// 
+    /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
     /// </remarks> 
-    public async Task<IEnumerable<TTargetType>?> GenerateOutput<TTargetType>(string tableName)
+    public async Task<IEnumerable<TTargetType>?> GenerateOutput<TTargetType>(string tableName, List<int>? selectedRecords = null)
         where TTargetType : new()
-        => (await GenerateOutputDataTable(tableName))?.ToObject<TTargetType>();
+        => (await GenerateOutputDataTable(tableName, selectedRecords))?.ToObject<TTargetType>();
 
     /// <summary>
     /// Applies the transformations to this imported data file and outputs the results as a list of objects.
     /// </summary>
     /// <param name="tableName">The name of the table to apply the transformation to.</param>
+    /// <param name="selectedRecords">The records to select from the table.</param>
     /// <returns>A list of objects.</returns>
-    public async Task<IEnumerable<object?>?> GenerateOutput(string tableName)
-        => (await GenerateOutputDataTable(tableName))?.ToObject<object?>();
+    /// <remarks>
+    /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
+    /// </remarks>
+    public async Task<IEnumerable<object?>?> GenerateOutput(string tableName, List<int>? selectedRecords = null)
+        => (await GenerateOutputDataTable(tableName, selectedRecords))?.ToObject<object?>();
     #endregion
     #endregion Public Methods
 
@@ -403,6 +413,7 @@ public class ImportedDataFile
     /// <exception cref="InvalidOperationException">Thrown when the target type has not been set.</exception>
     public Task TryMatchingFields(string tableName, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var dataTable = (DataSet?.Tables[tableName]) ?? throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
 
         if (TargetType is null)
@@ -416,7 +427,7 @@ public class ImportedDataFile
         }
 
         RefreshFieldDescriptors(forTable: tableName);
-        if (!TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors) || fieldDescriptors is null)
+        if (!TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors))
         {
             throw new ArgumentException($"Failed to populate the field descriptors for the table '{tableName}'.");
         }
@@ -463,11 +474,11 @@ public class ImportedDataFile
             throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
         }
 
-        if (!TableDefinitions.TryGetTableDefinition(tableName, out var tableDef) || tableDef is null)
+        if (!TableDefinitions.TryGetTableDefinition(tableName, out var tableDef))
         {
             RefreshFieldDescriptors(forTable: tableName);
             RefreshFieldMappings();
-            if (!TableDefinitions.TryGetTableDefinition(tableName, out tableDef) || tableDef is null)
+            if (!TableDefinitions.TryGetTableDefinition(tableName, out tableDef))
             {
                 throw new InvalidOperationException($"Failed to populate the field descriptors for the table '{tableName}'.");
             }
@@ -476,7 +487,7 @@ public class ImportedDataFile
         tableDef.FieldMappings = incomingFieldMappings.ToList();
         var foundDescriptors = TableDefinitions.TryGetFieldDescriptors(tableName, out var fieldDescriptors);
 
-        foreach (var fieldMapping in tableDef.FieldMappings)
+        foreach(var fieldMapping in tableDef.FieldMappings)
         {
             fieldMapping.ValidationAttributes = _targetTypeFieldMappings!.First(x => x.FieldName == fieldMapping.FieldName).ValidationAttributes;
             foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTranformations ?? []).Where(sfd => sfd?.Field is not null))
@@ -528,7 +539,11 @@ public class ImportedDataFile<TTargetType> : ImportedDataFile
     /// type.
     /// </summary>
     /// <param name="tableName">The name of the table to apply the transformation to.</param>
+    /// <param name="selectedRecords">The records to select from the table.</param>
     /// <returns>A list of objects of the specified type.</returns>
-    public new async Task<IEnumerable<TTargetType>?> GenerateOutput(string tableName)
-        => (await GenerateOutputDataTable(tableName))?.ToObject<TTargetType>();
+    /// <remarks>
+    /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
+    /// </remarks>
+    public new async Task<IEnumerable<TTargetType>?> GenerateOutput(string tableName, List<int>? selectedRecords = null)
+        => (await GenerateOutputDataTable(tableName, selectedRecords))?.ToObject<TTargetType>();
 }
