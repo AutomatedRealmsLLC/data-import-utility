@@ -34,5 +34,17 @@
   {
     "outputFile": "FieldMappingComponents/FieldTransformationComponents/ValueTransformationRuleDetails.razor.css",
     "inputFile": "FieldMappingComponents/FieldTransformationComponents/ValueTransformationRuleDetails.razor.scss"
+  },
+  {
+    "outputFile": "FieldMappingComponents/ValueTransformationComponents/ValueTransformationRuleDetails.razor.css",
+    "inputFile": "FieldMappingComponents/ValueTransformationComponents/ValueTransformationRuleDetails.razor.scss"
+  },
+  {
+    "outputFile": "FieldMappingComponents/ValueTransformationComponents/ValueTransformationConfiguration.razor.css",
+    "inputFile": "FieldMappingComponents/ValueTransformationComponents/ValueTransformationConfiguration.razor.scss"
+  },
+  {
+    "outputFile": "ButtonComponents/CheckButton.razor.css",
+    "inputFile": "ButtonComponents/CheckButton.razor.scss"
   }
 ]

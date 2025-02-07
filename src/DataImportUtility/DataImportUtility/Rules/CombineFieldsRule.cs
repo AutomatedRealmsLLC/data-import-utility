@@ -14,7 +14,7 @@ namespace DataImportUtility.Rules;
 public class CombineFieldsRule : MappingRuleBase
 {
     /// <inheritdoc />
-    public override int EnumMemberOrder { get; } = 2;
+    public override int EnumMemberOrder { get; } = 3;
 
     /// <inheritdoc />
     public override string EnumMemberName { get; } = nameof(CombineFieldsRule);

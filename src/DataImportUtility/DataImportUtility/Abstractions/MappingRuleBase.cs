@@ -65,7 +65,7 @@ public abstract partial class MappingRuleBase : IDisposable
     /// The additional information for the rule.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public string RuleDetail
+    public string? RuleDetail
     {
         get => _ruleDetail;
         set
@@ -74,7 +74,7 @@ public abstract partial class MappingRuleBase : IDisposable
             OnDefinitionChanged?.Invoke();
         }
     }
-    private string _ruleDetail = string.Empty;
+    private string? _ruleDetail;
 
     /// <summary>
     /// An indicator of whether the rule is empty.

@@ -1,11 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Data;
+﻿using System.Data;
+using System.Timers;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 using DataImportUtility.Components.Abstractions;
+using DataImportUtility.Components.DataSetComponents;
 using DataImportUtility.Components.FieldMappingComponents.Wrappers;
+using DataImportUtility.Components.JsInterop;
 using DataImportUtility.Components.State;
 using DataImportUtility.Models;
 
@@ -21,6 +24,7 @@ namespace DataImportUtility.Components;
 public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBase, IDisposable
     where TTargetType : class, new()
 {
+    [Inject, AllowNull] private IJSRuntime JsRuntime { get; set; }
     [Inject, AllowNull] private ILoggerFactory LoggerFactory { get; set; }
 
     private const string _noPreviewMessage = "No preview available.";
@@ -76,6 +80,20 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
     private bool _noPreviewAvailable;
     private string? _errorMessage;
 
+    private DataTableDisplay? _previewOutputTableRef;
+    private DataTableDisplay? _importedDataTableRef;
+
+    private FileMapperJsModule? _fileMapperJsModule;
+    private FileMapperJsModule FileMapperJsModule => _fileMapperJsModule ??= new FileMapperJsModule(JsRuntime);
+
+    private System.Timers.Timer _setJsHandlersTimer = new()
+    {
+        Interval = 200,
+        AutoReset = false
+    };
+
+    private int? _hoveredRowIndex;
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {
@@ -84,18 +102,33 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
         if (RegisterSelfToState) { _myDataFileMapperState.RegisterDataFileMapper(this); }
 
         _myDataFileMapperState.OnActiveDataTableChanged += HandleStateChanged;
-        _myDataFileMapperState.OnDataFileChanged += HandleDataFileChanged; ;
+        _myDataFileMapperState.OnDataFileChanged += HandleDataFileChanged;
         _myDataFileMapperState.OnFileReadStateChanged += HandleStateChanged;
         _myDataFileMapperState.OnFileReadError += HandleFileReadError;
         _myDataFileMapperState.OnFieldMapperDisplayModeChanged += HandleStateChanged;
         _myDataFileMapperState.OnFieldMappingsChanged += HandleStateChanged;
         _myDataFileMapperState.OnShowTransformPreviewChanged += HandleShowTransformPreviewChanged;
+        _myDataFileMapperState.OnStatePropertyChanged += HandleStatePropertyChanged;
+        _setJsHandlersTimer.Elapsed += HandleSetJsHandlers;
+    }
+
+    private Task HandleStatePropertyChanged(string propName)
+    {
+        if (propName == nameof(IDataFileMapperState.SelectedImportRows))
+        {
+            return InvokeAsync(StateHasChanged);
+        }
+        return Task.CompletedTask;
     }
 
     private Task HandleShowTransformPreviewChanged()
-        => _myDataFileMapperState.ShowTransformPreview && _myDataFileMapperState.ActiveDataTable is not null
+    {
+        _setJsHandlersTimer.Stop();
+        _setJsHandlersTimer.Start();
+        return _myDataFileMapperState.ShowTransformPreview && _myDataFileMapperState.ActiveDataTable is not null
             ? UpdatePreview(_myDataFileMapperState.ActiveDataTable)
             : HandleStateChanged();
+    }
 
     private Task HandleDataFileChanged()
     {
@@ -144,17 +177,31 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
             return;
         }
 
+        if (_importedDataTableRef is not null)
+        {
+            await FileMapperJsModule.RemoveScrollSynchronization(_importedDataTableRef.Id);
+            await FileMapperJsModule.RemoveScrollMouseEventsSynchronization(_importedDataTableRef.Id);
+        }
         _previewOutput = await LoadedDataFile.GenerateOutputDataTable(dataTable.TableName);
+
         _noPreviewAvailable = _previewOutput is null;
         await InvokeAsync(StateHasChanged);
     }
 
-    private Task HandleSelectedDataTableChanged(DataTable? dataTable)
+    private Task HandleSelectedDataTableChanged(DataTableDisplay? dataTableRef)
     {
-        _myDataFileMapperState.ActiveDataTable = dataTable;
+        _importedDataTableRef = dataTableRef;
+        _myDataFileMapperState.ActiveDataTable = dataTableRef?.DataTable;
+
         return Task.WhenAll(
-            OnSelectedDataTableChangedInternal.InvokeAsync(dataTable),
-            OnSelectedDataTableChanged.InvokeAsync(dataTable));
+            _previewOutputTableRef is not null && dataTableRef is not null
+                ? FileMapperJsModule.SynchronizeElementScrolling(dataTableRef.Id, _previewOutputTableRef.Id).AsTask()
+                : Task.CompletedTask,
+            _previewOutputTableRef is not null && dataTableRef is not null
+                ? FileMapperJsModule.SynchronizeTableRowHover(_previewOutputTableRef.Id, dataTableRef.Id).AsTask()
+                : Task.CompletedTask,
+            OnSelectedDataTableChangedInternal.InvokeAsync(dataTableRef?.DataTable),
+            OnSelectedDataTableChanged.InvokeAsync(dataTableRef?.DataTable));
     }
 
     private void HandleShowFieldMapperChanged(bool newShow)
@@ -175,6 +222,59 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
         _myDataFileMapperState.FieldMapperDisplayMode = FieldMapperDisplayMode.Hide;
     }
 
+    private async void HandleSetJsHandlers(object? sender, ElapsedEventArgs e)
+    {
+        _setJsHandlersTimer.Stop();
+
+        if (!_myDataFileMapperState.ShowTransformPreview || _importedDataTableRef is null)
+        {
+            await FileMapperJsModule.RemoveTableRowHoverSynchronization(".preview-data-table-wrapper");
+            await FileMapperJsModule.RemoveTableRowHoverSynchronization(".data-table-display-wrapper");
+            return;
+        }
+
+        if (_previewOutputTableRef is not { TableIsRendered: true })
+        {
+            _setJsHandlersTimer.Start();
+            return;
+        }
+
+        await FileMapperJsModule.SynchronizeElementScrolling(".data-table-display-wrapper", ".preview-data-table-wrapper");
+        await FileMapperJsModule.SynchronizeElementScrolling(".preview-data-table-wrapper", ".data-table-display-wrapper");
+        await FileMapperJsModule.SynchronizeTableRowHover(".data-table-display-wrapper", ".preview-data-table-wrapper");
+        await FileMapperJsModule.SynchronizeTableRowHover(".preview-data-table-wrapper", ".data-table-display-wrapper");
+    }
+
+    private Task HandleHoveredRowChanged(int? rowIndex)
+    {
+        if (_hoveredRowIndex == rowIndex) { return Task.CompletedTask; }
+        _hoveredRowIndex = rowIndex;
+        return Task.CompletedTask;
+    }
+
+    private void HandleToggleAllSelected()
+    {
+        if (_myDataFileMapperState.ActiveDataTable is null)
+        {
+            _myDataFileMapperState.SelectedImportRows.Clear();
+            return;
+        }
+
+        var currentRowCount = _myDataFileMapperState.ActiveDataTable.Rows.Count;
+        if (_myDataFileMapperState.SelectedImportRows.Count == currentRowCount)
+        {
+            _myDataFileMapperState.SelectedImportRows.Clear();
+        }
+        else
+        {
+            _myDataFileMapperState.SelectedImportRows.AddRange(Enumerable.Range(0, currentRowCount).Except(_myDataFileMapperState.SelectedImportRows));
+        }
+
+        return;
+    }
+
+    private Task HandleSelectedRowsChanged() => InvokeAsync(StateHasChanged);
+
     /// <inheritdoc />
     public void Dispose()
     {
@@ -185,5 +285,8 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
         _myDataFileMapperState.OnFieldMapperDisplayModeChanged -= HandleStateChanged;
         _myDataFileMapperState.OnFieldMappingsChanged -= HandleStateChanged;
         _myDataFileMapperState.OnShowTransformPreviewChanged -= HandleShowTransformPreviewChanged;
+
+        _setJsHandlersTimer.Stop();
+        _setJsHandlersTimer.Dispose();
     }
 }

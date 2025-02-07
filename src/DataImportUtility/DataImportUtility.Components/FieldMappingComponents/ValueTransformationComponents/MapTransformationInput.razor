@@ -2,63 +2,65 @@
 
 @inherits ValueTransformationInputBase<MapOperation>
 
-<div class="key-value-pairs">
-    <table class="@(DefaultCssClass)">
-        <thead>
-            <tr>
-                <th>From</th>
-                <th>To</th>
-                <th>Actions</th>
-            </tr>
-            <tr>
-                <td>
-                    <input type="text" id="@($"key-input_{Id}")" @bind=_inputKey />
-                </td>
-                <td>
-                    <input type="text" id="@($"value-input_{Id}")" @bind=_inputValue />
-                </td>
-                <td>
-                    <button type="button" class="add-pair" @onclick=AddValueMapping>Add</button>
-                </td>
-            </tr>
-        </thead>
-        <tbody>
-            @if (ValueTransformation.ValueMappings.Count == 0)
-            {
+<div class="mapping-transformation-input">
+    <div class="key-value-pairs">
+        <table class="@(DefaultCssClass)">
+            <thead>
                 <tr>
-                    <td colspan="3">No mappings defined</td>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Actions</th>
                 </tr>
-            }
-            @foreach (var kvp in ValueTransformation.ValueMappings)
-            {
                 <tr>
-                    <td>@kvp.FromValue</td>
-                    <td>@kvp.ToValue</td>
                     <td>
-                        <button type="button" class="remove-pair" @onclick="_ => RemoveValueMapping(kvp)">Remove</button>
+                        <input type="text" id="@($"key-input_{Id}")" @bind=_inputKey />
+                    </td>
+                    <td>
+                        <input type="text" id="@($"value-input_{Id}")" @bind=_inputValue />
+                    </td>
+                    <td>
+                        <button type="button" class="add-pair" @onclick=AddValueMapping>Add</button>
                     </td>
                 </tr>
-            }
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody>
+                @if (ValueTransformation.ValueMappings.Count == 0)
+                {
+                    <tr>
+                        <td colspan="3">No mappings defined</td>
+                    </tr>
+                }
+                @foreach (var kvp in ValueTransformation.ValueMappings)
+                {
+                    <tr>
+                        <td>@kvp.FromValue</td>
+                        <td>@kvp.ToValue</td>
+                        <td>
+                            <button type="button" class="remove-pair" @onclick="_ => RemoveValueMapping(kvp)">Remove</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
-@* 
+    @* 
     Not Implemented Yet
-<fieldset>
-    <legend>Options</legend>
+    <fieldset>
+        <legend>Options</legend>
 
-    <label for="default-value">Default Value (if not found):</label>
-    <input type="text" id="default-value" />
+        <label for="default-value">Default Value (if not found):</label>
+        <input type="text" id="default-value" />
 
-    <div>
-        <input type="checkbox" id="case-sensitive" /> 
-        <label for="case-sensitive">Case Sensitive Matching</label>
-    </div>
+        <div>
+            <input type="checkbox" id="case-sensitive" /> 
+            <label for="case-sensitive">Case Sensitive Matching</label>
+        </div>
 
-    <div>
-        <input type="checkbox" id="partial-match" /> 
-        <label for="partial-match">Allow Partial Matching</label>
-    </div>
-</fieldset> 
-*@
+        <div>
+            <input type="checkbox" id="partial-match" /> 
+            <label for="partial-match">Allow Partial Matching</label>
+        </div>
+    </fieldset> 
+    *@
+</div>

@@ -1,16 +1,18 @@
 ﻿table.o1l-library-style {
   --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  --o1l-use-table-tr-height: var(--o1l-table-tr-height, 2.4em);
   border-spacing: 0;
 }
 table.o1l-library-style thead {
   --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
   --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
-  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(255, 255, 255, 0.2));
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
   position: sticky;
   top: 0;
   z-index: 3;
 }
 table.o1l-library-style thead tr {
+  height: var(--o1l-use-table-tr-height);
   z-index: 3;
 }
 table.o1l-library-style thead tr:last-of-type th, table.o1l-library-style thead tr:last-of-type td {
@@ -19,7 +21,7 @@ table.o1l-library-style thead tr:last-of-type th, table.o1l-library-style thead 
 table.o1l-library-style thead tr th, table.o1l-library-style thead tr td {
   --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
   --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
-  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(255, 255, 255, 0.2));
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
   --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
   background: var(--o1l-use-table-head-background);
   color: var(--o1l-use-table-head-foreground);
@@ -39,12 +41,16 @@ table.o1l-library-style tbody {
   z-index: 1;
 }
 table.o1l-library-style tbody tr {
+  --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, rgba(128, 128, 128, 0.04));
+  --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, rgba(200, 200, 200, 0.1));
+  --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, rgba(33, 33, 33, 0.2));
+  height: var(--o1l-use-table-tr-height);
   z-index: 2;
 }
 table.o1l-library-style tbody tr th, table.o1l-library-style tbody tr td {
   --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
   --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
-  --o1l-use-table-body-border: var(--o1l-table-body-border, 1px solid rgba(255, 255, 255, 0.2));
+  --o1l-use-table-body-border: var(--o1l-table-body-border, 1px solid rgba(200, 200, 200, 0.1));
   --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
   background: var(--o1l-use-table-body-background);
   color: var(--o1l-use-table-body-foreground);
@@ -56,6 +62,24 @@ table.o1l-library-style tbody tr th, table.o1l-library-style tbody tr td {
 }
 table.o1l-library-style tbody tr th:first-of-type, table.o1l-library-style tbody tr td:first-of-type {
   border-left: var(--o1l-use-table-body-border);
+}
+table.o1l-library-style tbody tr:nth-child(odd) {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+table.o1l-library-style tbody tr:nth-child(odd) th, table.o1l-library-style tbody tr:nth-child(odd) td {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+table.o1l-library-style tbody tr:hover, table.o1l-library-style tbody tr.force-hover-style {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+table.o1l-library-style tbody tr:hover th, table.o1l-library-style tbody tr:hover td, table.o1l-library-style tbody tr.force-hover-style th, table.o1l-library-style tbody tr.force-hover-style td {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+table.o1l-library-style tbody tr.selected {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+table.o1l-library-style tbody tr.selected th, table.o1l-library-style tbody tr.selected td {
+  background: var(--o1l-use-table-body-row-selected-background);
 }
 table.o1l-library-style button {
   --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);

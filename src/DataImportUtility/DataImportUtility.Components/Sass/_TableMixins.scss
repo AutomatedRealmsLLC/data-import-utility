@@ -1,6 +1,7 @@
 @import 'ColorVariables';
 
 @mixin table-defaults {
+    --o1l-use-table-tr-height: var(--o1l-table-tr-height, 2.4em);
     border-spacing: 0;
 
     thead {
@@ -26,6 +27,7 @@
 }
 
 @mixin table-thead-tr-defaults {
+    height: var(--o1l-use-table-tr-height);
     z-index: 3;
 
     &:last-of-type {
@@ -69,10 +71,38 @@
 }
 
 @mixin table-tbody-tr-defaults {
+    --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, #{$default-translucent-medium});
+    --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, #{$default-translucent-light});
+    --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, #{$default-translucent-dark});
+    height: var(--o1l-use-table-tr-height);
     z-index: 2;
 
     th, td {
         @include table-tbody-tr-thtd-defaults;
+    }
+
+    &:nth-child(odd) {
+        background: var(--o1l-use-table-body-row-background-alt);
+
+        th, td {
+            background: var(--o1l-use-table-body-row-background-alt);
+        }
+    }
+
+    &:hover, &.force-hover-style {
+        background: var(--o1l-use-table-body-row-hover-background);
+
+        th, td {
+            background: var(--o1l-use-table-body-row-hover-background);
+        }
+    }
+
+    &.selected {
+        background: var(--o1l-use-table-body-row-selected-background);
+
+        th, td {
+            background: var(--o1l-use-table-body-row-selected-background);
+        }
     }
 }
 

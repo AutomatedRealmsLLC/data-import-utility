@@ -1,10 +1,23 @@
 @import '../../Sass/ButtonMixins';
 @import '../../Sass/TableMixins';
 
-table.o1l-library-style {
-    @include table-defaults;
+.value-transform-details {
 
-    button {
-        @include button-base-style;
+    ::deep {
+        .transformation-input {
+            display: grid;
+            grid-template-columns: 20ch auto;
+            padding: .5rem;
+            align-items: center;
+            gap: 1rem;
+        }
+    }
+
+    table.o1l-library-style {
+        @include table-defaults;
+
+        button {
+            @include button-base-style;
+        }
     }
 }

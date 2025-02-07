@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Data;
+﻿using System.Data;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
@@ -34,94 +33,125 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     private readonly ImportDataFileRequest _fileReadRequest = new();
 
     /// <inheritdoc />
-    public string MapperStateId { get; } = Guid.NewGuid().ToString()[^5..];
+    public virtual string MapperStateId { get; } = Guid.NewGuid().ToString()[^5..];
 
     /// <inheritdoc />
-    public ImportedDataFile? DataFile
+    public virtual ImportedDataFile? DataFile
     {
         get => _dataFile;
-        private set
+        protected set
         {
-            SetProperty(ref _dataFile, value);
-            ActiveDataTable = value?.DataSet?.Tables.Count > 0
-                ? value.DataSet.Tables[0]
-                : null;
-            OnDataFileChanged?.Invoke();
+            if (SetProperty(ref _dataFile, value))
+            {
+                OnDataFileChanged?.Invoke();
+                ActiveDataTable = value?.DataSet?.Tables.Count > 0
+                    ? value.DataSet.Tables[0]
+                    : null;
+            }
         }
     }
-    private ImportedDataFile? _dataFile;
+    /// <summary>
+    /// The backing field for the <see cref="DataFile" /> property.
+    /// </summary>
+    protected ImportedDataFile? _dataFile;
 
     /// <inheritdoc />
-    public DataTable? ActiveDataTable
+    public virtual DataTable? ActiveDataTable
     {
         get => _activeDataTable;
         set
         {
-            SetProperty(ref _activeDataTable, value);
-            OnActiveDataTableChanged?.Invoke();
+            if (SetProperty(ref _activeDataTable, value))
+            {
+                SelectedImportRows.Clear();
+                OnActiveDataTableChanged?.Invoke();
+            }
         }
     }
-    private DataTable? _activeDataTable;
+    /// <summary>
+    /// The backing field for the <see cref="ActiveDataTable" /> property.
+    /// </summary>
+    protected DataTable? _activeDataTable;
 
     /// <inheritdoc />
-    public FileReadState FileReadState
+    public virtual FileReadState FileReadState
     {
         get => _fileReadState;
-        private set
+        protected set
         {
-            SetProperty(ref _fileReadState, value);
-            OnFileReadStateChanged?.Invoke();
+            if (SetProperty(ref _fileReadState, value))
+            {
+                OnFileReadStateChanged?.Invoke();
+            }
         }
     }
-    private FileReadState _fileReadState;
+    /// <summary>
+    /// The backing field for the <see cref="FileReadState" /> property.
+    /// </summary>
+    protected FileReadState _fileReadState;
 
     /// <inheritdoc />
-    public FieldMapperDisplayMode FieldMapperDisplayMode
+    public virtual FieldMapperDisplayMode FieldMapperDisplayMode
     {
         get => _fieldMapperDisplayMode;
         set
         {
-            SetProperty(ref _fieldMapperDisplayMode, value);
-            OnFieldMapperDisplayModeChanged?.Invoke();
+            if (SetProperty(ref _fieldMapperDisplayMode, value))
+            {
+                OnFieldMapperDisplayModeChanged?.Invoke();
+            }
         }
     }
-    private FieldMapperDisplayMode _fieldMapperDisplayMode;
+    /// <summary>
+    /// The backing field for the <see cref="FieldMapperDisplayMode" /> property.
+    /// </summary>
+    protected FieldMapperDisplayMode _fieldMapperDisplayMode;
 
     /// <inheritdoc />
-    public bool ShowTransformPreview
+    public virtual bool ShowTransformPreview
     {
         get => _showTransformPreview;
         set
         {
-            if (_showTransformPreview == value) { return; }
-            SetProperty(ref _showTransformPreview, value);
-            OnShowTransformPreviewChanged?.Invoke();
+            if (SetProperty(ref _showTransformPreview, value))
+            {
+                OnShowTransformPreviewChanged?.Invoke();
+            }
         }
     }
-    private bool _showTransformPreview;
+    /// <summary>
+    /// The backing field for the <see cref="ShowTransformPreview" /> property.
+    /// </summary>
+    protected bool _showTransformPreview;
 
-    private Type? _targetType;
+    /// <inheritdoc />
+    public List<int> SelectedImportRows { get; } = [];
+
+    /// <summary>
+    /// The current target type.
+    /// </summary>
+    protected Type? _targetType;
 
     #region Events
     /// <inheritdoc />
-    public event Func<Task>? OnActiveDataTableChanged;
+    public virtual event Func<Task>? OnActiveDataTableChanged;
     /// <inheritdoc />
-    public event Func<Task>? OnDataFileChanged;
+    public virtual event Func<Task>? OnDataFileChanged;
     /// <inheritdoc />
-    public event Func<Task>? OnFieldMappingsChanged;
+    public virtual event Func<Task>? OnFieldMappingsChanged;
     /// <inheritdoc />
-    public event Func<Exception, Task>? OnFileReadError;
+    public virtual event Func<Exception, Task>? OnFileReadError;
     /// <inheritdoc />
-    public event Func<Task>? OnFileReadStateChanged;
+    public virtual event Func<Task>? OnFileReadStateChanged;
     /// <inheritdoc />
-    public event Func<Task>? OnFieldMapperDisplayModeChanged;
+    public virtual event Func<Task>? OnFieldMapperDisplayModeChanged;
     /// <inheritdoc />
-    public event Func<Task>? OnShowTransformPreviewChanged;
+    public virtual event Func<Task>? OnShowTransformPreviewChanged;
     #endregion Events
 
     #region Public Methods
     /// <inheritdoc />
-    public async Task UpdateAndShowTransformPreview()
+    public virtual async Task UpdateAndShowTransformPreview()
     {
         if (DataFile is null || string.IsNullOrWhiteSpace(ActiveDataTable?.TableName)) { return; }
         await DataFile.GenerateOutputDataTable(ActiveDataTable.TableName);
@@ -131,7 +161,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
 
     #region Component Callback Registrations
     /// <inheritdoc />
-    public void RegisterFilePicker(DataFilePicker dataFilePicker)
+    public virtual void RegisterFilePicker(DataFilePicker dataFilePicker)
     {
         dataFilePicker.OnFileRequestChangedInternal = new EventCallbackFactory().Create<ImportDataFileRequest>(this, HandleFilePicked);
     }
@@ -142,7 +172,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     /// <param name="importedDataFileDisplay">
     /// The data set display component to register.
     /// </param>
-    public void RegisterDataFileMapper<TTargetType>(DataFileMapper<TTargetType> importedDataFileDisplay)
+    public virtual void RegisterDataFileMapper<TTargetType>(DataFileMapper<TTargetType> importedDataFileDisplay)
         where TTargetType : class, new()
     {
         importedDataFileDisplay.OnSelectedDataTableChangedInternal = new EventCallbackFactory().Create<DataTable>(this, HandleSelectedDataTableChanged);
@@ -151,7 +181,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     }
 
     /// <inheritdoc />
-    public void RegisterDataSetDisplay(DataSetDisplay dataSetDisplay)
+    public virtual void RegisterDataSetDisplay(DataSetDisplay dataSetDisplay)
     {
         dataSetDisplay.OnSelectedDataTableChangedInternal = new EventCallbackFactory().Create<DataTable?>(this, HandleSelectedDataTableChanged);
         dataSetDisplay.OnShowFieldMapperClickedInternal = new EventCallbackFactory().Create<DataTable>(this, HandleShowFieldMapperDialog);
@@ -159,7 +189,11 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     #endregion
 
     #region File Reader Handlers and other related
-    private Task HandleFilePicked(ImportDataFileRequest request)
+    /// <summary>
+    /// Handles the file picked event.
+    /// </summary>
+    /// <param name="request">The file picked request.</param>
+    protected virtual Task HandleFilePicked(ImportDataFileRequest request)
     {
         FileReadState = FileReadState.FileSelected;
         _fileReadRequest.File = request.File;
@@ -173,7 +207,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     /// Thrown when the <see cref="DataFile" /> or its <see cref="ImportedDataFile.DataSet"/> is <see langword="null" />.
     /// </exception>
     /// <exception cref="ArgumentException">Thrown when the table does not exist in the data set.</exception>
-    public void ReplaceFieldMappings(string tableName, IEnumerable<FieldMapping> incomingFieldMappings)
+    public virtual void ReplaceFieldMappings(string tableName, IEnumerable<FieldMapping> incomingFieldMappings)
     {
         if (DataFile is null)
         {
@@ -185,14 +219,17 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     }
 
     /// <inheritdoc />
-    public Task UpdateHeaderRowFlag(bool hasHeaderRow)
+    public virtual Task UpdateHeaderRowFlag(bool hasHeaderRow)
     {
         _fileReadRequest.HasHeaderRow = hasHeaderRow;
 
         return PerformFileReadRequest();
     }
 
-    private async Task PerformFileReadRequest()
+    /// <summary>
+    /// Performs the file read request.
+    /// </summary>
+    protected virtual async Task PerformFileReadRequest()
     {
         if (_fileReadRequest.File is null) { return; }
         DataFile = null;
@@ -224,12 +261,20 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     #endregion File Reader Handlers and other related
 
     #region Data Display Handlers and other related
-    private void HandleSelectedDataTableChanged(DataTable? table)
+    /// <summary>
+    /// Handles the selected data table changed event.
+    /// </summary>
+    /// <param name="table">The selected data table.</param>
+    protected virtual void HandleSelectedDataTableChanged(DataTable? table)
     {
         ActiveDataTable = table;
     }
 
-    private void HandleShowFieldMapperDialog(DataTable table)
+    /// <summary>
+    /// Handles the show field mapper dialog event.
+    /// </summary>
+    /// <param name="table">The table to show the field mapper dialog for.</param>
+    protected virtual void HandleShowFieldMapperDialog(DataTable table)
     {
         ActiveDataTable = table;
         // TODO: Allow setting the FieldMapperDisplayMode in this method

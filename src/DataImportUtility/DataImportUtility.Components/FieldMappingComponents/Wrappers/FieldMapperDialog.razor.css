@@ -1,8 +1,8 @@
 ﻿.o1l-modal.o1l-library-style {
-  --o1l-use-primary-modal-background: var(--o1l-primary-modal-background, rgba(0, 0, 0, 0.2));
+  --o1l-use-primary-modal-background: var(--o1l-primary-modal-background, rgba(33, 33, 33, 0.2));
   --o1l-use-primary-modal-dialog-background: var(--o1l-primary-modal-dialog-background, #222);
-  --o1l-use-primary-modal-dialog-box-shadow: var(--o1l-primary-modal-dialog-box-shadow, 0 0 10px rgba(0, 0, 0, 0.2));
-  --o1l-use-primary-modal-header-border: var(--o1l-primary-modal-header-border, 1px solid rgba(255, 255, 255, 0.2));
+  --o1l-use-primary-modal-dialog-box-shadow: var(--o1l-primary-modal-dialog-box-shadow, 0 0 10px rgba(33, 33, 33, 0.2));
+  --o1l-use-primary-modal-header-border: var(--o1l-primary-modal-header-border, 1px solid rgba(200, 200, 200, 0.1));
   /* Styles */
   position: fixed;
   inset: 0;

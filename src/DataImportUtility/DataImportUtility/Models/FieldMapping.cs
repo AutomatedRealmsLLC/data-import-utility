@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using DataImportUtility.Abstractions;
+using DataImportUtility.Extensions;
 
 namespace DataImportUtility.Models;
 
@@ -13,7 +14,7 @@ namespace DataImportUtility.Models;
 /// </summary>
 public class FieldMapping
 {
-    private readonly Dictionary<string, List<ValidationResult>?> _valueValiationResults = [];
+    private readonly Dictionary<string, List<ValidationResult>?> _valueValidationResults = [];
 
     /// <summary>
     /// The name of the field.
@@ -67,13 +68,13 @@ public class FieldMapping
     /// The validation results for the distinct values.
     /// </summary>
     [JsonIgnore]
-    public IReadOnlyDictionary<string, List<ValidationResult>?> ValueValidationResults => _valueValiationResults;
+    public IReadOnlyDictionary<string, List<ValidationResult>?> ValueValidationResults => _valueValidationResults;
 
     /// <summary>
     /// Whether the field has validation errors.
     /// </summary>
     [JsonIgnore]
-    public bool HasValidationErrors => _valueValiationResults.Sum(x => x.Value?.Count(y => !string.IsNullOrWhiteSpace(y?.ErrorMessage)) ?? 0) > 0;
+    public bool HasValidationErrors => _valueValidationResults.Sum(x => x.Value?.Count(y => !string.IsNullOrWhiteSpace(y?.ErrorMessage)) ?? 0) > 0;
 
     /// <summary>
     /// The mapping rule to use to get the values.
@@ -121,11 +122,6 @@ public class FieldMapping
         => MappingRule?.Apply(dataRow) ?? Task.FromResult((TransformationResult?)null);
 
     /// <summary>
-    /// The validation results for the Transformed values for this.
-    /// </summary>
-    public Dictionary<ValidationContext, List<ValidationResult>> ValidationResults { get; set; } = [];
-
-    /// <summary>
     /// Clones the <see cref="FieldMapping" />.
     /// </summary>
     /// <returns>The cloned <see cref="FieldMapping" />.</returns>
@@ -141,17 +137,21 @@ public class FieldMapping
         if (transformedResult?.Value is null)
         {
             validationResults = Required ? [new ValidationResult("The field is required.", [FieldName])] : null;
+            if (validationResults is { Count: > 0})
+            {
+                _valueValidationResults.TryAdd("<null>", validationResults);
+            }
             return validationResults is null;
         }
 
         var valueKey = transformedResult.Value ?? "<null>";
 
-        if (!useCache && _valueValiationResults.ContainsKey(valueKey))
+        if (!useCache && _valueValidationResults.ContainsKey(valueKey))
         {
-            _valueValiationResults.Remove(valueKey);
+            _valueValidationResults.Remove(valueKey);
         }
 
-        if (_valueValiationResults.TryGetValue(valueKey, out var results))
+        if (_valueValidationResults.TryGetValue(valueKey, out var results))
         {
             validationResults = results;
             return validationResults is null;
@@ -168,7 +168,7 @@ public class FieldMapping
         }
 
         validationResults = valResults.Count > 0 ? valResults : null;
-        _valueValiationResults.Add(valueKey, validationResults);
+        _valueValidationResults.Add(valueKey, validationResults);
         return validationResults is null;
     }
 
@@ -177,21 +177,21 @@ public class FieldMapping
     /// </summary>
     public async Task UpdateValidationResults()
     {
-        _valueValiationResults.Clear();
+        _valueValidationResults.Clear();
         if (IgnoreMapping)
         {
             if (Required)
             {
-                _valueValiationResults.Add("<null>", [new ValidationResult("A value for this field is required.", [FieldName])]);
+                _valueValidationResults.Add("<null>", [new ValidationResult("A value for this field is required.", [FieldName])]);
             }
             else
             {
-                _valueValiationResults.Clear();
+                _valueValidationResults.Clear();
             }
             return;
         }
 
-        var results = await (MappingRule?.Apply() ?? Task.FromResult(Enumerable.Empty<TransformationResult>()));
+        var results = await MappingRule.Apply();
         foreach (var result in results)
         {
             Validate(result, out _, false);
@@ -199,7 +199,17 @@ public class FieldMapping
 
         if (HasValidationErrors)
         {
-            Console.WriteLine(JsonSerializer.Serialize(_valueValiationResults));
+            Console.WriteLine(JsonSerializer.Serialize(_valueValidationResults));
         }
     }
+
+    /// <summary>
+    /// Gets the validation errors for the field mapping for the given value.
+    /// </summary>
+    /// <param name="forValue">The value to get the validation errors for.</param>
+    /// <returns>The validation errors for the field mapping.</returns>
+    public ImmutableList<ValidationResult> GetValidationErrors(string forValue) 
+        => _valueValidationResults.TryGetValue(forValue, out var results) && results is not null
+            ? [.. results.Where(x => !string.IsNullOrWhiteSpace(x.ErrorMessage))]
+            : [];
 }

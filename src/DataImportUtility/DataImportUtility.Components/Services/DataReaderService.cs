@@ -51,7 +51,7 @@ public class DataReaderService : IDataReaderService
         var dataTable = (importedDataFile.DataSet?.Tables[tableName]) ?? throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
         importedDataFile.RefreshFieldDescriptors(forTable: tableName);
 
-        if (!importedDataFile.TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors) || fieldDescriptors is null)
+        if (!importedDataFile.TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors))
         {
             throw new ArgumentException($"Failed to populate the field descriptors for the table '{tableName}'.");
         }
@@ -76,7 +76,7 @@ public class DataReaderService : IDataReaderService
     }
 
     #region Helpers
-    private Task<ImportedDataFile> ProcessDataSet(IImportDataFileRequest request, DataSet dataSet, CancellationToken ct = default)
+    private static Task<ImportedDataFile> ProcessDataSet(IImportDataFileRequest request, DataSet dataSet, CancellationToken ct = default)
     {
         var dataFile = new ImportedDataFile()
         {
@@ -108,7 +108,7 @@ public class DataReaderService : IDataReaderService
         }
 
         var sheetName = request.SheetName ?? string.Empty;
-        var useDataTable = !isCsv && !string.IsNullOrEmpty(sheetName) && dataSet.Tables.Contains(sheetName)
+        var useDataTable = !string.IsNullOrEmpty(sheetName) && dataSet.Tables.Contains(sheetName)
             ? dataSet.Tables[sheetName]!
             : null;
 

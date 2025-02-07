@@ -1,0 +1,21 @@
+@import '../Sass/ColorVariables';
+
+button {
+    &.check-button {
+        background: none;
+        padding: 0;
+        height: auto;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #{$default-blue-light};
+
+        &.unchecked {
+            svg {
+                fill: #{$default-light1};
+            }
+        }
+    }
+}

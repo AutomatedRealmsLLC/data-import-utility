@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 using DataImportUtility.SourceGenerator.Helpers;
 
@@ -25,10 +25,10 @@ public partial class MappingRuleSourceGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
 #if DEBUGGENERATOR
-        if (!Debugger.IsAttached)
-        {
-            Debugger.Launch();
-        }
+            if (!Debugger.IsAttached)
+            {
+                Debugger.Launch();
+            }
 #endif
         var classDeclarations = context.SyntaxProvider
             .CreateSyntaxProvider(
