@@ -2,7 +2,6 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>13.0</LangVersion>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
@@ -20,6 +19,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
+		<PackageOutputPath>../../../nupkg</PackageOutputPath>
 		<Authors>Humberto Cruz-Oyola Jr.</Authors>
 		<Copyright>$([System.DateTime]::Now.Year.ToString())</Copyright>
 		<PackageReleaseNotes>Initial File Import Rule Engine Project Setup</PackageReleaseNotes>
