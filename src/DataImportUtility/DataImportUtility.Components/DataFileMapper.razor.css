@@ -30,7 +30,7 @@
   overflow: auto;
 }
 .data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr {
-  height: var(--o1l-use-table-tr-height);
+  height: var(--o1l-use-table-thead-tr-height);
   z-index: 3;
 }
 .data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr:last-of-type th, .data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr:last-of-type td {

@@ -217,11 +217,11 @@
   filter: brightness(120%);
 }
 .field-transform-config-modal.o1l-modal.o1l-library-style table, .field-transform-config-modal.o1l-modal.o1l-library-style ::deep table {
-  --o1l-use-table-tr-height: var(--o1l-table-tr-height, 2.4em);
   border-spacing: 0;
   width: 100%;
 }
 .field-transform-config-modal.o1l-modal.o1l-library-style table thead, .field-transform-config-modal.o1l-modal.o1l-library-style ::deep table thead {
+  --o1l-use-table-thead-tr-height: var(--o1l-table-thead-tr-height, 2.4em);
   --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
   --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
   --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
@@ -230,7 +230,7 @@
   z-index: 3;
 }
 .field-transform-config-modal.o1l-modal.o1l-library-style table thead tr, .field-transform-config-modal.o1l-modal.o1l-library-style ::deep table thead tr {
-  height: var(--o1l-use-table-tr-height);
+  height: var(--o1l-use-table-thead-tr-height);
   z-index: 3;
 }
 .field-transform-config-modal.o1l-modal.o1l-library-style table thead tr:last-of-type th, .field-transform-config-modal.o1l-modal.o1l-library-style table thead tr:last-of-type td, .field-transform-config-modal.o1l-modal.o1l-library-style ::deep table thead tr:last-of-type th, .field-transform-config-modal.o1l-modal.o1l-library-style ::deep table thead tr:last-of-type td {
@@ -252,6 +252,7 @@
   border-left: var(--o1l-use-table-head-border);
 }
 .field-transform-config-modal.o1l-modal.o1l-library-style table tbody, .field-transform-config-modal.o1l-modal.o1l-library-style ::deep table tbody {
+  --o1l-use-table-tbody-tr-height: var(--o1l-table-tbody-tr-height, 2.4em);
   --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
   --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
   background: var(--o1l-use-table-body-background);
@@ -262,7 +263,7 @@
   --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, rgba(128, 128, 128, 0.04));
   --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, rgba(200, 200, 200, 0.1));
   --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, rgba(33, 33, 33, 0.2));
-  height: var(--o1l-use-table-tr-height);
+  height: var(--o1l-use-table-tbody-tr-height);
   z-index: 2;
 }
 .field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr th, .field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr td, .field-transform-config-modal.o1l-modal.o1l-library-style ::deep table tbody tr th, .field-transform-config-modal.o1l-modal.o1l-library-style ::deep table tbody tr td {

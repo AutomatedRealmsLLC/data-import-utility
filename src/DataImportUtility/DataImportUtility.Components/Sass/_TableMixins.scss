@@ -1,7 +1,6 @@
 @import 'ColorVariables';
 
 @mixin table-defaults {
-    --o1l-use-table-tr-height: var(--o1l-table-tr-height, 2.4em);
     border-spacing: 0;
 
     thead {
@@ -14,6 +13,7 @@
 }
 
 @mixin table-thead-defaults {
+    --o1l-use-table-thead-tr-height: var(--o1l-table-thead-tr-height, 2.4em);
     --o1l-use-table-head-background: var(--o1l-table-head-background, #{$default-dark1});
     --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #{$default-light1});
     --o1l-use-table-head-border: var(--o1l-table-head-border, #{$default-border-light});
@@ -27,7 +27,7 @@
 }
 
 @mixin table-thead-tr-defaults {
-    height: var(--o1l-use-table-tr-height);
+    height: var(--o1l-use-table-thead-tr-height);
     z-index: 3;
 
     &:last-of-type {
@@ -59,6 +59,7 @@
 }
 
 @mixin table-tbody-defaults {
+    --o1l-use-table-tbody-tr-height: var(--o1l-table-tbody-tr-height, 2.4em);
     --o1l-use-table-body-background: var(--o1l-table-body-background, #{$default-dark2});
     --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #{$default-light1});
     background: var(--o1l-use-table-body-background);
@@ -74,7 +75,7 @@
     --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, #{$default-translucent-medium});
     --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, #{$default-translucent-light});
     --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, #{$default-translucent-dark});
-    height: var(--o1l-use-table-tr-height);
+    height: var(--o1l-use-table-tbody-tr-height);
     z-index: 2;
 
     th, td {

@@ -10,7 +10,6 @@
 }
 
 table.o1l-library-style {
-  --o1l-use-table-tr-height: var(--o1l-table-tr-height, 2.4em);
   border-spacing: 0;
   transition: opacity 0.2s ease-in-out, filter 0.2s ease-in-out;
   /*
@@ -26,6 +25,7 @@ table.o1l-library-style {
   */
 }
 table.o1l-library-style thead {
+  --o1l-use-table-thead-tr-height: var(--o1l-table-thead-tr-height, 2.4em);
   --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
   --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
   --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
@@ -34,7 +34,7 @@ table.o1l-library-style thead {
   z-index: 3;
 }
 table.o1l-library-style thead tr {
-  height: var(--o1l-use-table-tr-height);
+  height: var(--o1l-use-table-thead-tr-height);
   z-index: 3;
 }
 table.o1l-library-style thead tr:last-of-type th, table.o1l-library-style thead tr:last-of-type td {
@@ -56,6 +56,7 @@ table.o1l-library-style thead tr th:first-of-type, table.o1l-library-style thead
   border-left: var(--o1l-use-table-head-border);
 }
 table.o1l-library-style tbody {
+  --o1l-use-table-tbody-tr-height: var(--o1l-table-tbody-tr-height, 2.4em);
   --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
   --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
   background: var(--o1l-use-table-body-background);
@@ -66,7 +67,7 @@ table.o1l-library-style tbody tr {
   --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, rgba(128, 128, 128, 0.04));
   --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, rgba(200, 200, 200, 0.1));
   --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, rgba(33, 33, 33, 0.2));
-  height: var(--o1l-use-table-tr-height);
+  height: var(--o1l-use-table-tbody-tr-height);
   z-index: 2;
 }
 table.o1l-library-style tbody tr th, table.o1l-library-style tbody tr td {
@@ -103,11 +104,17 @@ table.o1l-library-style tbody tr.selected {
 table.o1l-library-style tbody tr.selected th, table.o1l-library-style tbody tr.selected td {
   background: var(--o1l-use-table-body-row-selected-background);
 }
+table.o1l-library-style * {
+  white-space: nowrap;
+}
 table.o1l-library-style.busy {
   cursor: wait;
   opacity: 0.5;
   filter: brightness(30%);
   transition: opacity 0.2s ease-in-out, filter 0.2s ease-in-out;
+}
+table.o1l-library-style thead, table.o1l-library-style ::deep thead {
+  --o1l-table-thead-tr-height: 8ch;
 }
 table.o1l-library-style .col-header-wrapper, table.o1l-library-style .cell-value-wrapper, table.o1l-library-style ::deep .col-header-wrapper, table.o1l-library-style ::deep .cell-value-wrapper {
   display: flex;
