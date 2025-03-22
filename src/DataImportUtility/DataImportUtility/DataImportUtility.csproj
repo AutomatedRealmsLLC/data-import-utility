@@ -2,8 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<TargetFrameworks>netstandard2.0;netstandard2.1;net462;net47;net471;net472;net48;net481;net5.0;net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
 		<LangVersion>13.0</LangVersion>
+		<IncludeBuildOutput>true</IncludeBuildOutput>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -15,15 +15,29 @@
 		<PackageTags>Data Import, File Import, Utility, Excel, CSV</PackageTags>
 	</PropertyGroup>
 
+	<!-- This is needed for the .NET Framework 4.6.2 to ensure that the assemblies are copied locally -->
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net462'">
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="ExcelDataReader" Version="3.7.0" />
 		<PackageReference Include="ExcelDataReader.DataSet" Version="3.7.0" />
 		<PackageReference Include="Jace" Version="1.0.0" />
-		<PackageReference Include="System.Collections.Immutable" Version="9.0.0" />
 		<PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
 		<PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
-		<PackageReference Include="System.Text.Json" Version="9.0.0" />
+		<PackageReference Include="System.Text.Json" Version="8.0.5" />
+		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
 	</ItemGroup>
+	
+	<PropertyGroup>
+		<Product>AutomatedRealms.DataImportUtility</Product>
+		<PackageId>AutomatedRealms.DataImportUtility</PackageId>
+		<AssemblyName>DataImportUtility</AssemblyName>
+		<RootNamespace>DataImportUtility</RootNamespace>
+		<Description>A library for importing data from CSV, Excel, and other structured files, and turning it into C# objects.</Description>
+		<PackageTags>Data Import, File Import, Utility, Excel, CSV</PackageTags>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\DataImportUtility.SourceGenerator\DataImportUtility.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />

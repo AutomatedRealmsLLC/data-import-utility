@@ -22,6 +22,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2C5F6B56
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataImportUtility.Tests", "DataImportUtility.Tests\DataImportUtility.Tests.csproj", "{9A7BE597-786A-420D-A8E2-97C760B80365}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4571F3AE-BD82-4FDB-B2F6-BA68892AFE32}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\.github\workflows\build-test-publish.yml = ..\..\.github\workflows\build-test-publish.yml
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4571F3AE-BD82-4FDB-B2F6-BA68892AFE32}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\.github\workflows\build-test-publish.yml = ..\..\.github\workflows\build-test-publish.yml
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

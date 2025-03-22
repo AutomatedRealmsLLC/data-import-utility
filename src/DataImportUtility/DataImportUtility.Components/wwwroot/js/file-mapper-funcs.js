@@ -15,18 +15,15 @@ export function getElements(elemOrSelector) {
     let elems = (typeof elemOrSelector === 'string')
         ? (document.getElementById(elemOrSelector) || document.querySelectorAll(elemOrSelector))
         : elemOrSelector;
-    // if only one HTMLElement is returned, convert it to an array
     if (elems instanceof HTMLElement) {
         elems = [elems];
     }
     else if (!(elems instanceof Array)) {
-        // Convert it to HTMLElement array
         elems = Array.from(elems);
     }
     if (!(elems === null || elems === void 0 ? void 0 : elems.length) && typeof elemOrSelector === 'string') {
         elems = document.querySelectorAll(elemOrSelector);
     }
-    // Filter out null or undefined elements
     elems = elems.filter(elem => elem !== null && elem !== undefined);
     return elems;
 }
@@ -64,7 +61,6 @@ export function synchronizeTableRowHover(sourceTable, targetTable) {
     const sourceElem = getElement(sourceTable);
     const targetElem = getElement(targetTable);
     if (targetElem && sourceElem) {
-        // forward the mouse events for each row in source table to the corresponding row in target table
         const sourceRows = sourceElem.querySelectorAll('tr');
         const targetRows = targetElem.querySelectorAll('tr');
         sourceRows.forEach((sourceRow, i) => {
@@ -126,7 +122,6 @@ export function elementExists(elemOrSelector) {
 }
 function handleAndCloneMouseEvent(event, elem1, elem2) {
     var _a, _b, _c;
-    // Prevent infinite loop by checking if the event was already dispatched
     const origEvent = event;
     const originalElement = (_a = origEvent === null || origEvent === void 0 ? void 0 : origEvent.customDetail) === null || _a === void 0 ? void 0 : _a.originalTarget;
     if (originalElement === event.currentTarget) {
@@ -142,12 +137,11 @@ function handleAndCloneMouseEvent(event, elem1, elem2) {
     const clonedEvent = new MouseEvent(event.type, {
         clientX: event.clientX,
         clientY: event.clientY,
-        bubbles: true, // Allow the event to bubble up
-        cancelable: true, // Allow the event to be canceled
+        bubbles: true,
+        cancelable: true,
     });
     clonedEvent.customDetail = { originalTarget: (_c = (_b = origEvent === null || origEvent === void 0 ? void 0 : origEvent.customDetail) === null || _b === void 0 ? void 0 : _b.originalTarget) !== null && _c !== void 0 ? _c : event.currentTarget };
     event.currentTarget === elem1
         ? elem2.dispatchEvent(clonedEvent)
         : elem1.dispatchEvent(clonedEvent);
 }
-//# sourceMappingURL=file-mapper-funcs.js.map
