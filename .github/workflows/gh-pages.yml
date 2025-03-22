@@ -20,7 +20,7 @@ jobs:
         
       # Publish the site
       - name: Publish
-        run: dotnet publish src/SampleApp/SampleApp/SampleApp.csproj -p:GHPages=true -o:public -c:Release
+        run: dotnet publish src/SampleApp/DataImportUtility.SampleApp/DataImportUtility.SampleApp.csproj -p:GHPages=true -o:public -c:Release
 
       # Deploy the site
       - name: Deploy
