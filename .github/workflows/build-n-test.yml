@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Build and Test
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
         
       # Build the solution
       - name: Build
-        run: dotnet build src/DataImportUtility/DataImportUtility.sln -p:GHPages=true -o:public -c:Release
+        run: dotnet build src/DataImportUtility/DataImportUtility.sln -c:Release
 
       # Run the tests - Disabled for now
       # - name: Test
