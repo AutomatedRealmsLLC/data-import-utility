@@ -3,9 +3,16 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<TargetFrameworks>netstandard2.0;netstandard2.1;net462;net47;net471;net472;net48;net481;net5.0;net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
-		<Nullable>enable</Nullable>
 		<LangVersion>13.0</LangVersion>
-		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>DataImportUtility</PackageId>
+		<AssemblyName>DataImportUtility</AssemblyName>
+		<RootNamespace>DataImportUtility</RootNamespace>
+		<Product>DataImportUtility</Product>
+		<Description>The library for the Data File Import Utility used for applying mapping rules.</Description>
+		<PackageTags>DataImportUtility, File Import, Utility</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

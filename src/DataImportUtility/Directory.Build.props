@@ -1,0 +1,39 @@
+<!-- This only affects the class library projects and does not affect the Sample App project -->
+
+<Project>
+
+	<PropertyGroup Label="Globals">
+		<SccProjectName>SAK</SccProjectName>
+		<SccProvider>SAK</SccProvider>
+		<SccAuxPath>SAK</SccAuxPath>
+		<SccLocalPath>SAK</SccLocalPath>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<Company>Automated Realms, LLC</Company>
+		<Authors>Humberto Cruz-Oyola Jr.</Authors>
+		<Copyright>$([System.DateTime]::Now.Year.ToString())</Copyright>
+		<PackageReleaseNotes>Initial Project Setup</PackageReleaseNotes>
+		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Version)' == ''">
+		<VersionPrefix Condition="'$(VersionPrefix)' == ''">1.0.0</VersionPrefix>
+		<VersionSuffix>$(VersionSuffix)</VersionSuffix>
+		<Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
+		<Version Condition="'$(Version)' == ''">$(VersionPrefix)</Version>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<NoWarn>CA1816</NoWarn>
+	</PropertyGroup>
+
+</Project>

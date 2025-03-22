@@ -54,9 +54,9 @@ internal static partial class ImportDataObjects
         {
             if (_valueTransformations is { Count: >0 }) { return; }
 
-            _valueTransformations = Enum.GetValues<ValueTransformationType>().Select(x => x.CreateNewInstance()!).ToList();
+            _valueTransformations = Enum.GetValues(typeof(ValueTransformationType)).OfType<ValueTransformationType>().Select(x => x.CreateNewInstance()!).ToList();
 
-            foreach (var ruleType in Enum.GetValues<ValueTransformationType>())
+            foreach (var ruleType in Enum.GetValues(typeof(ValueTransformationType)).OfType<ValueTransformationType>())
             {
                 var newRule = ruleType.CreateNewInstance();
                 // Setup the default parameters for each operation

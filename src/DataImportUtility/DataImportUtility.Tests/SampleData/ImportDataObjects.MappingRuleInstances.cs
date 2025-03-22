@@ -43,9 +43,9 @@ internal static partial class ImportDataObjects
         {
             if (_mappingRules is { Count: >0 }) { return; }
 
-            _mappingRules = Enum.GetValues<MappingRuleType>().Select(x => x.CreateNewInstance()!).ToList();
+            _mappingRules = Enum.GetValues(typeof(MappingRuleType)).OfType<MappingRuleType>().Select(x => x.CreateNewInstance()!).ToList();
 
-            foreach (var ruleType in Enum.GetValues<MappingRuleType>())
+            foreach (var ruleType in Enum.GetValues(typeof(MappingRuleType)).OfType<MappingRuleType>())
             {
                 var newRule = ruleType.CreateNewInstance();
                 switch (newRule)

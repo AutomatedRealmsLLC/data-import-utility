@@ -5,7 +5,16 @@
 		<IsRoslynComponent>true</IsRoslynComponent>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 		<LangVersion>13.0</LangVersion>
-		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>DataImportUtility.SourceGenerator</PackageId>
+		<AssemblyName>DataImportUtility.SourceGenerator</AssemblyName>
+		<RootNamespace>DataImportUtility</RootNamespace>
+		<Product>DataImportUtility.SourceGenerator</Product>
+		<Description>The source generator project for the Data File Import Utility used for applying mapping rules. This could allow extending the rules for performing transformation and mapping functions without needing to update the File Import Utility.</Description>
+		<PackageTags>DataImportUtility, File Import, Utility</PackageTags>
+		<PackageReleaseNotes>Initial Source Gen for the File Import Rule Engine Project Setup</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -19,6 +28,11 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="System.CodeDom" Version="9.0.0" />
+	</ItemGroup>
+
+	<!-- This allows us to use the Source Gen as a NuGet package if we choose to in the future -->
+	<ItemGroup>
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
 
 </Project>

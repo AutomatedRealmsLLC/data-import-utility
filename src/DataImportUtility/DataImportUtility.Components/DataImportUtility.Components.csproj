@@ -2,9 +2,24 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<Nullable>enable</Nullable>
-		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>DataImportUtility.Components</PackageId>
+		<AssemblyName>DataImportUtility.Components</AssemblyName>
+		<RootNamespace>DataImportUtility.Components</RootNamespace>
+		<Product>DataImportUtility.Components</Product>
+		<Description>The Blazor Component Library for the Data File Import Utility used for applying mapping rules.</Description>
+		<PackageTags>DataImportUtility, File Import, Utility, Blazor Component Library</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Remove="compilerconfig.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="compilerconfig.json" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />

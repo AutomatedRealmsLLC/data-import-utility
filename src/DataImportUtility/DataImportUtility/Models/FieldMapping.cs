@@ -94,11 +94,7 @@ public class FieldMapping
     /// <summary>
     /// Whether to ignore the mapping.
     /// </summary>
-#if !NET5_0_OR_GREATER
-    [MyMemberNotNullWhen(false, nameof(MappingRule))]
-#else
     [MemberNotNullWhen(false, nameof(MappingRule))]
-#endif
     public bool IgnoreMapping => MappingRuleType == MappingRuleType.IgnoreRule
         || (MappingRule?.IsEmpty ?? true);
 
@@ -137,7 +133,7 @@ public class FieldMapping
     }
 
 #if !NETCOREAPP3_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-    internal bool Validate(TransformationResult? transformedResult, [MyNotNullWhen(false)] out List<ValidationResult>? validationResults, bool useCache = true)
+    internal bool Validate(TransformationResult? transformedResult, [NotNullWhen(false)] out List<ValidationResult>? validationResults, bool useCache = true)
 #else
     internal bool Validate(TransformationResult? transformedResult, [NotNullWhen(false)] out List<ValidationResult>? validationResults, bool useCache = true)
 #endif

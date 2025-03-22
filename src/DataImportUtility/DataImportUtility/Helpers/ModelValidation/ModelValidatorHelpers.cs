@@ -51,15 +51,15 @@ public static class ModelValidatorHelpers
     /// <see langword="true" /> if the object is valid; otherwise, <see langword="false" />.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="obj"/> is <see langword="null" />.</exception>
-#if !NETCOREAPP3_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-    public static bool TryValidateObject<TObjectType>(this TObjectType obj, [MyNotNullWhen(false)] out ImmutableArray<ValidationResult>? errorResults)
-#else
     public static bool TryValidateObject<TObjectType>(this TObjectType obj, [NotNullWhen(false)] out ImmutableArray<ValidationResult>? errorResults)
-#endif
     {
         var context = obj.GetOrCreateContext();
         return obj.TryValidateObject(context, out errorResults);
     }
+
+    
+
+
 
     /// <summary>
     /// Validates the specified object and returns a collection of validation results.
@@ -75,11 +75,7 @@ public static class ModelValidatorHelpers
     /// <see langword="true" /> if the object is valid; otherwise, <see langword="false" />.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="obj"/> is <see langword="null" />.</exception>
-#if !NETCOREAPP3_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-    public static bool TryValidateObject<TObjectType>(this TObjectType obj, ValidationContext context, [MyNotNullWhen(false)] out ImmutableArray<ValidationResult>? errorResults)
-#else
     public static bool TryValidateObject<TObjectType>(this TObjectType obj, ValidationContext context, [NotNullWhen(false)] out ImmutableArray<ValidationResult>? errorResults)
-#endif
     {
         if (obj is null) { throw new ArgumentNullException(nameof(obj)); }
         var results = new List<ValidationResult>();
@@ -102,11 +98,7 @@ public static class ModelValidatorHelpers
     /// <see langword="true" /> if the property is valid; otherwise, <see langword="false" />.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="obj"/> is <see langword="null" />.</exception>
-#if !NETCOREAPP3_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-    public static bool TryValidateProperty<TObjectType>(this TObjectType obj, string propertyName, [MyNotNullWhen(false)] out ImmutableArray<ValidationResult>? errorResults)
-#else
     public static bool TryValidateProperty<TObjectType>(this TObjectType obj, string propertyName, [NotNullWhen(false)] out ImmutableArray<ValidationResult>? errorResults)
-#endif
     {
         var context = obj.GetOrCreateContext();
         return obj.TryValidateProperty(propertyName, context, out errorResults);
@@ -127,11 +119,7 @@ public static class ModelValidatorHelpers
     /// <see langword="true" /> if the property is valid; otherwise, <see langword="false" />.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="obj"/> is <see langword="null" />.</exception>
-#if !NETCOREAPP3_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-    public static bool TryValidateProperty<TObjectType>(this TObjectType obj, string propertyName, ValidationContext context, [MyNotNullWhen(false)] out ImmutableArray<ValidationResult>? errorResults)
-#else
     public static bool TryValidateProperty<TObjectType>(this TObjectType obj, string propertyName, ValidationContext context, [NotNullWhen(false)] out ImmutableArray<ValidationResult>? errorResults)
-#endif
     {
         var results = new List<ValidationResult>();
         context.MemberName = propertyName;

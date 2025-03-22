@@ -13,7 +13,8 @@ public class ValueTransformationTypeEnumExtensionTests
     /// Everything else uses the created class instance to test the extension methods.
     /// </remarks>
     public static IEnumerable<object[]> ValueTransformationTypeWithInstanceData
-    { get; } = Enum.GetValues<ValueTransformationType>()
+    { get; } = Enum.GetValues(typeof(ValueTransformationType))
+        .OfType<ValueTransformationType>()
         .Select(opType => new object[] { opType, opType.CreateNewInstance()! });
 
     /// <summary>
