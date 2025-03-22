@@ -27,7 +27,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="System.CodeDom" Version="9.0.0" />
+		<PackageReference Include="System.CodeDom" Version="7.0.0" />
 	</ItemGroup>
 
 	<!-- This allows us to use the Source Gen as a NuGet package if we choose to in the future -->

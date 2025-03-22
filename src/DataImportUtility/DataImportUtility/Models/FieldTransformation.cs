@@ -23,6 +23,7 @@ public class FieldTransformation : IDisposable
         if (field is not null)
         {
             Field = field;
+#if NET8_0_OR_GREATER
             TransformationResults = [..
                 field.ValueSet?
                     .Select(value => new TransformationResult()
@@ -30,6 +31,15 @@ public class FieldTransformation : IDisposable
                         OriginalValue = value?.ToString(),
                         Value = value?.ToString()
                     }) ?? []];
+#else
+            TransformationResults = field.ValueSet?
+                    .Select(value => new TransformationResult()
+                    {
+                        OriginalValue = value?.ToString(),
+                        Value = value?.ToString()
+                    })
+                    .ToImmutableList() ?? ImmutableList<TransformationResult>.Empty;
+#endif
         }
     }
 
@@ -65,13 +75,21 @@ public class FieldTransformation : IDisposable
             UpdateTransformationResults();
         }
     }
+#if NET8_0_OR_GREATER
     private ImmutableList<ValueTransformationBase> _valueTransformations = [];
+#else
+    private ImmutableList<ValueTransformationBase> _valueTransformations = ImmutableList<ValueTransformationBase>.Empty;
+#endif
 
     /// <summary>
     /// Gets or sets the results of the transformations.
     /// </summary>
     [JsonIgnore]
+#if NET8_0_OR_GREATER
     public ImmutableList<TransformationResult> TransformationResults { get; private set; } = [];
+#else
+    public ImmutableList<TransformationResult> TransformationResults { get; private set; } = ImmutableList<TransformationResult>.Empty;
+#endif
 
     #region ValueTransformation Methods
     /// <summary>
@@ -82,7 +100,11 @@ public class FieldTransformation : IDisposable
     {
         var transformations = ValueTransformations.ToList();
         transformations.Add(transformation);
+#if NET8_0_OR_GREATER
         ValueTransformations = [.. transformations];
+#else
+        ValueTransformations = transformations.ToImmutableList();
+#endif
     }
 
     /// <summary>
@@ -93,7 +115,11 @@ public class FieldTransformation : IDisposable
     {
         var transformations = ValueTransformations.ToList();
         transformations.Remove(transformation);
+#if NET8_0_OR_GREATER
         ValueTransformations = [.. transformations];
+#else
+        ValueTransformations = transformations.ToImmutableList();
+#endif
     }
 
     /// <summary>
@@ -107,7 +133,11 @@ public class FieldTransformation : IDisposable
     {
         var transformations = ValueTransformations.ToList();
         transformations.RemoveAt(index);
+#if NET8_0_OR_GREATER
         ValueTransformations = [.. transformations];
+#else
+        ValueTransformations = transformations.ToImmutableList();
+#endif
     }
 
     /// <summary>
@@ -119,7 +149,11 @@ public class FieldTransformation : IDisposable
     {
         var transformations = ValueTransformations.ToList();
         transformations[transformations.IndexOf(oldTransformation)] = newTransformation;
+#if NET8_0_OR_GREATER
         ValueTransformations = [.. transformations];
+#else
+        ValueTransformations = transformations.ToImmutableList();
+#endif
     }
 
     /// <summary>
@@ -134,7 +168,11 @@ public class FieldTransformation : IDisposable
     {
         var transformations = ValueTransformations.ToList();
         transformations[index] = newTransformation;
+#if NET8_0_OR_GREATER
         ValueTransformations = [.. transformations];
+#else
+        ValueTransformations = transformations.ToImmutableList();
+#endif
     }
 
     /// <summary>
@@ -145,7 +183,11 @@ public class FieldTransformation : IDisposable
     /// </param>
     public void SetTransformations(IEnumerable<ValueTransformationBase> transformations)
     {
+#if NET8_0_OR_GREATER
         ValueTransformations = [.. transformations];
+#else
+        ValueTransformations = transformations.ToImmutableList();
+#endif
     }
     #endregion ValueTransformation Methods
 
@@ -202,10 +244,15 @@ public class FieldTransformation : IDisposable
             // Reinitialize the TransformationResults with the original values
             if (values is null)
             {
+#if NET8_0_OR_GREATER
                 TransformationResults = [];
+#else
+                TransformationResults = ImmutableList<TransformationResult>.Empty;
+#endif
             }
             else
             {
+#if NET8_0_OR_GREATER
                 TransformationResults = [..
                     values
                         .Select(x => new TransformationResult()
@@ -215,8 +262,23 @@ public class FieldTransformation : IDisposable
                             Value = x?.ToString(),
                             CurrentValueType = x?.GetType() ?? typeof(string)
                         })];
+#else
+                TransformationResults = values
+                        .Select(x => new TransformationResult()
+                        {
+                            OriginalValue = x?.ToString(),
+                            OriginalValueType = x?.GetType() ?? typeof(string),
+                            Value = x?.ToString(),
+                            CurrentValueType = x?.GetType() ?? typeof(string)
+                        })
+                        .ToImmutableList();
+#endif
             }
+#if NET8_0_OR_GREATER
             TransformationResults = [.. (await Apply(TransformationResults, ct))];
+#else
+            TransformationResults = (await Apply(TransformationResults, ct)).ToImmutableList();
+#endif
 
             return TransformationResults;
         }
@@ -303,7 +365,7 @@ public class FieldTransformation : IDisposable
             return result;
         }
     }
-    #endregion Apply Methods
+#endregion Apply Methods
 
     #region Helpers
     private CancellationToken InitCancellationTokenIfNull(CancellationToken? ct)
@@ -330,7 +392,11 @@ public class FieldTransformation : IDisposable
     public FieldTransformation Clone()
     {
         var forRet = (FieldTransformation)MemberwiseClone();
+#if NET8_0_OR_GREATER
         forRet.ValueTransformations = [.. ValueTransformations.Select(x => x.Clone())];
+#else
+        forRet.ValueTransformations = ValueTransformations.Select(x => x.Clone()).ToImmutableList();
+#endif
         return forRet;
     }
     #endregion

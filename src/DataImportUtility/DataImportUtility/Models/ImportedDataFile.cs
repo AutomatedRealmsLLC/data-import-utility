@@ -491,8 +491,12 @@ public class ImportedDataFile
         foreach(var fieldMapping in tableDef.FieldMappings)
         {
             fieldMapping.ValidationAttributes = _targetTypeFieldMappings!.First(x => x.FieldName == fieldMapping.FieldName).ValidationAttributes;
+#if NET8_0_OR_GREATER
             foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTranformations ?? []).Where(sfd => sfd?.Field is not null))
-            {
+#else
+            foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTranformations ?? ImmutableList<FieldTransformation>.Empty).Where(sfd => sfd?.Field is not null))
+#endif
+                {
                 sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors!.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
             }
         }
