@@ -15,6 +15,11 @@
 		<PackageTags>Data Import, File Import, Utility, Excel, CSV</PackageTags>
 	</PropertyGroup>
 
+	<!-- This is needed for the .NET Framework 4.6.2 to ensure that the assemblies are copied locally -->
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net462'">
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
+	
 	<!-- Common packages for all frameworks -->
 	<ItemGroup>
 		<PackageReference Include="ExcelDataReader" Version="3.7.0" />
@@ -24,20 +29,28 @@
 		<PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
 	</ItemGroup>
 
-	<!-- 
-		TODO: Continue Updating conditional package references 
-	-->
-
-	<!-- For .NET 6.0 and .NET 7.0 -->
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0'">
-		<PackageReference Include="System.Collections.Immutable" Version="7.0.0" />
-		<PackageReference Include="System.Text.Json" Version="7.0.0" />
+	<!-- For .NET Framework -->
+	<ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
+		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
+		<PackageReference Include="System.Text.Json" Version="6.0.7" />
 	</ItemGroup>
 
-	<!-- For .NET targets not explicitly set above -->
-	<ItemGroup Condition="'$(TargetFramework)' != 'net6.0' AND '$(TargetFramework)' != 'net7.0'">
-		<PackageReference Include="System.Collections.Immutable" Version="9.0.0" />
-		<PackageReference Include="System.Text.Json" Version="9.0.0" />
+	<!-- For .NET Standard -->
+	<ItemGroup Condition="$(TargetFramework.StartsWith('netstandard'))">
+		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
+		<PackageReference Include="System.Text.Json" Version="6.0.7" />
+	</ItemGroup>
+
+	<!-- For .NET 5.0, 6.0, and 7.0 -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net5.0' OR '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0'">
+		<PackageReference Include="System.Collections.Immutable" Version="7.0.0" />
+		<PackageReference Include="System.Text.Json" Version="7.0.3" />
+	</ItemGroup>
+
+	<!-- For .NET 8.0 and higher -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net9.0'">
+		<PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
+		<PackageReference Include="System.Text.Json" Version="8.0.0" />
 	</ItemGroup>
 
 	<PropertyGroup>
