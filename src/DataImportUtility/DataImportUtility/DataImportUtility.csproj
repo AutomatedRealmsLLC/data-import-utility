@@ -7,12 +7,12 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<PackageId>DataImportUtility</PackageId>
+		<Product>AutomatedRealms.DataImportUtility</Product>
+		<PackageId>AutomatedRealms.DataImportUtility</PackageId>
 		<AssemblyName>DataImportUtility</AssemblyName>
 		<RootNamespace>DataImportUtility</RootNamespace>
-		<Product>DataImportUtility</Product>
-		<Description>The library for the Data File Import Utility used for applying mapping rules.</Description>
-		<PackageTags>DataImportUtility, File Import, Utility</PackageTags>
+		<Description>A library for importing data from CSV, Excel, and other structured files, and turning it into C# objects.</Description>
+		<PackageTags>Data Import, File Import, Utility, Excel, CSV</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

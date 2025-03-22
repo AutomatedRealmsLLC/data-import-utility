@@ -5,12 +5,12 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<PackageId>DataImportUtility.Components</PackageId>
+		<Product>AutomatedRealms.DataImportUtility.Components</Product>
+		<PackageId>AutomatedRealms.DataImportUtility.Components</PackageId>
 		<AssemblyName>DataImportUtility.Components</AssemblyName>
 		<RootNamespace>DataImportUtility.Components</RootNamespace>
-		<Product>DataImportUtility.Components</Product>
-		<Description>The Blazor Component Library for the Data File Import Utility used for applying mapping rules.</Description>
-		<PackageTags>DataImportUtility, File Import, Utility, Blazor Component Library</PackageTags>
+		<Description>The Blazor Component Library for the AutomatedRealms.DataImportUtility.</Description>
+		<PackageTags>Data Import, File Import, Utility, Blazor, Components, Excel, CSV</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
