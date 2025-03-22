@@ -1,6 +1,16 @@
 #nullable enable
 #addin nuget:?package=Cake.Git&version=5.0.0
 
+// To use this, navigate to the directory containing the .sln file and run:
+// - On the first run, install the Cake tool: 
+//   - dotnet new tool-manifest
+//   - dotnet tool install cake.tool
+// - To run the build script:
+//   - dotnet dotnet-cake
+// - To run a specific target, for example, to the Build step:
+//   - dotnet dotnet-cake --target=Build
+// See more at https://cakebuild.net/
+
 using System.Text.RegularExpressions;
 
 // `target` indicates where to run through
@@ -133,28 +143,6 @@ Task("GithubAction")
     .IsDependentOn("PublishCoreLibraryToNuGet")
     .IsDependentOn("PublishComponentLibraryToNuGet")
     ;
-
-
-//Task("GenerateReferenceAssets")
-//    .Does<BuildData>((ctx, bd) =>
-//{
-//    (string,string)[] refs = [
-//        ("dotnet-bot"     , "-i ../../assets/dotnet-bot_branded.png -s 100 -o ../../assets/dotnet-bot_branded.txt -oo")
-//    ,   ("tool-icon"      , "-i ../../assets/icon.png -s 100 -o ../../assets/icon.txt -oo")
-//    ,   ("cube-1s"        , "-i ../../assets/cube1s.gif -s 100 -o ../../assets/cube1s.txt -oo")
-//    ,   ("cube-1s(IFRAME)", "-ei -i ../../assets/cube1s.gif -s 100 -o ../../assets/cube1s_.txt -oo")
-//    ];
-//    foreach (var (name, command) in refs)
-//    {
-//        Information($"Generating reference asset: {name}");
-//        DotNetRun("./DataImportUtility.fsproj", command, new()
-//        {
-//            Configuration   = "Release"
-//        ,   WorkingDirectory= "./src/DataImportUtility/"
-//        });
-//    }
-//});
-
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION

@@ -30,6 +30,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImportUtility.SampleApp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Class Library-specific", "Class Library-specific", "{9092A40A-726E-4188-81C5-1F4C1233AE24}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\build.cake = ..\..\build.cake
 		..\DataImportUtility\Directory.Build.props = ..\DataImportUtility\Directory.Build.props
 		..\..\README.md = ..\..\README.md
 	EndProjectSection
