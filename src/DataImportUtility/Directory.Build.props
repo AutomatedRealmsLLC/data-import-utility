@@ -26,12 +26,18 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Version)' == ''">
-		<VersionPrefix Condition="'$(VersionPrefix)' == ''">1.0.0</VersionPrefix>
+		<VersionMajorNumber Condition="'$(VersionMajorNumber)' != ''">$(VersionMajorNumber)</VersionMajorNumber>
+		<VersionMajorNumber Condition="'$(VersionMajorNumber)' == ''">1</VersionMajorNumber>
+		<VersionMinorNumber Condition="'$(VersionMinorNumber)' != ''">$(VersionMinorNumber)</VersionMinorNumber>
+		<VersionMinorNumber Condition="'$(VersionMinorNumber)' == ''">0</VersionMinorNumber>
+		<VersionBuildNumber Condition="'$(VersionBuildNumber)' != ''">$(VersionBuildNumber)</VersionBuildNumber>
+		<VersionBuildNumber Condition="'$(VersionBuildNumber)' == ''">0.0</VersionBuildNumber>
+		<VersionPrefix Condition="'$(VersionPrefix)' == ''">$(VersionMajorNumber).$(VersionMinorNumber).$(VersionBuildNumber)</VersionPrefix>
 		<VersionSuffix>$(VersionSuffix)</VersionSuffix>
 		<Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
 		<Version Condition="'$(Version)' == ''">$(VersionPrefix)</Version>
 	</PropertyGroup>
-	
+
 	<PropertyGroup>
 		<NoWarn>CA1816</NoWarn>
 	</PropertyGroup>
