@@ -1,0 +1,12 @@
+﻿@page "/"
+@using System.Data
+@using DataImportUtility.SampleApp.Client.Models
+
+<PageTitle>Home</PageTitle>
+
+<div class="page home-page">
+    <h1>Data Import Sample</h1>
+
+    <DataFileMapper TTargetType=TargetRecord
+                    IgnoreFields=_ignoreFields />
+</div>

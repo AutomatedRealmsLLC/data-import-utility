@@ -2,11 +2,13 @@
 using System.Timers;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Components.DataSetComponents;
+using DataImportUtility.Components.Extensions;
 using DataImportUtility.Components.FieldMappingComponents.Wrappers;
 using DataImportUtility.Components.JsInterop;
 using DataImportUtility.Components.State;
@@ -26,6 +28,7 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
 {
     [Inject, AllowNull] private IJSRuntime JsRuntime { get; set; }
     [Inject, AllowNull] private ILoggerFactory LoggerFactory { get; set; }
+    [Inject, AllowNull] private IServiceProvider ServiceProvider { get; set; }
 
     private const string _noPreviewMessage = "No preview available.";
 

@@ -82,7 +82,7 @@ public abstract partial class ValueTransformationBase : IDisposable
     /// <summary>
     /// The additional arguments for the operation.
     /// </summary>
-    public virtual string? OperationDetail
+    public virtual string? TransformationDetail
     {
         get => _operationDetail;
         set
@@ -92,14 +92,14 @@ public abstract partial class ValueTransformationBase : IDisposable
         }
     }
     /// <summary>
-    /// The backing field for the OperationDetail property.
+    /// The backing field for the TransformationDetail property.
     /// It should only be used in the derived class when 
-    /// overriding the OperationDetail property.
+    /// overriding the TransformationDetail property.
     /// </summary>
     protected string? _operationDetail;
 
     /// <summary>
-    /// Generates the syntax for the operation based on the OperationDetail.
+    /// Generates the syntax for the operation based on the TransformationDetail.
     /// </summary>
     /// <returns>
     /// The result of the transformation.
@@ -107,7 +107,7 @@ public abstract partial class ValueTransformationBase : IDisposable
     /// <remarks>
     /// If you add additional properties to the operation, you can include them in the syntax.
     /// </remarks>
-    public virtual string GenerateSyntax() => OperationDetail ?? string.Empty;
+    public virtual string GenerateSyntax() => TransformationDetail ?? string.Empty;
 
     /// <summary>
     /// Applies the transformation to the provided <see cref="TransformationResult" />.

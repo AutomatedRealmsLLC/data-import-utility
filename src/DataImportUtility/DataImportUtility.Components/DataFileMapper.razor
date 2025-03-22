@@ -3,6 +3,7 @@
 @using DataImportUtility.Components.Abstractions
 @using DataImportUtility.Components.ButtonComponents
 @using DataImportUtility.Components.FieldMappingComponents.Wrappers
+@using DataImportUtility.Components.Models
 @using DataImportUtility.Models
 @using DataImportUtility.Components.DataSetComponents
 @using DataImportUtility.Components.FilePickerComponent
@@ -38,50 +39,59 @@
         <DataFilePicker OnFileRequestChanged=HandleFilePicked
                         ApplyDefaultCss=ApplyDefaultCss />
 
-        <DataSetDisplay OnSelectedDataTableChanged=HandleSelectedDataTableChanged
-                        ApplyDefaultCss=ApplyDefaultCss
-                        AdditionalTableCssClasses="imported-data-table"
-                        HoveredRow=_hoveredRowIndex
-                        HoveredRowChanged=HandleHoveredRowChanged
-                        SelectedRows=_myDataFileMapperState.SelectedImportRows
-                        SelectedRowsChanged=HandleSelectedRowsChanged
-                        ShowRowSelect=true>
-            <OverrideHeaderRow Context="dataTable">
-                <tr class="header-controls@(DefaultCssClass)"
-                    data-from-component="@nameof(DataFileMapper<TTargetType>)"
-                    data-component-instance="@InstanceId"
-                    data-mapper-state="@_myDataFileMapperState.MapperStateId">
-                    <td colspan="@(dataTable.Columns.Count + 1)">
-                        <div class="table-title-wrapper">
-                            <span class="table-title">Data Table: @dataTable.TableName</span>
-                            <div class="main-controls">
-                                <button type="button" class="o1l-btn-field-mapper o1l-btn-icon-only o1l-btn-sm@(DefaultCssClass)" @onclick="_ => HandleShowFieldMapperDialog(dataTable)">
-                                    @Icons.List()
-                                </button>
-                                <button type="button" class="o1l-btn-field-mapper o1l-btn-icon-only o1l-btn-sm@(DefaultCssClass)" @onclick="_ => HandleTogglePreviewOutput(dataTable)" title="@($"Show {(_myDataFileMapperState.ShowTransformPreview ? "Incoming Data" : "Output Preview")}")">
-                                    @Icons.Preview()
-                                    <span class="o1l-sr-only">@($"Show {(_myDataFileMapperState.ShowTransformPreview ? "Incoming Data" : "Output Preview")}")</span>
-                                </button>
+        @if (_myDataFileMapperState.DataFile is not null)
+        {
+            <DataSetDisplay OnSelectedDataTableChanged=HandleSelectedDataTableChanged
+                            ApplyDefaultCss=ApplyDefaultCss
+                            AdditionalTableCssClasses="imported-data-table"
+                            HoveredRow=_hoveredRowIndex
+                            HoveredRowChanged=HandleHoveredRowChanged
+                            SelectedRows=_myDataFileMapperState.SelectedImportRows
+                            SelectedRowsChanged=HandleSelectedRowsChanged
+                            ShowRowSelect=true>
+                <OverrideHeaderRow Context="dataTable">
+                    <tr class="header-controls@(DefaultCssClass)"
+                        data-from-component="@nameof(DataFileMapper<TTargetType>)"
+                        data-component-instance="@InstanceId"
+                        data-mapper-state="@_myDataFileMapperState.MapperStateId">
+                        <td colspan="@(dataTable.Columns.Count + 1)">
+                            <div class="table-title-wrapper">
+                                <span class="table-title">Data Table: @dataTable.TableName</span>
+                                <div class="main-controls">
+                                    <button type="button" class="o1l-btn-field-mapper o1l-btn-icon-only o1l-btn-sm@(DefaultCssClass)" @onclick="_ => HandleShowFieldMapperDialog(dataTable)">
+                                        @Icons.List()
+                                    </button>
+                                    <button type="button" class="o1l-btn-field-mapper o1l-btn-icon-only o1l-btn-sm@(DefaultCssClass)" @onclick="_ => HandleTogglePreviewOutput(dataTable)" title="@($"Show {(_myDataFileMapperState.ShowTransformPreview ? "Incoming Data" : "Output Preview")}")">
+                                        @Icons.Preview()
+                                        <span class="o1l-sr-only">@($"Show {(_myDataFileMapperState.ShowTransformPreview ? "Incoming Data" : "Output Preview")}")</span>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr class="header-row@(DefaultCssClass)"
-                    data-from-component="@nameof(DataFileMapper<TTargetType>)"
-                    data-component-instance="@InstanceId"
-                    data-mapper-state="@_myDataFileMapperState.MapperStateId">
-                    <th>
-                        <CheckButton Checked=@(_myDataFileMapperState.SelectedImportRows.Count == dataTable.Rows.Count) OnClick="_ => HandleToggleAllSelected()" />
-                    </th>
-                    @foreach (DataColumn curCol in dataTable.Columns)
-                    {
+                        </td>
+                    </tr>
+                    <tr class="header-row@(DefaultCssClass)"
+                        data-from-component="@nameof(DataFileMapper<TTargetType>)"
+                        data-component-instance="@InstanceId"
+                        data-mapper-state="@_myDataFileMapperState.MapperStateId">
                         <th>
-                            @curCol.ColumnName
+                            <CheckButton Checked=@(_myDataFileMapperState.SelectedImportRows.Count == dataTable.Rows.Count) OnClick="_ => HandleToggleAllSelected()" />
                         </th>
-                    }
-                </tr>
-            </OverrideHeaderRow>
-        </DataSetDisplay>
+                        @foreach (DataColumn curCol in dataTable.Columns)
+                        {
+                            <th>
+                                @curCol.ColumnName
+                            </th>
+                        }
+                    </tr>
+                </OverrideHeaderRow>
+            </DataSetDisplay>
+        } 
+        else if(_myDataFileMapperState.FileReadState == FileReadState.Reading)
+        {
+            <div class="file-loader-wrapper">
+                @Icons.PreLoader()
+            </div>
+        }
 
         @if (_myDataFileMapperState.ShowTransformPreview)
         {

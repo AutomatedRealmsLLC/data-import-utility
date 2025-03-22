@@ -3,7 +3,7 @@
 using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Models;
-using DataImportUtility.TransformOperations;
+using DataImportUtility.ValueTransformations;
 
 namespace DataImportUtility.Components.FieldMappingComponents.ValueTransformationComponents;
 
@@ -85,7 +85,7 @@ public partial class ValueTransformationRuleDetails : FileImportUtilityComponent
 
     private Task AddValueMapping()
     {
-        if (ValueTransformation is MapOperation mapOperation)
+        if (ValueTransformation is MapTransformation mapOperation)
         {
             if (string.IsNullOrWhiteSpace(_inputKey) || string.IsNullOrWhiteSpace(_inputValue))
             {
@@ -109,7 +109,7 @@ public partial class ValueTransformationRuleDetails : FileImportUtilityComponent
 
     private Task RemoveValueMapping(ValueMap valueMap)
     {
-        if (ValueTransformation is MapOperation mapOperation && mapOperation.ValueMappings.Contains(valueMap))
+        if (ValueTransformation is MapTransformation mapOperation && mapOperation.ValueMappings.Contains(valueMap))
         {
             mapOperation.ValueMappings.Remove(valueMap);
         }

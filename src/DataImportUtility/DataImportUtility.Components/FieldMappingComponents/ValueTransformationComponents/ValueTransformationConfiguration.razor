@@ -15,7 +15,11 @@
         <select class="@DefaultCssClass"
                 @bind=_selectedTransformationType
                 @bind:after=HandleTransformationChanged>
-            @foreach (var transformType in Enum.GetValues<ValueTransformationType>())
+            @foreach (var transformType in Enum.GetValues<ValueTransformationType>()
+#if !DEBUG
+                .Where(x => x != ValueTransformationType.ConditionalTransformation)
+#endif
+            )
             {
                 <option value="@transformType">@transformType.GetDisplayText()</option>
             }

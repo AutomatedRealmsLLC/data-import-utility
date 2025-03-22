@@ -16,4 +16,5 @@ public static class MappingRulesHelpers
             .OfType<MappingRuleType>()
             .Select(ruleType => $"{ruleType}: {ruleType.GetDescription()}")
     );
+
 }

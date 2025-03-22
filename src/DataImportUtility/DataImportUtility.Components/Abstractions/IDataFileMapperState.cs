@@ -4,7 +4,7 @@ using System.Data;
 using DataImportUtility.Components.DataSetComponents;
 using DataImportUtility.Components.FieldMappingComponents.Wrappers;
 using DataImportUtility.Components.FilePickerComponent;
-using DataImportUtility.Components.State;
+using DataImportUtility.Components.Models;
 using DataImportUtility.Models;
 
 namespace DataImportUtility.Components.Abstractions;

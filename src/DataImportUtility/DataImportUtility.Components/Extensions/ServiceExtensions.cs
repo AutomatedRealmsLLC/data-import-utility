@@ -21,4 +21,24 @@ public static class ServiceExtensions
     /// </returns>
     public static IServiceCollection AddDataReaderServices(this IServiceCollection services)
         => services.AddSingleton<IDataReaderService, DataReaderService>();
+
+    /// <summary>
+    /// Adds the data file mapper options to the DI container.
+    /// </summary>
+    /// <param name="services">
+    /// The <see cref="IServiceCollection" /> to add the services to.
+    /// </param>
+    /// <param name="configureOptions">
+    /// The action to configure the <see cref="DataFileMapperUiOptions" />.
+    /// </param>
+    /// <returns>
+    /// The <see cref="IServiceCollection" /> with the options added.
+    /// </returns>
+    public static IServiceCollection ConfigureDataFileMapperUiOptions(this IServiceCollection services, Action<DataFileMapperUiOptions> configureOptions)
+    {
+        var options = new DataFileMapperUiOptions();
+        configureOptions(options);
+        services.AddSingleton(options);
+        return services;
+    }
 }

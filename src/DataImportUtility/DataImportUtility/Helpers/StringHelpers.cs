@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 
 namespace DataImportUtility.Helpers;
 
@@ -24,7 +25,11 @@ public static partial class StringHelpers
     /// <returns>
     /// The converted value.
     /// </returns>
-    //[return: NotNullIfNotNull(nameof(val))]
+#if !NETCOREAPP3_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
+    [return: MyNotNullIfNotNull(nameof(val))]
+#else
+    [return: NotNullIfNotNull(nameof(val))]
+#endif
     public static string? ToCamelCase(this string? val)
         => val is null or { Length: < 2 }
             ? val

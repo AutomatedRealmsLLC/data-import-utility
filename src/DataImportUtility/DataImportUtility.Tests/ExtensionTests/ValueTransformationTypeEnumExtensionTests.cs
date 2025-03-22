@@ -1,5 +1,5 @@
 ﻿using DataImportUtility.Abstractions;
-using DataImportUtility.TransformOperations;
+using DataImportUtility.ValueTransformations;
 
 namespace DataImportUtility.Tests.ExtensionTests;
 
@@ -22,12 +22,12 @@ public class ValueTransformationTypeEnumExtensionTests
     /// <param name="opType">The ValueTransformationType to create a new instance of.</param>
     /// <param name="expectedType">The expected type of the new instance.</param>
     [Theory]
-    [InlineData(ValueTransformationType.CalculateOperation, typeof(CalculateOperation))]
-    [InlineData(ValueTransformationType.CombineFieldsOperation, typeof(CombineFieldsOperation))]
-    [InlineData(ValueTransformationType.InterpolateOperation, typeof(InterpolateOperation))]
-    [InlineData(ValueTransformationType.MapOperation, typeof(MapOperation))]
-    [InlineData(ValueTransformationType.RegexMatchOperation, typeof(RegexMatchOperation))]
-    [InlineData(ValueTransformationType.SubstringOperation, typeof(SubstringOperation))]
+    [InlineData(ValueTransformationType.CalculateTransformation, typeof(CalculateTransformation))]
+    [InlineData(ValueTransformationType.CombineFieldsTransformation, typeof(CombineFieldsTransformation))]
+    [InlineData(ValueTransformationType.InterpolateTransformation, typeof(InterpolateTransformation))]
+    [InlineData(ValueTransformationType.MapTransformation, typeof(MapTransformation))]
+    [InlineData(ValueTransformationType.RegexMatchTransformation, typeof(RegexMatchTransformation))]
+    [InlineData(ValueTransformationType.SubstringTransformation, typeof(SubstringTransformation))]
     public void CreateNewInstance_ShouldReturnCorrectRuleType(ValueTransformationType opType, Type expectedType)
     {
         // Arrange + Act

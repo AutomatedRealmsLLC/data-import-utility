@@ -1,0 +1,101 @@
+@import "../../Sass/ButtonMixins";
+@import '../../Sass/ColorVariables';
+@import "../../Sass/TableMixins";
+
+@mixin field-mapper-editor-wrapper-styles {
+    table.o1l-library-style ::deep {
+        @include field-mapper-editor-table-styles;
+    }
+
+
+    ::deep button {
+        @include button-base-style;
+
+        &.o1l-library-style {
+            &.o1l-btn-remove, &.o1l-btn-add {
+                font-size: 1.4rem;
+            }
+        }
+    }
+}
+
+@mixin field-mapper-editor-wrapper-styles-nested-component {
+    table.o1l-library-style {
+        @include field-mapper-editor-table-styles;
+    }
+
+    button {
+        @include button-base-style;
+
+        &.o1l-library-style {
+            &.o1l-btn-remove, &.o1l-btn-add {
+                font-size: 1.4rem;
+            }
+        }
+    }
+}
+
+@mixin field-mapper-editor-table-styles {
+    --o1l-use-danger-color: var(--o1l-danger-color, #{$default-danger});
+
+    @include table-defaults;
+
+    tbody {
+        tr {
+            th, td {
+                &:has(.mapping-rule-picker-wrapper), &:has(.combine-fields-wrapper) {
+                    vertical-align: top;
+                }
+
+                > div {
+                    display: flex;
+                    gap: .5em;
+
+                    &.combine-fields-wrapper, &.mapping-rule-picker-wrapper {
+                        flex-direction: column;
+
+                        &.combine-fields-wrapper {
+                            align-self: flex-start;
+                            justify-self: flex-start;
+
+                            .combined-field {
+                                display: flex;
+                                gap: .2em;
+
+                                > div {
+                                    display: flex;
+                                    gap: .5em;
+                                }
+                            }
+                        }
+
+                        button {
+                            &.o1l-library-style {
+                                &.o1l-btn-remove, &.o1l-btn-add {
+                                    font-size: 1.4rem;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .field-info-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+
+        .field-name-wrapper {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+
+            .required-field {
+                color: var(--o1l-use-danger-color);
+            }
+        }
+    }
+}

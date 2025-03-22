@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 
 using DataImportUtility.Models;
-using DataImportUtility.TransformOperations;
+using DataImportUtility.ValueTransformations;
 
 namespace DataImportUtility.Tests.ValueTransformTests;
 
@@ -20,9 +20,9 @@ public class CombineFieldsOperationTests
         // Arrange
         var prevTransformResult = new TransformationResult() { Value = prevResult };
 
-        var operation = new CombineFieldsOperation()
+        var operation = new CombineFieldsTransformation()
         {
-            OperationDetail = operationDetail,
+            TransformationDetail = operationDetail,
             SourceFieldTransforms = [new() { Field = new() { FieldName = "Field 1", ImportedDataFile = new(), ForTableName = string.Empty } }]
         };
 
@@ -62,9 +62,9 @@ public class CombineFieldsOperationTests
             .Select(importField => new FieldTransformation(importField))
             .ToList();
 
-        var operation = new CombineFieldsOperation()
+        var operation = new CombineFieldsTransformation()
         {
-            OperationDetail = operationDetail,
+            TransformationDetail = operationDetail,
             SourceFieldTransforms = fieldTransforms
         };
 

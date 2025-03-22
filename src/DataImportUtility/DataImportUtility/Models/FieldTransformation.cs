@@ -211,7 +211,9 @@ public class FieldTransformation : IDisposable
                         .Select(x => new TransformationResult()
                         {
                             OriginalValue = x?.ToString(),
-                            Value = x?.ToString()
+                            OriginalValueType = x?.GetType() ?? typeof(string),
+                            Value = x?.ToString(),
+                            CurrentValueType = x?.GetType() ?? typeof(string)
                         })];
             }
             TransformationResults = [.. (await Apply(TransformationResults, ct))];
@@ -262,12 +264,16 @@ public class FieldTransformation : IDisposable
             return new() { ErrorMessage = $"The field {Field.FieldName} does not exist in the data row." };
         }
 
+        var dataType = dataRow.Table.Columns[Field.FieldName]?.DataType ?? typeof(string);
+
         return (await Apply([dataRow[Field.FieldName]], ct)).FirstOrDefault()
             ?? new()
             {
                 ErrorMessage = "The transformation produced no result.",
                 OriginalValue = dataRow[Field.FieldName]?.ToString(),
-                Value = dataRow[Field.FieldName]?.ToString()
+                OriginalValueType = dataType,
+                Value = dataRow[Field.FieldName]?.ToString(),
+                CurrentValueType = dataType
             };
     }
 

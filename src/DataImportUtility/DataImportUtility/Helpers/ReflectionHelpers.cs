@@ -6,7 +6,6 @@ using DataImportUtility.Abstractions;
 using DataImportUtility.Models;
 
 namespace DataImportUtility.Helpers;
-
 internal static class ReflectionHelpers
 {
     public static FieldMapping AsFieldMapping(this PropertyInfo prop, bool forceRequired = false)

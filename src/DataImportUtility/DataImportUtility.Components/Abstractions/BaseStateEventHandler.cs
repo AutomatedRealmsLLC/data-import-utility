@@ -64,6 +64,7 @@ public abstract class BaseStateEventHandler : INotifyPropertyChanged, INotifyPro
         OnStatePropertyChanged?.Invoke(propertyName);
         OnNotifyStateChanged?.Invoke();
     }
+
     /// <summary>
     /// Notifies that a property has changed.
     /// </summary>

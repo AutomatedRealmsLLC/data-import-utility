@@ -1,0 +1,21 @@
+﻿@using DataImportUtility.SampleApp.Client.Models
+@using DataImportUtility.Components.FieldMappingComponents
+@using DataImportUtility.Models
+
+@inherits FieldMapperEditorBase
+
+<div class="field-mapper-editor-wrapper">
+    @base.Render
+</div>
+
+@code {
+    protected override RenderFragment ItemContentTemplate(FieldMapping curField) =>
+        curField.FieldName != nameof(TargetRecord.IgnoreField1)
+        ? base.ItemContentTemplate(curField)
+        : 
+        @<tr>
+            <td>I'm Overridden</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+        </tr>;
+}

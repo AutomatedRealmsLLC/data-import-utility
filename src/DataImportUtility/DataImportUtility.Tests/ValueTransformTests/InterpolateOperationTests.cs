@@ -1,12 +1,12 @@
 ﻿using DataImportUtility.Models;
-using DataImportUtility.TransformOperations;
+using DataImportUtility.ValueTransformations;
 
 namespace DataImportUtility.Tests.ValueTransformTests;
 
 public class InterpolateOperationTests
 {
     /// <summary>
-    /// Tests that the <see cref="InterpolateOperation"/> works as expected.
+    /// Tests that the <see cref="InterpolateTransformation"/> works as expected.
     /// </summary>
     [Theory]
     [InlineData("280-190533-1", "Sample For ${0}", "Sample For 280-190533-1")]
@@ -17,9 +17,9 @@ public class InterpolateOperationTests
     private async Task InterpolateOperation_WorksOnValidInput(string input, string format, string expected)
     {
         // Arrange
-        var operation = new InterpolateOperation()
+        var operation = new InterpolateTransformation()
         {
-            OperationDetail = format
+            TransformationDetail = format
         };
 
         // Act
@@ -31,7 +31,7 @@ public class InterpolateOperationTests
     }
 
     /// <summary>
-    /// Tests that the <see cref="InterpolateOperation"/> works as expected when chained with another operation (using <see cref="MapOperation" />).
+    /// Tests that the <see cref="InterpolateTransformation"/> works as expected when chained with another operation (using <see cref="MapTransformation" />).
     /// </summary>
     [Fact]
     private async Task InterpolateOperation_ChainedWithMapOperation()
@@ -46,12 +46,12 @@ public class InterpolateOperationTests
         };
         var expected = "Mapped";
 
-        var interpolateOperation = new InterpolateOperation()
+        var interpolateOperation = new InterpolateTransformation()
         {
-            OperationDetail = interpolationPattern
+            TransformationDetail = interpolationPattern
         };
 
-        var mapOperation = new MapOperation()
+        var mapOperation = new MapTransformation()
         {
             FieldName = fieldName,
             ValueMappings = valueMappings

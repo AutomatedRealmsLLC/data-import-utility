@@ -1,11 +1,15 @@
 @import "../../Sass/ButtonMixins";
-@import '../../Sass/ModalMixins';
+@import "../../Sass/ModalMixins";
+@import "FieldMapperEditorMixins";
 
-.o1l-modal.o1l-library-style
-{
+.o1l-modal.o1l-library-style {
     @include modal-defaults;
 
     button {
         @include button-base-style;
+    }
+
+    ::deep .field-mapper-editor-wrapper {
+        @include field-mapper-editor-wrapper-styles-nested-component;
     }
 }

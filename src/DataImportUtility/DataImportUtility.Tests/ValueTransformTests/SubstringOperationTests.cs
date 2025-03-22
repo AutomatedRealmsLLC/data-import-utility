@@ -2,14 +2,14 @@
 
 using DataImportUtility.Abstractions;
 using DataImportUtility.Tests.SampleData;
-using DataImportUtility.TransformOperations;
+using DataImportUtility.ValueTransformations;
 
 namespace DataImportUtility.Tests.ValueTransformTests;
 
 public class SubstringOperationTests
 {
     /// <summary>
-    /// Tests that the <see cref="SubstringOperation"/> works as expected.
+    /// Tests that the <see cref="SubstringTransformation"/> works as expected.
     /// </summary>
     [Theory]
     // Positive start index, positive max length
@@ -35,7 +35,7 @@ public class SubstringOperationTests
     private async Task SubstringOperation_WorksOnValidInput(string input, int startIndex, int? maxLength, string expected)
     {
         // Arrange
-        var operation = new SubstringOperation()
+        var operation = new SubstringTransformation()
         {
             StartIndex = startIndex,
             MaxLength = maxLength
@@ -49,7 +49,7 @@ public class SubstringOperationTests
         Assert.Equal(expected, result.Value);
     }
     /// <summary>
-    /// Tests that the <see cref="SubstringOperation"/> fails when applied to a collection.
+    /// Tests that the <see cref="SubstringTransformation"/> fails when applied to a collection.
     /// </summary>
     [Fact]
     private async Task SubstringOperation_FailsOnCollection()
@@ -59,7 +59,7 @@ public class SubstringOperationTests
         var startIndex = 0;
         var maxLength = 5;
 
-        var operation = new SubstringOperation()
+        var operation = new SubstringTransformation()
         {
             StartIndex = startIndex,
             MaxLength = maxLength

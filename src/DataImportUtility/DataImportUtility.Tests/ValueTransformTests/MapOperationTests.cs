@@ -1,21 +1,21 @@
 ﻿using DataImportUtility.Abstractions;
 using DataImportUtility.Models;
 using DataImportUtility.Tests.SampleData;
-using DataImportUtility.TransformOperations;
+using DataImportUtility.ValueTransformations;
 
 namespace DataImportUtility.Tests.ValueTransformTests;
 
 public class MapOperationTests
 {
     /// <summary>
-    /// Tests that the <see cref="MapOperation"/> works as expected.
+    /// Tests that the <see cref="MapTransformation"/> works as expected.
     /// </summary>
     [Theory]
     [MemberData(nameof(ImportDataObjects.ValidInputData), MemberType = typeof(ImportDataObjects))]
     private async Task MapOperation_WorksOnValidInput(string? fieldName, string input, List<ValueMap> valueMappings, string expected)
     {
         // Arrange
-        var operation = new MapOperation()
+        var operation = new MapTransformation()
         {
             FieldName = fieldName,
             ValueMappings = valueMappings
@@ -29,7 +29,7 @@ public class MapOperationTests
         Assert.Equal(expected, result.Value);
     }
     /// <summary>
-    /// Tests that the <see cref="MapOperation"/> fails when applied to a collection.
+    /// Tests that the <see cref="MapTransformation"/> fails when applied to a collection.
     /// </summary>
     [Fact]
     private async Task MapOperation_FailsOnCollection()
@@ -42,7 +42,7 @@ public class MapOperationTests
             new() { ImportedFieldName = fieldName, FromValue = "1234567890", ToValue = "Mapped" }
         };
 
-        var operation = new MapOperation()
+        var operation = new MapTransformation()
         {
             FieldName = fieldName,
             ValueMappings = valueMappings
@@ -57,7 +57,7 @@ public class MapOperationTests
     }
 
     /// <summary>
-    /// Tests that the <see cref="MapOperation"/> works as expected when chained with another operation (using <see cref="CalculateOperation" />).
+    /// Tests that the <see cref="MapTransformation"/> works as expected when chained with another operation (using <see cref="CalculateTransformation" />).
     /// </summary>
     [Fact]
     private async Task MapOperation_ChainedWithCalculateOperation()
@@ -73,15 +73,15 @@ public class MapOperationTests
         var decimalPlaces = 2;
         var expected = "33.01";
 
-        var mapOperation = new MapOperation()
+        var mapOperation = new MapTransformation()
         {
             FieldName = fieldName,
             ValueMappings = valueMappings
         };
 
-        var calculateOperation = new CalculateOperation()
+        var calculateOperation = new CalculateTransformation()
         {
-            OperationDetail = formula,
+            TransformationDetail = formula,
             DecimalPlaces = decimalPlaces
         };
 

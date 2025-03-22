@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp", "SampleApp\SampleApp.csproj", "{9429C237-2A35-43C1-8862-CF75E1977228}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data Import Library", "Data Import Library", "{A1D95C9B-51B2-4117-B6F7-3CBC5520B870}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImportUtility.SourceGenerator", "..\DataImportUtility\DataImportUtility.SourceGenerator\DataImportUtility.SourceGenerator.csproj", "{3EA197F9-9CF0-4A91-81DA-966313B5C1E2}"
@@ -18,16 +16,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\..\.github\workflows\gh-pages.yml = ..\..\.github\workflows\gh-pages.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImportUtility.SampleApp", "DataImportUtility.SampleApp\DataImportUtility.SampleApp.csproj", "{B4851100-441D-F062-A1D5-7FD7788EC562}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImportUtility.Tests", "..\DataImportUtility\DataImportUtility.Tests\DataImportUtility.Tests.csproj", "{E98D214E-F1FB-6688-5DC8-5C48D7B94822}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9429C237-2A35-43C1-8862-CF75E1977228}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9429C237-2A35-43C1-8862-CF75E1977228}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9429C237-2A35-43C1-8862-CF75E1977228}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9429C237-2A35-43C1-8862-CF75E1977228}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3EA197F9-9CF0-4A91-81DA-966313B5C1E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3EA197F9-9CF0-4A91-81DA-966313B5C1E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EA197F9-9CF0-4A91-81DA-966313B5C1E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -40,6 +40,14 @@ Global
 		{CD53ED0A-F28A-4D6B-8893-B1CB4EE02156}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD53ED0A-F28A-4D6B-8893-B1CB4EE02156}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD53ED0A-F28A-4D6B-8893-B1CB4EE02156}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4851100-441D-F062-A1D5-7FD7788EC562}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4851100-441D-F062-A1D5-7FD7788EC562}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4851100-441D-F062-A1D5-7FD7788EC562}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4851100-441D-F062-A1D5-7FD7788EC562}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E98D214E-F1FB-6688-5DC8-5C48D7B94822}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E98D214E-F1FB-6688-5DC8-5C48D7B94822}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E98D214E-F1FB-6688-5DC8-5C48D7B94822}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E98D214E-F1FB-6688-5DC8-5C48D7B94822}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,5 +56,10 @@ Global
 		{3EA197F9-9CF0-4A91-81DA-966313B5C1E2} = {A1D95C9B-51B2-4117-B6F7-3CBC5520B870}
 		{AFC96801-A173-478A-9655-BBAFAF1222C4} = {A1D95C9B-51B2-4117-B6F7-3CBC5520B870}
 		{CD53ED0A-F28A-4D6B-8893-B1CB4EE02156} = {A1D95C9B-51B2-4117-B6F7-3CBC5520B870}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {A1D95C9B-51B2-4117-B6F7-3CBC5520B870}
+		{E98D214E-F1FB-6688-5DC8-5C48D7B94822} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {38E125D5-75DF-4C31-A5CB-1377B69ABA9A}
 	EndGlobalSection
 EndGlobal
