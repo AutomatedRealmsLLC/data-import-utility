@@ -1,4 +1,4 @@
-<!-- This only affects the class library projects and does not affect the Sample App project -->
+﻿<!-- This only affects the class library projects and does not affect the Sample App project -->
 
 <Project>
 
@@ -39,7 +39,11 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<NoWarn>CA1816</NoWarn>
+		<PackageOutputPath>../../../nupkg</PackageOutputPath>
+		<Authors>Humberto Cruz-Oyola Jr.</Authors>
+		<Copyright>$([System.DateTime]::Now.Year.ToString())</Copyright>
+		<PackageReleaseNotes>Initial File Import Rule Engine Project Setup</PackageReleaseNotes>
+		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
 	</PropertyGroup>
 
 </Project>

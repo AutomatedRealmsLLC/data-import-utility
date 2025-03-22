@@ -25,6 +25,15 @@
 		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 	</ItemGroup>
 
+	<PropertyGroup>
+		<Product>AutomatedRealms.DataImportUtility</Product>
+		<PackageId>AutomatedRealms.DataImportUtility</PackageId>
+		<AssemblyName>DataImportUtility</AssemblyName>
+		<RootNamespace>DataImportUtility</RootNamespace>
+		<Description>A library for importing data from CSV, Excel, and other structured files, and turning it into C# objects.</Description>
+		<PackageTags>Data Import, File Import, Utility, Excel, CSV</PackageTags>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\DataImportUtility.SourceGenerator\DataImportUtility.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
