@@ -1,8 +1,10 @@
 ﻿using System.Collections.Immutable;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 
 using DataImportUtility.Components.Abstractions;
+using DataImportUtility.Components.Extensions;
 using DataImportUtility.Models;
 
 namespace DataImportUtility.Components.FieldMappingComponents.Wrappers;
@@ -10,8 +12,10 @@ namespace DataImportUtility.Components.FieldMappingComponents.Wrappers;
 /// <summary>
 /// The base class for all field mapper wrappers.
 /// </summary>
-public class FieldMapperWrapperBase : FileImportUtilityComponentBase
+public abstract class FieldMapperWrapperBase : FileImportUtilityComponentBase
 {
+    [Inject, AllowNull] private IServiceProvider ServiceProvider { get; set; }
+
     /// <summary>
     /// Whether to show the dialog.
     /// </summary>
@@ -48,6 +52,17 @@ public class FieldMapperWrapperBase : FileImportUtilityComponentBase
     [Parameter] public EventCallback OnCancelClicked { get; set; }
 
     /// <summary>
+    /// The field mapper editor component to use for editing the field mappings.
+    /// </summary>
+    [CascadingParameter] public FieldMapperEditorBase? FieldMapperEditor { get; set; }
+
+    /// <summary>
+    /// The field mapper editor component to use for editing the field mappings.
+    /// </summary>
+    [AllowNull]
+    protected FieldMapperEditorBase _fieldMapperEditor;
+
+    /// <summary>
     /// A copy of the field mappings to edit.
     /// </summary>
     /// <remarks>
@@ -61,8 +76,33 @@ public class FieldMapperWrapperBase : FileImportUtilityComponentBase
     protected IEnumerable<FieldMapping> MissingReqFields => _editFieldMappings.Where(x => x.Required && x.IgnoreMapping);
 
     /// <inheritdoc />
-    protected override void OnInitialized()
-        => _editFieldMappings = [.. FieldMappings];
+    protected override Task OnInitializedAsync()
+    { 
+        _editFieldMappings = [.. FieldMappings];
+
+        // Use the field mapper editor type from the UI Options if one is specified
+        var uiOptions = ServiceProvider.GetService<DataFileMapperUiOptions>();
+        _fieldMapperEditor = uiOptions?.FieldMapperEditorComponentType is not null
+            ? (FieldMapperEditorBase)(Activator.CreateInstance(uiOptions.FieldMapperEditorComponentType)!)
+            : new FieldMapperEditor();
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Render the field mapper editor component.
+    /// </summary>
+    public RenderFragment RenderFieldMapperEditor => builder =>
+    {
+        var curElem = 0;
+        builder.OpenComponent(curElem++, _fieldMapperEditor.GetType());
+        // Set the parameters
+        builder.AddAttribute(curElem++, nameof(FieldMapperEditorBase.FieldMappings), FieldMappings);
+        builder.AddAttribute(curElem++, nameof(FieldMapperEditorBase.FieldDescriptors), FieldDescriptors);
+        builder.AddAttribute(curElem++, nameof(FieldMapperEditorBase.ApplyDefaultCss), ApplyDefaultCss);
+        builder.AddAttribute(curElem++, nameof(FieldMapperEditorBase.OnDraftFieldMappingsChanged), EventCallback.Factory.Create<IEnumerable<FieldMapping>>(this, HandleFieldMappingChanged));
+        builder.CloseComponent();
+    };
 
     /// <summary>
     /// Handles when the field mappings are changed.

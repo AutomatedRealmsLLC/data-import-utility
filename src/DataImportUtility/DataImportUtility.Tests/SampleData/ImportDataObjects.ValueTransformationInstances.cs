@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 using DataImportUtility.Abstractions;
-using DataImportUtility.TransformOperations;
+using DataImportUtility.ValueTransformations;
 
 namespace DataImportUtility.Tests.SampleData;
 
@@ -23,27 +23,27 @@ internal static partial class ImportDataObjects
     /// <summary>
     /// The calculate operation instance to use for testing.
     /// </summary>
-    internal static CalculateOperation CalculateOperation => ValueTransformations.OfType<CalculateOperation>().First().Clone<CalculateOperation>();
+    internal static CalculateTransformation CalculateOperation => ValueTransformations.OfType<CalculateTransformation>().First().Clone<CalculateTransformation>();
     /// <summary>
     /// The combine fields operation instance to use for testing.
     /// </summary>
-    internal static CombineFieldsOperation CombineFieldsOperation => ValueTransformations.OfType<CombineFieldsOperation>().First().Clone<CombineFieldsOperation>();
+    internal static CombineFieldsTransformation CombineFieldsOperation => ValueTransformations.OfType<CombineFieldsTransformation>().First().Clone<CombineFieldsTransformation>();
     /// <summary>
     /// The interpolate operation instance to use for testing.
     /// </summary>
-    internal static InterpolateOperation InterpolateOperation => ValueTransformations.OfType<InterpolateOperation>().First().Clone<InterpolateOperation>();
+    internal static InterpolateTransformation InterpolateOperation => ValueTransformations.OfType<InterpolateTransformation>().First().Clone<InterpolateTransformation>();
     /// <summary>
     /// The map operation instance to use for testing.
     /// </summary>
-    internal static MapOperation MapOperation => ValueTransformations.OfType<MapOperation>().First().Clone<MapOperation>();
+    internal static MapTransformation MapOperation => ValueTransformations.OfType<MapTransformation>().First().Clone<MapTransformation>();
     /// <summary>
     /// The regex match operation instance to use for testing.
     /// </summary>
-    internal static RegexMatchOperation RegexMatchOperation => ValueTransformations.OfType<RegexMatchOperation>().First().Clone<RegexMatchOperation>();
+    internal static RegexMatchTransformation RegexMatchOperation => ValueTransformations.OfType<RegexMatchTransformation>().First().Clone<RegexMatchTransformation>();
     /// <summary>
     /// The substring operation instance to use for testing.
     /// </summary>
-    internal static SubstringOperation SubstringOperation => ValueTransformations.OfType<SubstringOperation>().First().Clone<SubstringOperation>();
+    internal static SubstringTransformation SubstringOperation => ValueTransformations.OfType<SubstringTransformation>().First().Clone<SubstringTransformation>();
 
     private static readonly object _valueTransformationPreparationLock = new();
 
@@ -54,30 +54,30 @@ internal static partial class ImportDataObjects
         {
             if (_valueTransformations is { Count: >0 }) { return; }
 
-            _valueTransformations = Enum.GetValues<ValueTransformationType>().Select(x => x.CreateNewInstance()!).ToList();
+            _valueTransformations = Enum.GetValues(typeof(ValueTransformationType)).OfType<ValueTransformationType>().Select(x => x.CreateNewInstance()!).ToList();
 
-            foreach (var ruleType in Enum.GetValues<ValueTransformationType>())
+            foreach (var ruleType in Enum.GetValues(typeof(ValueTransformationType)).OfType<ValueTransformationType>())
             {
                 var newRule = ruleType.CreateNewInstance();
                 // Setup the default parameters for each operation
                 switch (newRule)
                 {
-                    case CalculateOperation calculateOperation:
-                        calculateOperation.OperationDetail = "${0} + .01";
+                    case CalculateTransformation calculateOperation:
+                        calculateOperation.TransformationDetail = "${0} + .01";
                         break;
-                    case CombineFieldsOperation combineFieldsOperation:
+                    case CombineFieldsTransformation combineFieldsOperation:
 
                         break;
-                    case InterpolateOperation interpolationOperation:
+                    case InterpolateTransformation interpolationOperation:
 
                         break;
-                    case MapOperation mapOperation:
+                    case MapTransformation mapOperation:
 
                         break;
-                    case RegexMatchOperation regexMatchOperation:
+                    case RegexMatchTransformation regexMatchOperation:
 
                         break;
-                    case SubstringOperation substringOperation:
+                    case SubstringTransformation substringOperation:
 
                         break;
                 }

@@ -34,7 +34,7 @@ public partial class ValueTransformationConfiguration : FileImportUtilityCompone
     /// </summary>
     [Parameter] public EventCallback<TransformationResult> NewTransformationResultAvailable { get; set; }
 
-    private ValueTransformationType _selectedTransformationType = ValueTransformationType.SubstringOperation;
+    private ValueTransformationType _selectedTransformationType = ValueTransformationType.SubstringTransformation;
 
     [AllowNull]
     private ValueTransformationBase _selectedTransformation;

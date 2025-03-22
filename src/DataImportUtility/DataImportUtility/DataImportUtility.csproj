@@ -2,9 +2,17 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<Nullable>enable</Nullable>
+		<TargetFrameworks>netstandard2.0;netstandard2.1;net462;net47;net471;net472;net48;net481;net5.0;net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
 		<LangVersion>13.0</LangVersion>
-		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Product>AutomatedRealms.DataImportUtility</Product>
+		<PackageId>AutomatedRealms.DataImportUtility</PackageId>
+		<AssemblyName>DataImportUtility</AssemblyName>
+		<RootNamespace>DataImportUtility</RootNamespace>
+		<Description>A library for importing data from CSV, Excel, and other structured files, and turning it into C# objects.</Description>
+		<PackageTags>Data Import, File Import, Utility, Excel, CSV</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

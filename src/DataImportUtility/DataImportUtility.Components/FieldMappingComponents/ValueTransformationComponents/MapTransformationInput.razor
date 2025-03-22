@@ -1,6 +1,6 @@
-@using DataImportUtility.TransformOperations
+@using DataImportUtility.ValueTransformations
 
-@inherits ValueTransformationInputBase<MapOperation>
+@inherits ValueTransformationInputBase<MapTransformation>
 
 <div class="mapping-transformation-input">
     <div class="key-value-pairs">
@@ -22,6 +22,12 @@
                         <button type="button" class="add-pair" @onclick=AddValueMapping>Add</button>
                     </td>
                 </tr>
+                @if (!string.IsNullOrWhiteSpace(_errorMessage))
+                {
+                    <tr>
+                        <td colspan="3" class="text-danger">@_errorMessage</td>
+                    </tr>
+                }
             </thead>
             <tbody>
                 @if (ValueTransformation.ValueMappings.Count == 0)
@@ -33,8 +39,8 @@
                 @foreach (var kvp in ValueTransformation.ValueMappings)
                 {
                     <tr>
-                        <td>@kvp.FromValue</td>
-                        <td>@kvp.ToValue</td>
+                        <td>@(kvp.FromValue is null ? "<null>" : string.IsNullOrWhiteSpace(kvp.FromValue) ? "<blank>" : kvp.FromValue)</td>
+                        <td>@(kvp.ToValue is null ? "<null>" : string.IsNullOrWhiteSpace(kvp.ToValue) ? "<blank>" : kvp.ToValue)</td>
                         <td>
                             <button type="button" class="remove-pair" @onclick="_ => RemoveValueMapping(kvp)">Remove</button>
                         </td>

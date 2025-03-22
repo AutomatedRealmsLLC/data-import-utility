@@ -433,6 +433,7 @@ public abstract partial class MappingRuleBase : IDisposable
         => SourceFieldTranformations = [];
     #endregion SourceFields Methods
 
+    #region Clone Methods
     /// <summary>
     /// Clones the rule.
     /// </summary>
@@ -451,6 +452,7 @@ public abstract partial class MappingRuleBase : IDisposable
     /// <returns>A new rule that is a deep clone of the original.</returns>
     public virtual TRuleType Clone<TRuleType>() where TRuleType : MappingRuleBase
         => (TRuleType)Clone();
+    #endregion Clone Methods
 
     /// <inheritdoc />
     public virtual void Dispose()

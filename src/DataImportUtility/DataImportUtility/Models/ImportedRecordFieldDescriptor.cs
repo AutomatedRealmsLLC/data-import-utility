@@ -30,7 +30,7 @@ public class ImportedRecordFieldDescriptor
     /// <summary>
     /// The imported field name.
     /// </summary>
-    public /*required*/ string FieldName { get; set; } = string.Empty;
+    public required string FieldName { get; init; }
 
     /// <summary>
     /// The value type for the source field.
@@ -43,7 +43,7 @@ public class ImportedRecordFieldDescriptor
         {
             if (value == _fieldType) { return; }
             _fieldType = value;
-            FieldTypeString = value.FullName!.ToString();
+            _fieldTypeString = value.FullName!.ToString();
         }
     }
     private Type _fieldType = typeof(object);
@@ -51,7 +51,17 @@ public class ImportedRecordFieldDescriptor
     /// <summary>
     /// The value type for the source field as a string.
     /// </summary>
-    public string FieldTypeString { get; set; } = typeof(object).FullName!.ToString();
+    public string FieldTypeString
+    {
+        get => _fieldTypeString;
+        set
+        {
+            if (value == _fieldTypeString) { return; }
+            _fieldTypeString = value;
+            _fieldType = Type.GetType(value) ?? typeof(object);
+        }
+    }
+    private string _fieldTypeString = $"{typeof(object).FullName}";
 
     /// <summary>
     /// The sample values for the field.
@@ -65,7 +75,7 @@ public class ImportedRecordFieldDescriptor
             {
                 UpdateValueSet(false);
             }
-            return _valueSet ?? Array.Empty<object>();
+            return _valueSet ?? [];
         }
         private set
         {

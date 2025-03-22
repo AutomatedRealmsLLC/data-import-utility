@@ -11,7 +11,7 @@ namespace DataImportUtility.Components.FieldMappingComponents.FieldTransformatio
 /// </summary>
 public partial class FieldTransformationConfiguration : FileImportUtilityComponentBase
 {
-    private const ValueTransformationType _defaultTransformationType = ValueTransformationType.InterpolateOperation;
+    private const ValueTransformationType _defaultTransformationType = ValueTransformationType.InterpolateTransformation;
 
     /// <summary>
     /// Whether to show the dialog.

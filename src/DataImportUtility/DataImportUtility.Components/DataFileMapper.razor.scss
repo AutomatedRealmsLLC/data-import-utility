@@ -1,6 +1,7 @@
 @import 'Sass/AccessibilityStyles';
 @import 'Sass/ButtonMixins';
 @import 'Sass/TableMixins';
+@import 'Sass/ControlStyles';
 
 .data-file-mapper-wrapper.o1l-library-style {
     display: grid;
@@ -22,6 +23,12 @@
     .preview-data-table-wrapper {
         grid-area: pd;
         overflow: auto;
+    }
+
+    .file-loader-wrapper {
+        grid-area: dd;
+        padding: 0 1rem;
+        font-size: 2em;
     }
 
     ::deep {

@@ -1,11 +1,11 @@
-﻿using DataImportUtility.TransformOperations;
+﻿using DataImportUtility.ValueTransformations;
 
 namespace DataImportUtility.Tests.ValueTransformTests;
 
 public class RegexMatchOperationTests
 {
     /// <summary>
-    /// Tests that the <see cref="RegexMatchOperation"/> works as expected.
+    /// Tests that the <see cref="RegexMatchTransformation"/> works as expected.
     /// </summary>
     [Theory]
     [InlineData("280-190533-1", @"\d+", @"[""280"",""190533"",""1""]")]
@@ -14,9 +14,9 @@ public class RegexMatchOperationTests
     private async Task RegexMatchOperation_WorksOnValidInput(string input, string regExPattern, string expected)
     {
         // Arrange
-        var operation = new RegexMatchOperation()
+        var operation = new RegexMatchTransformation()
         {
-            OperationDetail = regExPattern
+            TransformationDetail = regExPattern
         };
 
         // Act
@@ -28,7 +28,7 @@ public class RegexMatchOperationTests
     }
 
     /// <summary>
-    /// Tests that the <see cref="RegexMatchOperation"/> works as expected when chained with another operation (using <see cref="InterpolateOperation" />).
+    /// Tests that the <see cref="RegexMatchTransformation"/> works as expected when chained with another operation (using <see cref="InterpolateTransformation" />).
     /// </summary>
     [Fact]
     private async Task RegexMatchOperation_ChainedWithInterpolateOperation()
@@ -39,14 +39,14 @@ public class RegexMatchOperationTests
         var interpolationPattern = "Sample For ${0}|${1}";
         var expected = "Sample For 280|190533";
 
-        var regExOperation = new RegexMatchOperation()
+        var regExOperation = new RegexMatchTransformation()
         {
-            OperationDetail = regExPattern
+            TransformationDetail = regExPattern
         };
 
-        var interpolateOperation = new InterpolateOperation()
+        var interpolateOperation = new InterpolateTransformation()
         {
-            OperationDetail = interpolationPattern
+            TransformationDetail = interpolationPattern
         };
 
         // Act

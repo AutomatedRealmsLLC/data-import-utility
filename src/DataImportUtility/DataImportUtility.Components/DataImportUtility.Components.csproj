@@ -1,22 +1,56 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+	</PropertyGroup>
 
+	<PropertyGroup>
+		<Product>AutomatedRealms.DataImportUtility.Components</Product>
+		<PackageId>AutomatedRealms.DataImportUtility.Components</PackageId>
+		<AssemblyName>DataImportUtility.Components</AssemblyName>
+		<RootNamespace>DataImportUtility.Components</RootNamespace>
+		<Description>The Blazor Component Library for the AutomatedRealms.DataImportUtility.</Description>
+		<PackageTags>Data Import, File Import, Utility, Blazor, Components, Excel, CSV</PackageTags>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <SupportedPlatform Include="browser" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Remove="compilerconfig.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="compilerconfig.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DataImportUtility\DataImportUtility.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<TypeScriptOutDir>wwwroot\js</TypeScriptOutDir>
+		<TypeScriptTarget>ES2018</TypeScriptTarget>
+		<TypeScriptAlwaysStrict>true</TypeScriptAlwaysStrict>
+		<TypeScriptInclude>wwwroot\scripts\*.ts</TypeScriptInclude>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+		<TypeScriptRemoveComments>false</TypeScriptRemoveComments>
+		<TypeScriptSourceMap>true</TypeScriptSourceMap>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<TypeScriptRemoveComments>true</TypeScriptRemoveComments>
+		<TypeScriptSourceMap>false</TypeScriptSourceMap>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
+		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.8.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\DataImportUtility\DataImportUtility.csproj" />
+	</ItemGroup>
 
 </Project>

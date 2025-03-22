@@ -1,6 +1,6 @@
-@using DataImportUtility.TransformOperations
+@using DataImportUtility.ValueTransformations
 
-@inherits ValueTransformationInputBase<CalculateOperation>
+@inherits ValueTransformationInputBase<CalculateTransformation>
 
 
 <div class="substring-transformation-input">
@@ -14,7 +14,7 @@
         <input id="@($"formula_{Id}")"
                type="string"
                class="@DefaultCssClass"
-               @bind=ValueTransformation.OperationDetail
+               @bind=ValueTransformation.TransformationDetail
                @bind:event="oninput"
                @bind:after=HandleOperationDetailChanged />
     </div>

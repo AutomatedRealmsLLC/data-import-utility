@@ -1,7 +1,8 @@
 {
   "profiles": {
     "DebugGenerator": {
-      "commandName": "DebugRoslynComponent"
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\DataImportUtility\\DataImportUtility.csproj"
     }
   }
 }

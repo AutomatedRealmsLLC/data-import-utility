@@ -240,10 +240,17 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
         {
             DataFile = await _dataReaderService.ReadImportFile(_fileReadRequest);
             // TODO: Use the IgnoreFields and RequiredFields properties here
+
+            // Refresh the ImportedRecordFieldDescriptors
+            DataFile.RefreshFieldDescriptors(false);
+            DataFile.RefreshFieldMappings(false);
+
+            // Update target type auto-mappings
             if (_targetType is not null)
             {
                 DataFile.SetTargetType(_targetType, autoMatchFields: true);
             }
+
             FileReadState = FileReadState.Success;
         }
         catch (Exception ex)

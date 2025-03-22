@@ -1,11 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using DataImportUtility.Abstractions;
-using DataImportUtility.Extensions;
 
 namespace DataImportUtility.Models;
 
@@ -19,7 +19,7 @@ public class FieldMapping
     /// <summary>
     /// The name of the field.
     /// </summary>
-    public /*required*/ string FieldName { get; /*init*/ set; } = string.Empty;
+    public required string FieldName { get; init; }
 
     /// <summary>
     /// The type of the field.
@@ -94,7 +94,7 @@ public class FieldMapping
     /// <summary>
     /// Whether to ignore the mapping.
     /// </summary>
-    //[MemberNotNullWhen(false, nameof(MappingRule))]
+    [MemberNotNullWhen(false, nameof(MappingRule))]
     public bool IgnoreMapping => MappingRuleType == MappingRuleType.IgnoreRule
         || (MappingRule?.IsEmpty ?? true);
 
@@ -132,12 +132,16 @@ public class FieldMapping
         return forRet;
     }
 
-    internal bool Validate(TransformationResult? transformedResult, /*[NotNullWhen(false)]*/ out List<ValidationResult>? validationResults, bool useCache = true)
+#if !NETCOREAPP3_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
+    internal bool Validate(TransformationResult? transformedResult, [NotNullWhen(false)] out List<ValidationResult>? validationResults, bool useCache = true)
+#else
+    internal bool Validate(TransformationResult? transformedResult, [NotNullWhen(false)] out List<ValidationResult>? validationResults, bool useCache = true)
+#endif
     {
         if (transformedResult?.Value is null)
         {
             validationResults = Required ? [new ValidationResult("The field is required.", [FieldName])] : null;
-            if (validationResults is { Count: > 0})
+            if (validationResults is { Count: > 0 })
             {
                 _valueValidationResults.TryAdd("<null>", validationResults);
             }
@@ -208,7 +212,7 @@ public class FieldMapping
     /// </summary>
     /// <param name="forValue">The value to get the validation errors for.</param>
     /// <returns>The validation errors for the field mapping.</returns>
-    public ImmutableList<ValidationResult> GetValidationErrors(string forValue) 
+    public ImmutableList<ValidationResult> GetValidationErrors(string forValue)
         => _valueValidationResults.TryGetValue(forValue, out var results) && results is not null
             ? [.. results.Where(x => !string.IsNullOrWhiteSpace(x.ErrorMessage))]
             : [];

@@ -1,5 +1,5 @@
 @using DataImportUtility.Components.FieldMappingComponents.FieldTransformationComponents
-@using DataImportUtility.TransformOperations
+@using DataImportUtility.ValueTransformations
 
 @inherits FileImportUtilityComponentBase
 
@@ -9,7 +9,7 @@
      data-mapper-state="@MapperStateId">
     @switch (ValueTransformation)
     {
-        case CombineFieldsOperation combineFieldsOperation:
+        case CombineFieldsTransformation combineFieldsOperation:
             @* <CombineFieldsOperationDetails CombineFieldsOperation=combineFieldsOperation /> *@
             <button type="button" class="@DefaultCssClass">
                 Configure Fields
@@ -20,14 +20,22 @@
                                            ApplyDefaultCss=ApplyDefaultCss
                                            OnAfterInput=HandleOperationDetailChanged />
             break;
-        case SubstringOperation substringOperation:
+            /*
+        case ConditionalTransformation conditionalOperation:
+            <ConditionalValueTransformationInput ValueTransformation=conditionalOperation
+                                                 Id=_id
+                                                 ApplyDefaultCss=ApplyDefaultCss
+                                                 OnAfterInput=HandleOperationDetailChanged />
+            break;
+            */
+        case SubstringTransformation substringOperation:
             <SubstringValueTransformationInput ValueTransformation=substringOperation
                                                Id=_id
                                                ApplyDefaultCss=ApplyDefaultCss
                                                OnAfterInput=HandleOperationDetailChanged />
             break;
 
-        case MapOperation mapOperation:
+        case MapTransformation mapOperation:
             <MapTransformationInput ValueTransformation=mapOperation
                                     Id=_id
                                     ApplyDefaultCss=ApplyDefaultCss
@@ -35,14 +43,14 @@
 
             break;
 
-        case CalculateOperation calculateOperation:
+        case CalculateTransformation calculateOperation:
             <CalculateValueTransformationInput ValueTransformation=calculateOperation
                                                Id=_id
                                                ApplyDefaultCss=ApplyDefaultCss
                                                OnAfterInput=HandleOperationDetailChanged />
             break;
-        case RegexMatchOperation regexMatchOperation:
-        case InterpolateOperation interpolateOperation:
+        case RegexMatchTransformation regexMatchOperation:
+        case InterpolateTransformation InterpolateTransformation:
         // If the thing we are doing the interpolation on is a single string, we will only display items relevant to a placeholder for
         // that string.  If it is a list of strings, we will display the list of strings and the placeholder.
         default:
@@ -63,8 +71,8 @@
         </thead>
         <tbody>
             <tr>
-                <td>@_myTransformationResult.OriginalValue</td>
-                <td>@_myTransformationResult.Value</td>
+                <td>@(_myTransformationResult.OriginalValue is null ? "<null>" : string.IsNullOrWhiteSpace(_myTransformationResult.OriginalValue) ? "<blank>" : _myTransformationResult.OriginalValue)</td>
+                <td>@(_myTransformationResult.Value is null ? "<null>" : string.IsNullOrWhiteSpace(_myTransformationResult.Value) ? "<blank>" : _myTransformationResult.Value)</td>
                 <td>
                     @if (_myTransformationResult.WasFailure)
                     {

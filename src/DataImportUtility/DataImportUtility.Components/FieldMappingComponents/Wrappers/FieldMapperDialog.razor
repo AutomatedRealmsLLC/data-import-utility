@@ -17,10 +17,7 @@
             <section class="o1l-modal-body">
                 @if (Show)
                 {
-                    <FieldMapperEditor FieldMappings=FieldMappings
-                                       FieldDescriptors=FieldDescriptors
-                                       OnDraftFieldMappingsChanged=HandleFieldMappingChanged
-                                       ApplyDefaultCss=ApplyDefaultCss />
+                    @RenderFieldMapperEditor
                 }
             </section>
             <footer class="o1l-modal-footer">

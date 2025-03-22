@@ -13,7 +13,8 @@ public class MappingRuleTypeEnumExtensionTests
     /// Everything else uses the created class instance to test the extension methods.
     /// </remarks>
     public static IEnumerable<object[]> MappingRuleTypeWithInstanceData
-    { get; } = Enum.GetValues<MappingRuleType>()
+    { get; } = Enum.GetValues(typeof(MappingRuleType))
+        .OfType<MappingRuleType>()
         .Select(ruleType => new object[] { ruleType, ruleType.CreateNewInstance()! });
 
     /// <summary>
