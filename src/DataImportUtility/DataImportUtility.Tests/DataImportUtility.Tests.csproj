@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<!-- Target minimum set of frameworks needed to fully test -->
-		<TargetFrameworks>net462;net48;net6.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>net462;net48;net6.0;net8.0;net9.0</TargetFrameworks>
 		<LangVersion>13.0</LangVersion>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
@@ -24,7 +24,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\DataImportUtility\DataImportUtility.csproj" />
+		<ProjectReference Include="..\DataImportUtility\DataImportUtility.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
