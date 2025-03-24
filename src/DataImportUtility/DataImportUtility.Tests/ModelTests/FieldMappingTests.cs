@@ -47,8 +47,12 @@ public class FieldMappingTests
     public async Task FieldMapping_WithCombineFieldsRule_FieldTransform_ShouldReturnExpectedOutput()
     {
         // Arrange
-        // Add a new data table to the global ImportDataFile
+        // Add a new data table to the ImportDataFile
         var randomTableName = Guid.NewGuid().ToString();
+
+        var dataFile = ImportDataObjects.DataFile.Clone();
+        Assert.NotNull(dataFile.DataSet);
+        var mainDataSet = dataFile.DataSet;
 
         var dataTable = new DataTable(randomTableName);
         dataTable.Columns.Add("Field 1");
@@ -64,8 +68,8 @@ public class FieldMappingTests
         row["Field 2"] = "Test Input 4";
         dataTable.Rows.Add(row);
 
-        // Add the DataTable to the global ImportDataFile
-        ImportDataObjects.MainDataSet.Tables.Add(dataTable);
+        // Add the DataTable to the ImportDataFile
+        mainDataSet.Tables.Add(dataTable);
 
         var rule = ImportDataObjects.CombineFieldsRule;
         rule.RuleDetail = "${0}-----${1}";
@@ -77,14 +81,14 @@ public class FieldMappingTests
                 FieldName = "Field 1",
                 FieldType = typeof(string),
                 ForTableName = randomTableName,
-                ImportedDataFile = ImportDataObjects.DataFile
+                ImportedDataFile = dataFile
             },
             new ImportedRecordFieldDescriptor()
             {
                 FieldName = "Field 2",
                 FieldType = typeof(string),
                 ForTableName = randomTableName,
-                ImportedDataFile = ImportDataObjects.DataFile
+                ImportedDataFile = dataFile
             }
         };
 

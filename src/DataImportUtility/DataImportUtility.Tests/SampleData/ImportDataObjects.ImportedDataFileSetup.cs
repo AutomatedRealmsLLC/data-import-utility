@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 using DataImportUtility.Models;
@@ -116,40 +115,10 @@ internal static partial class ImportDataObjects
             Extension = importDataFile.Extension,
             HasHeader = importDataFile.HasHeader
         };
-
-        // Create a new DataSet instead of using DataSet.Copy()
-        var newDataSet = new DataSet(importDataFile.DataSet!.DataSetName);
-
-        // Copy each table manually to avoid enumeration issues
-        foreach (DataTable sourceTable in importDataFile.DataSet.Tables.Cast<DataTable>().ToArray())
-        {
-            var newTable = new DataTable(sourceTable.TableName);
-
-            // Copy schema
-            foreach (DataColumn sourceColumn in sourceTable.Columns)
-            {
-                newTable.Columns.Add(new DataColumn(sourceColumn.ColumnName, sourceColumn.DataType));
-            }
-
-            // Copy data
-            foreach (DataRow sourceRow in sourceTable.Rows)
-            {
-                var newRow = newTable.NewRow();
-                foreach (DataColumn column in sourceTable.Columns)
-                {
-                    newRow[column.ColumnName] = sourceRow[column.ColumnName];
-                }
-                newTable.Rows.Add(newRow);
-            }
-
-            newDataSet.Tables.Add(newTable);
-        }
-
-        clone.SetData(newDataSet);
+        clone.SetData(importDataFile.DataSet!.Copy());
         clone.RefreshFieldDescriptors(false);
         clone.SetTargetType(importDataFile.TargetType!);
         clone.RefreshFieldMappings(preserveValidMappings: false);
         return clone;
     }
 }
-

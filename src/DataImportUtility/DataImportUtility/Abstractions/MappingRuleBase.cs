@@ -96,11 +96,7 @@ public abstract partial class MappingRuleBase : IDisposable
             OnDefinitionChanged?.Invoke();
         }
     }
-#if NET8_0_OR_GREATER
     private ImmutableList<FieldTransformation> _sourceFields = [];
-#else
-    private ImmutableList<FieldTransformation> _sourceFields = ImmutableList<FieldTransformation>.Empty;
-#endif
 
     /// <summary>
     /// The source fields that are in use. This is a subset of the <see cref="SourceFieldTranformations"/> that have a
@@ -360,12 +356,7 @@ public abstract partial class MappingRuleBase : IDisposable
 
         var sourceFields = SourceFieldTranformations.ToList();
         sourceFields.Add(fieldTransformation);
-
-#if NET8_0_OR_GREATER
         SourceFieldTranformations = [.. sourceFields];
-#else
-        SourceFieldTranformations = sourceFields.ToImmutableList();
-#endif
         return fieldTransformation;
     }
 
@@ -378,11 +369,7 @@ public abstract partial class MappingRuleBase : IDisposable
         var sourceFields = SourceFieldTranformations.ToList();
         var index = sourceFields.IndexOf(oldFieldTransformation);
         sourceFields[index] = newFieldTransformation;
-#if NET8_0_OR_GREATER
         SourceFieldTranformations = [.. sourceFields];
-#else
-        SourceFieldTranformations = sourceFields.ToImmutableList();
-#endif
     }
 
     /// <summary>
@@ -406,11 +393,7 @@ public abstract partial class MappingRuleBase : IDisposable
 
         var sourceFields = SourceFieldTranformations.ToList();
         sourceFields[(int)index] = fieldTransformation;
-#if NET8_0_OR_GREATER
         SourceFieldTranformations = [.. sourceFields];
-#else
-        SourceFieldTranformations = sourceFields.ToImmutableList();
-#endif
     }
 
     /// <summary>
@@ -421,11 +404,7 @@ public abstract partial class MappingRuleBase : IDisposable
     {
         var sourceFields = SourceFieldTranformations.ToList();
         sourceFields.Remove(fieldTransformation);
-#if NET8_0_OR_GREATER
         SourceFieldTranformations = [.. sourceFields];
-#else
-        SourceFieldTranformations = sourceFields.ToImmutableList();
-#endif
     }
 
     /// <summary>
@@ -444,23 +423,14 @@ public abstract partial class MappingRuleBase : IDisposable
 
         var sourceFields = SourceFieldTranformations.ToList();
         sourceFields.RemoveAt(index);
-#if NET8_0_OR_GREATER
         SourceFieldTranformations = [.. sourceFields];
-#else
-        SourceFieldTranformations = sourceFields.ToImmutableList();
-#endif
     }
 
     /// <summary>
     /// Removes all <see cref="FieldTransformation"/> from the <see cref="SourceFieldTranformations"/> collection.
     /// </summary>
-#if NET8_0_OR_GREATER
     public virtual void ClearFieldTransformations()
         => SourceFieldTranformations = [];
-#else
-    public virtual void ClearFieldTransformations()
-        => SourceFieldTranformations = ImmutableList<FieldTransformation>.Empty;
-#endif
     #endregion SourceFields Methods
 
     #region Clone Methods
