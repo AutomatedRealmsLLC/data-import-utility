@@ -54,14 +54,4 @@
 		<ProjectReference Include="..\DataImportUtility\DataImportUtility.csproj" />
 	</ItemGroup>
 
-	<Target Name="EnsureTypeScriptCompiled" BeforeTargets="PrepareForBuild">
-		<ItemGroup>
-			<TypeScriptCompile Include="wwwroot\scripts\*.ts" />
-		</ItemGroup>
-		<PropertyGroup>
-			<TypeScriptJSMapFiles Condition="'$(Configuration)' == 'Release'">false</TypeScriptJSMapFiles>
-		</PropertyGroup>
-		<Exec Command="npx tsc --outDir wwwroot\js wwwroot\scripts\file-mapper-funcs.ts $(TypeScriptJSMapFiles)" Condition="!Exists('wwwroot\js\file-mapper-funcs.js')" />
-		<Touch Files="wwwroot\js\file-mapper-funcs.js.map" AlwaysCreate="true" Condition="'$(Configuration)' == 'Release' AND !Exists('wwwroot\js\file-mapper-funcs.js.map')" />
-	</Target>
 </Project>

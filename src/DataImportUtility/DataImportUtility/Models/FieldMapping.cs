@@ -62,11 +62,7 @@ public class FieldMapping
     /// The validation attributes for the field.
     /// </summary>
     [JsonIgnore]
-#if NET8_0_OR_GREATER
     internal ImmutableArray<ValidationAttribute> ValidationAttributes { get; set; } = [];
-#else
-    internal ImmutableArray<ValidationAttribute> ValidationAttributes { get; set; } = ImmutableArray<ValidationAttribute>.Empty;
-#endif
 
     /// <summary>
     /// The validation results for the distinct values.
@@ -216,15 +212,8 @@ public class FieldMapping
     /// </summary>
     /// <param name="forValue">The value to get the validation errors for.</param>
     /// <returns>The validation errors for the field mapping.</returns>
-#if NET8_0_OR_GREATER
     public ImmutableList<ValidationResult> GetValidationErrors(string forValue)
         => _valueValidationResults.TryGetValue(forValue, out var results) && results is not null
             ? [.. results.Where(x => !string.IsNullOrWhiteSpace(x.ErrorMessage))]
             : [];
-#else
-    public ImmutableList<ValidationResult> GetValidationErrors(string forValue)
-        => _valueValidationResults.TryGetValue(forValue, out var results) && results is not null
-            ? results.Where(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)).ToImmutableList()
-            : ImmutableList<ValidationResult>.Empty;
-#endif
 }

@@ -36,6 +36,10 @@ public class CombineFieldsRuleTests : MappingRuleBaseTestContext
         // Arrange
         var randomTableName = Guid.NewGuid().ToString();
 
+        var dataFile = ImportDataObjects.DataFile.Clone();
+        Assert.NotNull(dataFile.DataSet);
+        var mainDataSet = dataFile.DataSet;
+
         var dataTable = new DataTable(randomTableName);
         dataTable.Columns.Add("Field 1");
         dataTable.Columns.Add("Field 2");
@@ -51,9 +55,9 @@ public class CombineFieldsRuleTests : MappingRuleBaseTestContext
         dataTable.Rows.Add(row);
 
         // Add the DataTable to the global ImportDataFile
-        ImportDataObjects.MainDataSet.Tables.Add(dataTable);
+        mainDataSet.Tables.Add(dataTable);
 
-        var rule = ImportDataObjects.CombineFieldsRule;
+        var rule = ImportDataObjects.CombineFieldsRule.Clone();
         rule.RuleDetail = "${0} ${1}";
 
         var fieldDescriptors = new[]
@@ -63,14 +67,14 @@ public class CombineFieldsRuleTests : MappingRuleBaseTestContext
                 FieldName = "Field 1",
                 FieldType = typeof(string),
                 ForTableName = randomTableName,
-                ImportedDataFile = ImportDataObjects.DataFile
+                ImportedDataFile = dataFile
             },
             new ImportedRecordFieldDescriptor()
             {
                 FieldName = "Field 2",
                 FieldType = typeof(string),
                 ForTableName = randomTableName,
-                ImportedDataFile = ImportDataObjects.DataFile
+                ImportedDataFile = dataFile
             }
         };
 
