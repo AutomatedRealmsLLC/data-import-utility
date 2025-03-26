@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 
 using DataImportUtility.Abstractions;
-using DataImportUtility.CustomExceptions;
 using DataImportUtility.Helpers;
 
 namespace DataImportUtility.Models;
@@ -205,7 +204,7 @@ public class ImportedDataFile
 
         foreach (var curTable in DataSet.Tables.OfType<DataTable>().Where(x => forTable is null || forTable == x.TableName) ?? [])
         {
-            if (onlyIfNotExists && TableDefinitions.TryGetFieldDescriptors(curTable.TableName, out var existDescriptors) && existDescriptors.Count > 0)
+            if (onlyIfNotExists && TableDefinitions.TryGetFieldDescriptors(curTable.TableName, out var existDescriptors) && existDescriptors is { Count: > 0 })
             {
                 continue;
             }
@@ -293,7 +292,7 @@ public class ImportedDataFile
         var table = DataSet.Tables[tableName]
             ?? throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
 
-        if (!TableDefinitions.TryGetFieldMappings(tableName, out var fieldMappings))
+        if (!TableDefinitions.TryGetFieldMappings(tableName, out var fieldMappings) || fieldMappings is null)
         {
             throw new ArgumentException($"The table '{tableName}' does not have any field mappings.");
         }
@@ -382,7 +381,8 @@ public class ImportedDataFile
     private static List<FieldMapping> MergeValidFieldMappings(DataTable curTable, FieldMapping[] fieldMappingSet, List<FieldMapping> existMappings)
     {
         // Make sure all the field mappings are still valid
-        var validFieldMappings = existMappings.Where(x => curTable.Columns.Contains(x.FieldName))
+        var validFieldMappings = existMappings
+            .Where(x => curTable.Columns.Contains(x.FieldName))
             .ToList();
 
         var mergedMappings = new List<FieldMapping>();
@@ -422,13 +422,13 @@ public class ImportedDataFile
             throw new InvalidOperationException("The target type must be set before trying to match fields.");
         }
 
-        if (!TableDefinitions.TryGetFieldMappings(tableName, out var mappableFields))
+        if (!TableDefinitions.TryGetFieldMappings(tableName, out var mappableFields) || mappableFields is null)
         {
             throw new ArgumentException($"The table '{tableName}' does not have any field mappings.");
         }
 
         RefreshFieldDescriptors(forTable: tableName);
-        if (!TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors))
+        if (!TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors) || fieldDescriptors is null)
         {
             throw new ArgumentException($"Failed to populate the field descriptors for the table '{tableName}'.");
         }
@@ -445,7 +445,7 @@ public class ImportedDataFile
 
             matchingField.MappingRule ??= MappingRuleType.CopyRule.CreateNewInstance();
 
-            if (matchingField.MappingRule!.SourceFieldTranformations.Any(x => x.Field is not null))
+            if (matchingField.MappingRule!.SourceFieldTransformations.Any(x => x.Field is not null))
             {
                 continue;
             }
@@ -475,11 +475,11 @@ public class ImportedDataFile
             throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
         }
 
-        if (!TableDefinitions.TryGetTableDefinition(tableName, out var tableDef))
+        if (!TableDefinitions.TryGetTableDefinition(tableName, out var tableDef) || tableDef is null)
         {
             RefreshFieldDescriptors(forTable: tableName);
             RefreshFieldMappings();
-            if (!TableDefinitions.TryGetTableDefinition(tableName, out tableDef))
+            if (!TableDefinitions.TryGetTableDefinition(tableName, out tableDef) || tableDef is null)
             {
                 throw new InvalidOperationException($"Failed to populate the field descriptors for the table '{tableName}'.");
             }
@@ -488,12 +488,12 @@ public class ImportedDataFile
         tableDef.FieldMappings = incomingFieldMappings.ToList();
         var foundDescriptors = TableDefinitions.TryGetFieldDescriptors(tableName, out var fieldDescriptors);
 
-        foreach(var fieldMapping in tableDef.FieldMappings)
+        foreach (var fieldMapping in tableDef.FieldMappings)
         {
             fieldMapping.ValidationAttributes = _targetTypeFieldMappings!.First(x => x.FieldName == fieldMapping.FieldName).ValidationAttributes;
-            foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTranformations ?? []).Where(sfd => sfd?.Field is not null))
+            foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTransformations ?? []).Where(sfd => sfd?.Field is not null))
             {
-                sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors!.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
+                sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
             }
         }
     }

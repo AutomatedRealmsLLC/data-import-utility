@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 using ExcelDataReader;
@@ -52,7 +51,7 @@ public static class FileReaderHelpers
                 await stream.ReadAsync(buffer, 0, bufferSize, ct);
                 await memoryStream.WriteAsync(buffer, 0, bufferSize, ct);
             }
-            
+
             memoryStream.Position = 0;
 
             using var reader = ExcelReaderFactory.CreateReader(

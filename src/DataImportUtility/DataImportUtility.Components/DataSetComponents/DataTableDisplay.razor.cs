@@ -1,11 +1,11 @@
 ﻿using System.Data;
 
-using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Components.JsInterop;
 using DataImportUtility.Components.State;
+
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace DataImportUtility.Components.DataSetComponents;
 
@@ -14,7 +14,7 @@ namespace DataImportUtility.Components.DataSetComponents;
 /// </summary>
 public partial class DataTableDisplay : FileImportUtilityComponentBase
 {
-    [Inject, AllowNull] private IJSRuntime JsRuntime { get; set; }
+    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
 
     /// <summary>
     /// The data table to display.

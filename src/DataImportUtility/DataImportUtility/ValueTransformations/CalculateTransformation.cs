@@ -1,12 +1,11 @@
-﻿using System.Numerics;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-
-using Jace;
 
 using DataImportUtility.Abstractions;
 using DataImportUtility.Helpers;
 using DataImportUtility.Models;
+
+using Jace;
 
 namespace DataImportUtility.ValueTransformations;
 
@@ -104,7 +103,7 @@ public static class CalculateOperationExtensions
             // Replace the transformation detail placeholders with the actual values
             foreach (var (index, value) in valuesToUse.Select((value, index) => (index, value)))
             {
-                resultValue = resultValue.Replace($"${{{index}}}", value);
+                resultValue = resultValue!.Replace($"${{{index}}}", value);
             }
         }
 
@@ -113,7 +112,7 @@ public static class CalculateOperationExtensions
         {
             foreach (Match match in placeholderMatches)
             {
-                resultValue = resultValue.Replace(match.Value, "0");
+                resultValue = resultValue!.Replace(match.Value, "0");
             }
         }
 

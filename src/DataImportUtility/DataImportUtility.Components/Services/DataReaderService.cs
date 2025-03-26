@@ -51,7 +51,7 @@ public class DataReaderService : IDataReaderService
         var dataTable = (importedDataFile.DataSet?.Tables[tableName]) ?? throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
         importedDataFile.RefreshFieldDescriptors(forTable: tableName);
 
-        if (!importedDataFile.TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors))
+        if (!importedDataFile.TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors) || fieldDescriptors is null)
         {
             throw new ArgumentException($"Failed to populate the field descriptors for the table '{tableName}'.");
         }
@@ -64,7 +64,7 @@ public class DataReaderService : IDataReaderService
                 mappableFields.FirstOrDefault(x => x.FieldName.ToStandardComparisonString() == colNameInvariant && x.FieldType == fieldDescriptor.FieldType)
                 ?? mappableFields.FirstOrDefault(x => x.FieldName.ToStandardComparisonString() == colNameInvariant);
 
-            if (matchingField?.MappingRule is null || matchingField.MappingRule.SourceFieldTranformations.Any(x => x.Field is not null))
+            if (matchingField?.MappingRule is null || matchingField.MappingRule.SourceFieldTransformations.Any(x => x.Field is not null))
             {
                 continue;
             }

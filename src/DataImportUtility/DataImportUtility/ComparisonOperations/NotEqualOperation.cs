@@ -25,13 +25,13 @@ public class NotEqualOperation : ComparisonOperationBase
             return true;
         }
 
-        var leftResult = await(LeftOperand?.Apply(result) ?? Task.FromResult(result with { Value = null }));
+        var leftResult = await (LeftOperand?.Apply(result) ?? Task.FromResult(result with { Value = null }));
         if (leftResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate left operand for {DisplayName} operation: {leftResult.ErrorMessage}");
         }
 
-        var rightResult = await(RightOperand?.Apply(result) ?? Task.FromResult(result with { Value = null }));
+        var rightResult = await (RightOperand?.Apply(result) ?? Task.FromResult(result with { Value = null }));
         if (rightResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate right operand for {DisplayName} operation: {rightResult.ErrorMessage}");

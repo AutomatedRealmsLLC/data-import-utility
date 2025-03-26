@@ -91,7 +91,7 @@ public static class InterpolateTransformationExtensions
         // We are using the syntax ${0} to indicate the value to interpolate
         for (var i = 0; i < valuesToUse.Length; i++)
         {
-            resultValue = resultValue.Replace($"${{{i}}}", valuesToUse[i] ?? string.Empty);
+            resultValue = resultValue!.Replace($"${{{i}}}", valuesToUse[i] ?? string.Empty);
         }
 
         return result with { Value = resultValue, CurrentValueType = typeof(string) };

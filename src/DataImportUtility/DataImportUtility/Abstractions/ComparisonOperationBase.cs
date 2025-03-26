@@ -16,7 +16,7 @@ public abstract class ComparisonOperationBase
     /// The display name of the operation
     /// </summary>
     public abstract string DisplayName { get; }
-    
+
     /// <summary>
     /// The description of the operation
     /// </summary>

@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-using DataImportUtility.Abstractions;
+﻿using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Services;
+
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DataImportUtility.Components.Extensions;
 

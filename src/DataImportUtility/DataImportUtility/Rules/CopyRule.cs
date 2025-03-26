@@ -38,14 +38,14 @@ public class CopyRule : MappingRuleBase
     [JsonIgnore]
     public FieldTransformation? FieldTransformation
     {
-        get => SourceFieldTranformations.Count > 0 ? SourceFieldTranformations[0] : null;
+        get => SourceFieldTransformations.Count > 0 ? SourceFieldTransformations[0] : null;
         set
         {
             if (value is null)
             {
                 ClearFieldTransformations();
             }
-            else if (SourceFieldTranformations.Count == 0)
+            else if (SourceFieldTransformations.Count == 0)
             {
                 AddFieldTransformation(value);
             }

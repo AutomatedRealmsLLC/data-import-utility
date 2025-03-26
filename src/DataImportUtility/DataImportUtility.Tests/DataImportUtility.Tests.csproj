@@ -33,5 +33,6 @@
 
 	<PropertyGroup>
 		<NoWarn>IDE0051</NoWarn>
+		<SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
 	</PropertyGroup>
 </Project>

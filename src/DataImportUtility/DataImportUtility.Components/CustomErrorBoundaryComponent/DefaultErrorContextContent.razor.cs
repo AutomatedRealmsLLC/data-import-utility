@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Components;
-
 using DataImportUtility.Components.Abstractions;
+
+using Microsoft.AspNetCore.Components;
 
 namespace DataImportUtility.Components.CustomErrorBoundaryComponent;
 
@@ -12,5 +12,5 @@ public partial class DefaultErrorContextContent : FileImportUtilityComponentBase
     /// <summary>
     /// The error context.
     /// </summary>
-    [Parameter, EditorRequired, AllowNull] public Exception ErrorContext { get; set; }
+    [Parameter, EditorRequired] public Exception ErrorContext { get; set; } = default!;
 }

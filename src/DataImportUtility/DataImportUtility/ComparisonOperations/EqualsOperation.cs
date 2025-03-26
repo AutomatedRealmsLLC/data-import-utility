@@ -53,6 +53,6 @@ public static class EqualsOperationExtensions
     /// <param name="leftResult">The result of the left operand.</param>
     /// <param name="rightResult">The result of the right operand.</param>
     /// <returns>True if the left result equals the right result; otherwise, false.</returns>
-    public static bool IsEqualTo(this TransformationResult leftResult, TransformationResult rightResult) 
+    public static bool IsEqualTo(this TransformationResult leftResult, TransformationResult rightResult)
         => leftResult.Value == rightResult.Value;
 }

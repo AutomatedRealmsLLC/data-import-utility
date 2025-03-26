@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -94,7 +93,6 @@ public class FieldMapping
     /// <summary>
     /// Whether to ignore the mapping.
     /// </summary>
-    [MemberNotNullWhen(false, nameof(MappingRule))]
     public bool IgnoreMapping => MappingRuleType == MappingRuleType.IgnoreRule
         || (MappingRule?.IsEmpty ?? true);
 
@@ -133,9 +131,9 @@ public class FieldMapping
     }
 
 #if !NETCOREAPP3_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-    internal bool Validate(TransformationResult? transformedResult, [NotNullWhen(false)] out List<ValidationResult>? validationResults, bool useCache = true)
+    internal bool Validate(TransformationResult? transformedResult, out List<ValidationResult>? validationResults, bool useCache = true)
 #else
-    internal bool Validate(TransformationResult? transformedResult, [NotNullWhen(false)] out List<ValidationResult>? validationResults, bool useCache = true)
+    internal bool Validate(TransformationResult? transformedResult, out List<ValidationResult>? validationResults, bool useCache = true)
 #endif
     {
         if (transformedResult?.Value is null)
@@ -182,7 +180,7 @@ public class FieldMapping
     public async Task UpdateValidationResults()
     {
         _valueValidationResults.Clear();
-        if (IgnoreMapping)
+        if (IgnoreMapping || MappingRule is null)
         {
             if (Required)
             {

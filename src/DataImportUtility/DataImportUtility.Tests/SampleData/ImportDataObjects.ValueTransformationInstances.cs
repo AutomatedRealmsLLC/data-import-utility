@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-using DataImportUtility.Abstractions;
+﻿using DataImportUtility.Abstractions;
 using DataImportUtility.ValueTransformations;
 
 namespace DataImportUtility.Tests.SampleData;
@@ -16,7 +14,7 @@ internal static partial class ImportDataObjects
         get
         {
             PrepareValueTransformationInstances();
-            return _valueTransformations;
+            return _valueTransformations ?? throw new InvalidOperationException("Value transformations failed to initialize. Please check the test setup.");
         }
     }
 
@@ -47,7 +45,6 @@ internal static partial class ImportDataObjects
 
     private static readonly object _valueTransformationPreparationLock = new();
 
-    [MemberNotNull(nameof(_valueTransformations))]
     private static void PrepareValueTransformationInstances()
     {
         lock (_valueTransformationPreparationLock)

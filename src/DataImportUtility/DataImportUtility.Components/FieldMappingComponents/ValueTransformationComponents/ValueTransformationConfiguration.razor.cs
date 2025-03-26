@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
-
-using DataImportUtility.Abstractions;
+﻿using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Models;
+
+using Microsoft.AspNetCore.Components;
 
 namespace DataImportUtility.Components.FieldMappingComponents.ValueTransformationComponents;
 
@@ -16,7 +16,7 @@ public partial class ValueTransformationConfiguration : FileImportUtilityCompone
     /// <summary>
     /// The output target to display the configuration for.
     /// </summary>
-    [Parameter, EditorRequired, AllowNull] public FieldTransformation FieldTransformation { get; set; }
+    [Parameter, EditorRequired] public FieldTransformation FieldTransformation { get; set; } = default!;
     /// <summary>
     /// The callback for when the output target is changed.
     /// </summary>
@@ -26,9 +26,9 @@ public partial class ValueTransformationConfiguration : FileImportUtilityCompone
     /// </summary>
     [Parameter, EditorRequired] public int TransformationRuleIndex { get; set; }
     /// <summary>
-    /// The tranformation result coming in from previous transformation operations.
+    /// The transformation result coming in from previous transformation operations.
     /// </summary>
-    [Parameter, EditorRequired, AllowNull] public TransformationResult CurrentTransformationResult { get; set; }
+    [Parameter, EditorRequired] public TransformationResult CurrentTransformationResult { get; set; } = default!;
     /// <summary>
     /// The callback for when a new transformation result is available.
     /// </summary>
@@ -36,8 +36,7 @@ public partial class ValueTransformationConfiguration : FileImportUtilityCompone
 
     private ValueTransformationType _selectedTransformationType = ValueTransformationType.SubstringTransformation;
 
-    [AllowNull]
-    private ValueTransformationBase _selectedTransformation;
+    private ValueTransformationBase _selectedTransformation = default!; // Initialized in OnInitializedAsync
 
     /// <inheritdoc />
     protected override void OnInitialized()

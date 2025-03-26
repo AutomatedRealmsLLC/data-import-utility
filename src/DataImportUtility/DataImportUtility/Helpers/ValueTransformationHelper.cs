@@ -117,7 +117,7 @@ public static partial class ValueTransformationHelper
             }
             else
             {
-                destRow[fieldMap.FieldName] = transformedResult.Value;;
+                destRow[fieldMap.FieldName] = transformedResult.Value; ;
             }
         }
     }
@@ -197,7 +197,7 @@ public static partial class ValueTransformationHelper
     /// </exception>
     /// <remarks>
     /// This method checks the source data table for any source fields that are not present used in each of the 
-    /// <see cref="MappingRuleBase.SourceFieldTranformations" />'s <see cref="FieldTransformation.Field"/>, as well
+    /// <see cref="MappingRuleBase.SourceFieldTransformations" />'s <see cref="FieldTransformation.Field"/>, as well
     /// as target fields that are not present in the destination data table using the <see cref="FieldMapping.FieldName"/>.
     /// </remarks>
     /// <exception cref="MissingMemberException">
@@ -210,7 +210,7 @@ public static partial class ValueTransformationHelper
     {
         var missingSourceFields = fieldMappings
             .Where(x => x.MappingRule is not null && !x.IgnoreMapping)
-            .SelectMany(x => x.MappingRule!.SourceFieldTranformations.Select(y => y.Field))
+            .SelectMany(x => x.MappingRule!.SourceFieldTransformations.Select(y => y.Field))
             .Where(x => x is not null && !string.IsNullOrEmpty(x.FieldName) && !sourceDataTable.Columns.Contains(x.FieldName))
             .Select(x => x!.FieldName);
 

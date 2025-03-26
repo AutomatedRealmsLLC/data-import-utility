@@ -7,7 +7,7 @@ namespace DataImportUtility.Helpers;
 /// <summary>
 /// The helper methods for the <see cref="TransformationResult" />.
 /// </summary>
-public static class TranformationResultHelpers
+public static class TransformationResultHelpers
 {
     /// <summary>
     /// Checks if the current value for the <see cref="TransformationResult" /> is null.

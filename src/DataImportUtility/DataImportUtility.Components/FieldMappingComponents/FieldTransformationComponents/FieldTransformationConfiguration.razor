@@ -112,7 +112,7 @@
                                                     @Icons.Caution()
                                                 </span>
                                             }
-                                            else if (!FieldMapping.Validate(thisTransformedValue, out var validationResults, false))
+                                            else if (!FieldMapping.Validate(thisTransformedValue, out var validationResults, false) && validationResults is not null)
                                             {
                                                 <span title="@string.Join(Environment.NewLine, validationResults.Select(vr => vr.ErrorMessage))">@Icons.Caution()</span>
                                             }
@@ -135,7 +135,7 @@
                                                 {
                                                     <span title="An error occurred while applying the transformations. See the transforms above for more information.">@Icons.Caution()</span>
                                                 }
-                                                else if (!FieldMapping.Validate(thisTransformedValue, out var validationResults, false))
+                                                else if (!FieldMapping.Validate(thisTransformedValue, out var validationResults, false) && validationResults is not null)
                                                 {
                                                     <span title="@string.Join(Environment.NewLine, validationResults.Select(vr => vr.ErrorMessage))">@Icons.Caution()</span>
                                                 }

@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Components;
-
-using DataImportUtility.Abstractions;
+﻿using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Models;
 using DataImportUtility.ValueTransformations;
+
+using Microsoft.AspNetCore.Components;
 
 namespace DataImportUtility.Components.FieldMappingComponents.ValueTransformationComponents;
 
@@ -15,22 +15,21 @@ public partial class ValueTransformationRuleDetails : FileImportUtilityComponent
     /// <summary>
     /// The output target to display the configuration for.
     /// </summary>
-    [Parameter, EditorRequired, AllowNull] public ValueTransformationBase ValueTransformation { get; set; }
+    [Parameter, EditorRequired] public ValueTransformationBase ValueTransformation { get; set; } = default!;
     /// <summary>
     /// The callback for when the output target is changed.
     /// </summary>
     [Parameter] public EventCallback<ValueTransformationBase> ValueTransformationChanged { get; set; }
     /// <summary>
-    /// The tranformation result coming in from previous transformation operations.
+    /// The transformation result coming in from previous transformation operations.
     /// </summary>
-    [Parameter, EditorRequired, AllowNull] public TransformationResult CurrentTransformationResult { get; set; }
+    [Parameter, EditorRequired] public TransformationResult CurrentTransformationResult { get; set; } = default!;
     /// <summary>
     /// The callback for when a new transformation result is available.
     /// </summary>
     [Parameter] public EventCallback<TransformationResult> NewTransformationResultAvailable { get; set; }
 
-    [AllowNull]
-    private TransformationResult _myTransformationResult;
+    private TransformationResult _myTransformationResult = default!; // Initialized in OnInitializedAsync
 
     private readonly System.Timers.Timer _debounceTimer = new()
     {

@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using DataImportUtility.Abstractions;
 
-using DataImportUtility.Abstractions;
+using Microsoft.AspNetCore.Components;
 
 namespace DataImportUtility.Components.FieldMappingComponents.ValueTransformationComponents;
 
@@ -13,7 +13,7 @@ public abstract class ValueTransformationInputBase<T> : ComponentBase
     /// <summary>
     /// The transformation to display the configuration for.
     /// </summary>
-    [Parameter, EditorRequired, AllowNull] public T ValueTransformation { get; set; }
+    [Parameter, EditorRequired] public T ValueTransformation { get; set; } = default!;
     /// <summary>
     /// The ID to use for the input element.
     /// </summary>
