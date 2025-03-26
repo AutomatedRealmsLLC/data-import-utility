@@ -156,7 +156,7 @@
             </div>
         }
 
-        @if (_myDataFileMapperState.ActiveDataTable is not null && (_myDataFileMapperState.DataFile?.TableDefinitions.TryGetTableDefinition(_myDataFileMapperState.ActiveDataTable.TableName, out var activeTableDefinition) ?? false))
+        @if (_myDataFileMapperState.ActiveDataTable is not null && (_myDataFileMapperState.DataFile?.TableDefinitions.TryGetTableDefinition(_myDataFileMapperState.ActiveDataTable.TableName, out var activeTableDefinition) ?? false) && activeTableDefinition is not null)
         {
             switch (_myDataFileMapperState.FieldMapperDisplayMode)
             {
