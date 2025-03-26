@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
-
-using DataImportUtility.Abstractions;
+﻿using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Models;
+
+using Microsoft.AspNetCore.Components;
 
 namespace DataImportUtility.Components.FieldMappingComponents.FieldTransformationComponents;
 
@@ -24,11 +24,11 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
     /// <summary>
     /// The field mapping the transformation is for.
     /// </summary>
-    [Parameter, EditorRequired, AllowNull] public FieldMapping FieldMapping { get; set; }
+    [Parameter, EditorRequired] public FieldMapping FieldMapping { get; set; } = default!;
     /// <summary>
     /// The field transformation to display the configuration for.
     /// </summary>
-    [Parameter, EditorRequired, AllowNull] public FieldTransformation FieldTransformation { get; set; }
+    [Parameter, EditorRequired] public FieldTransformation FieldTransformation { get; set; } = default!;
     /// <summary>
     /// The callback for when the output target is changed.
     /// </summary>
@@ -45,8 +45,6 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
     private ImportedRecordFieldDescriptor? Field => FieldTransformation.Field;
     private List<ValueTransformationBase> _valueTransformations = [];
     private bool _previewsExpanded;
-
-    private readonly string _id = Guid.NewGuid().ToString()[^5..];
 
     /// <inheritdoc />
     protected override Task OnInitializedAsync()
@@ -132,10 +130,10 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
         valueIndex ??= _previewIndex;
 
         var retVal = HasValues
-                ? DistinctValues
-                    .Skip(Math.Max(0, Math.Min(valueIndex.Value, DistinctValues.Length - 1)))
-                    .First()
-                : default;
+            ? DistinctValues
+                .Skip(Math.Max(0, Math.Min(valueIndex.Value, DistinctValues.Length - 1)))
+                .First()
+            : default;
 
         return new()
         {

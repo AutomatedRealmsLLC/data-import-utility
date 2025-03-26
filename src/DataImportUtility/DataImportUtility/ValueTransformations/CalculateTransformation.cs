@@ -104,7 +104,7 @@ public static class CalculateOperationExtensions
             // Replace the transformation detail placeholders with the actual values
             foreach (var (index, value) in valuesToUse.Select((value, index) => (index, value)))
             {
-                resultValue = resultValue.Replace($"${{{index}}}", value);
+                resultValue = resultValue!.Replace($"${{{index}}}", value);
             }
         }
 
@@ -113,7 +113,7 @@ public static class CalculateOperationExtensions
         {
             foreach (Match match in placeholderMatches)
             {
-                resultValue = resultValue.Replace(match.Value, "0");
+                resultValue = resultValue!.Replace(match.Value, "0");
             }
         }
 

@@ -11,7 +11,7 @@ namespace DataImportUtility.CustomConverters;
 /// </summary>
 public class MappingRuleBaseConverter : JsonConverter<MappingRuleBase>
 {
-    private static readonly string _opNamePropCamelCase = nameof(MappingRuleBase.EnumMemberName).ToCamelCase();
+    private static readonly string _opNamePropCamelCase = nameof(MappingRuleBase.EnumMemberName).ToCamelCase()!;
 
     /// <inheritdoc />
     public override MappingRuleBase Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

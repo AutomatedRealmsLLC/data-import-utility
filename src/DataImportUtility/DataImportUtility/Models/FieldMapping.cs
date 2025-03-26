@@ -182,7 +182,7 @@ public class FieldMapping
     public async Task UpdateValidationResults()
     {
         _valueValidationResults.Clear();
-        if (IgnoreMapping)
+        if (IgnoreMapping || MappingRule is null)
         {
             if (Required)
             {

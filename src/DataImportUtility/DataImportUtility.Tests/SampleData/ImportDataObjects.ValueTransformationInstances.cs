@@ -16,7 +16,7 @@ internal static partial class ImportDataObjects
         get
         {
             PrepareValueTransformationInstances();
-            return _valueTransformations;
+            return _valueTransformations ?? throw new InvalidOperationException("Value transformations failed to initialize. Please check the test setup.");
         }
     }
 

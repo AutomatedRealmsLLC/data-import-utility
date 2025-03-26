@@ -7,7 +7,7 @@ namespace DataImportUtility.Components.JsInterop;
 /// The JavaScript module for the file mapper.
 /// </summary>
 /// <param name="jsRuntime">The JS runtime this instance uses.</param>
-public class FileMapperJsModule(IJSRuntime jsRuntime) : JsModuleBase(jsRuntime, "./_content/AutomatedRealms.DataImportUtility.Components/js/file-mapper-funcs.js")
+public class FileMapperJsModule(IJSRuntime jsRuntime) : JsModuleBase(jsRuntime, "./_content/DataImportUtility.Components/js/file-mapper-funcs.js")
 {
     /// <summary>
     /// Scrolls the element into view.

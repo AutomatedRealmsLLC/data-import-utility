@@ -1,18 +1,16 @@
 ﻿using System.Data;
 using System.Timers;
 
-using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
-
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Components.DataSetComponents;
-using DataImportUtility.Components.Extensions;
 using DataImportUtility.Components.FieldMappingComponents.Wrappers;
 using DataImportUtility.Components.JsInterop;
 using DataImportUtility.Components.State;
 using DataImportUtility.Models;
+
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace DataImportUtility.Components;
 
@@ -26,11 +24,8 @@ namespace DataImportUtility.Components;
 public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBase, IDisposable
     where TTargetType : class, new()
 {
-    [Inject, AllowNull] private IJSRuntime JsRuntime { get; set; }
-    [Inject, AllowNull] private ILoggerFactory LoggerFactory { get; set; }
-    [Inject, AllowNull] private IServiceProvider ServiceProvider { get; set; }
-
-    private const string _noPreviewMessage = "No preview available.";
+    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
+    [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
 
     /// <summary>
     /// Whether to register this component to the <see cref="DataFileMapperState" />.
@@ -75,8 +70,7 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
     /// </remarks>
     internal EventCallback<DataTable> OnShowFieldMapperClickedInternal { get; set; }
 
-    [AllowNull]
-    private IDataFileMapperState _myDataFileMapperState; // Just so we don't have to null check every time.
+    private IDataFileMapperState _myDataFileMapperState = default!; // Initialized in OnInitializedAsync
 
     private ImportedDataFile? LoadedDataFile => _myDataFileMapperState?.DataFile;
     private DataTable? _previewOutput;

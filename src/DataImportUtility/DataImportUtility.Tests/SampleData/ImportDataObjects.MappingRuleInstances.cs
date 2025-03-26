@@ -17,7 +17,7 @@ internal static partial class ImportDataObjects
         get
         {
             PrepareMappingRuleInstances();
-            return _mappingRules;
+            return _mappingRules ?? throw new InvalidOperationException("Mapping rules failed to initialize. Please check the test setup.");
         }
     }
 

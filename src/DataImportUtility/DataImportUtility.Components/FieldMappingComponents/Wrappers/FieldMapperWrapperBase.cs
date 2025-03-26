@@ -14,7 +14,7 @@ namespace DataImportUtility.Components.FieldMappingComponents.Wrappers;
 /// </summary>
 public abstract class FieldMapperWrapperBase : FileImportUtilityComponentBase
 {
-    [Inject, AllowNull] private IServiceProvider ServiceProvider { get; set; }
+    [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
 
     /// <summary>
     /// Whether to show the dialog.
@@ -30,14 +30,14 @@ public abstract class FieldMapperWrapperBase : FileImportUtilityComponentBase
     /// <remarks>
     /// This collection is cloned when the component is initialized and changes are not committed to the <see cref="FieldMappings" /> directly.
     /// </remarks>
-    [Parameter, EditorRequired, AllowNull] public ImmutableArray<FieldMapping> FieldMappings { get; set; }
+    [Parameter, EditorRequired] public ImmutableArray<FieldMapping> FieldMappings { get; set; } = default!;
     /// <summary>
     /// The field mappings to configure.
     /// </summary>
     /// <remarks>
     /// This collection is cloned when the component is initialized and changes are not committed to the <see cref="FieldMappings" /> directly.
     /// </remarks>
-    [Parameter, EditorRequired, AllowNull] public ImmutableArray<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; }
+    [Parameter, EditorRequired] public ImmutableArray<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = default!;
     /// <summary>
     /// The callback for when the set of edit field mappings are changed.
     /// </summary>
@@ -59,8 +59,7 @@ public abstract class FieldMapperWrapperBase : FileImportUtilityComponentBase
     /// <summary>
     /// The field mapper editor component to use for editing the field mappings.
     /// </summary>
-    [AllowNull]
-    protected FieldMapperEditorBase _fieldMapperEditor;
+    protected FieldMapperEditorBase _fieldMapperEditor = default!; // Initialized in OnInitializedAsync
 
     /// <summary>
     /// A copy of the field mappings to edit.

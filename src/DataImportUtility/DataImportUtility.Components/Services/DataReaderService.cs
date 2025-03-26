@@ -51,7 +51,7 @@ public class DataReaderService : IDataReaderService
         var dataTable = (importedDataFile.DataSet?.Tables[tableName]) ?? throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
         importedDataFile.RefreshFieldDescriptors(forTable: tableName);
 
-        if (!importedDataFile.TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors))
+        if (!importedDataFile.TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors) || fieldDescriptors is null)
         {
             throw new ArgumentException($"Failed to populate the field descriptors for the table '{tableName}'.");
         }

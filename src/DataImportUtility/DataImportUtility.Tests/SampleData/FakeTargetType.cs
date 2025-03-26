@@ -1,12 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace DataImportUtility.Tests.SampleData;
 
 public class FakeTargetType
 {
-    [AllowNull]
-    public string LabAnalysisId { get; set; }
+    public string LabAnalysisId { get; set; } = default!;
     public double? FinalAmount { get; set; }
     public string? Result { get; set; }
     public string? AnalysisId { get; set; }
@@ -20,9 +18,8 @@ public class FakeTargetType
 
 public class FakeTargetTypeWithValidation
 {
-    [AllowNull]
     [Required]
-    public string LabAnalysisId { get; set; }
+    public string LabAnalysisId { get; set; } = default!;
     public double? FinalAmount { get; set; }
     [StringLength(10)]
     public string? Result { get; set; }

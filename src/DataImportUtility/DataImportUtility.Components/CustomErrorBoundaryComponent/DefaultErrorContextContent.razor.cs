@@ -12,5 +12,5 @@ public partial class DefaultErrorContextContent : FileImportUtilityComponentBase
     /// <summary>
     /// The error context.
     /// </summary>
-    [Parameter, EditorRequired, AllowNull] public Exception ErrorContext { get; set; }
+    [Parameter, EditorRequired] public Exception ErrorContext { get; set; } = default!;
 }
