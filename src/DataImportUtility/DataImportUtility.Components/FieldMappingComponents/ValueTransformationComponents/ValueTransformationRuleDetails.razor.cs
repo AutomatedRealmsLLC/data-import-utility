@@ -21,7 +21,7 @@ public partial class ValueTransformationRuleDetails : FileImportUtilityComponent
     /// </summary>
     [Parameter] public EventCallback<ValueTransformationBase> ValueTransformationChanged { get; set; }
     /// <summary>
-    /// The tranformation result coming in from previous transformation operations.
+    /// The transformation result coming in from previous transformation operations.
     /// </summary>
     [Parameter, EditorRequired, AllowNull] public TransformationResult CurrentTransformationResult { get; set; }
     /// <summary>

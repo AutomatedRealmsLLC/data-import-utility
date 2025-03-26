@@ -31,15 +31,15 @@ public class CombineFieldsRule : MappingRuleBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override bool IsEmpty => !SourceFieldTranformations.Any(x => !string.IsNullOrWhiteSpace(x.Field?.FieldName));
+    public override bool IsEmpty => !SourceFieldTransformations.Any(x => !string.IsNullOrWhiteSpace(x.Field?.FieldName));
 
     /// <inheritdoc />
     public override async Task<IEnumerable<TransformationResult>> Apply()
     {
         var sourceFieldResults = new List<(int SourceIndex, int ResultIndex, TransformationResult Result)>();
-        for (var sourceIndex = 0; sourceIndex < SourceFieldTranformations.Count; sourceIndex++)
+        for (var sourceIndex = 0; sourceIndex < SourceFieldTransformations.Count; sourceIndex++)
         {
-            var field = SourceFieldTranformations[sourceIndex];
+            var field = SourceFieldTransformations[sourceIndex];
             var currentSourceFieldTransforms = await field.Apply();
 
             sourceFieldResults.AddRange(currentSourceFieldTransforms

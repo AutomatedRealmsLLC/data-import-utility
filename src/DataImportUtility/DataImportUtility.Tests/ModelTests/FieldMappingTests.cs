@@ -40,7 +40,7 @@ public class FieldMappingTests
 
     #region Field Transforms
     /// <summary>
-    /// A field mapping with a <see cref="MappingRuleBase"/> that has <see cref="MappingRuleBase.SourceFieldTranformations" />
+    /// A field mapping with a <see cref="MappingRuleBase"/> that has <see cref="MappingRuleBase.SourceFieldTransformations" />
     /// should return the correct values.
     /// </summary>
     [Fact]

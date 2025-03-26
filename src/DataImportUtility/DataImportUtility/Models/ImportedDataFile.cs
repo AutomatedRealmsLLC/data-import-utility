@@ -445,7 +445,7 @@ public class ImportedDataFile
 
             matchingField.MappingRule ??= MappingRuleType.CopyRule.CreateNewInstance();
 
-            if (matchingField.MappingRule!.SourceFieldTranformations.Any(x => x.Field is not null))
+            if (matchingField.MappingRule!.SourceFieldTransformations.Any(x => x.Field is not null))
             {
                 continue;
             }
@@ -491,7 +491,7 @@ public class ImportedDataFile
         foreach(var fieldMapping in tableDef.FieldMappings)
         {
             fieldMapping.ValidationAttributes = _targetTypeFieldMappings!.First(x => x.FieldName == fieldMapping.FieldName).ValidationAttributes;
-            foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTranformations ?? []).Where(sfd => sfd?.Field is not null))
+            foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTransformations ?? []).Where(sfd => sfd?.Field is not null))
             {
                 sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors!.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
             }

@@ -64,7 +64,7 @@ public class DataReaderService : IDataReaderService
                 mappableFields.FirstOrDefault(x => x.FieldName.ToStandardComparisonString() == colNameInvariant && x.FieldType == fieldDescriptor.FieldType)
                 ?? mappableFields.FirstOrDefault(x => x.FieldName.ToStandardComparisonString() == colNameInvariant);
 
-            if (matchingField?.MappingRule is null || matchingField.MappingRule.SourceFieldTranformations.Any(x => x.Field is not null))
+            if (matchingField?.MappingRule is null || matchingField.MappingRule.SourceFieldTransformations.Any(x => x.Field is not null))
             {
                 continue;
             }

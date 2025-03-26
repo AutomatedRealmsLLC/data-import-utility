@@ -87,7 +87,7 @@ public abstract partial class MappingRuleBase : IDisposable
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonInclude]
-    public ImmutableList<FieldTransformation> SourceFieldTranformations
+    public ImmutableList<FieldTransformation> SourceFieldTransformations
     {
         get => _sourceFields;
         internal set
@@ -99,11 +99,11 @@ public abstract partial class MappingRuleBase : IDisposable
     private ImmutableList<FieldTransformation> _sourceFields = [];
 
     /// <summary>
-    /// The source fields that are in use. This is a subset of the <see cref="SourceFieldTranformations"/> that have a
+    /// The source fields that are in use. This is a subset of the <see cref="SourceFieldTransformations"/> that have a
     /// field name.
     /// </summary>
     [JsonIgnore]
-    protected IEnumerable<FieldTransformation> SourceFieldsInUse => SourceFieldTranformations
+    protected IEnumerable<FieldTransformation> SourceFieldsInUse => SourceFieldTransformations
         .Where(x => x.Field is { FieldName: not null });
 
     /// <summary>
@@ -114,7 +114,7 @@ public abstract partial class MappingRuleBase : IDisposable
 
     #region Apply Methods
     /// <summary>
-    /// Applies the mapping rule to each transformed value contained in the <see cref="SourceFieldTranformations"/>.<see cref="FieldTransformation.Field"/>'s <see cref="ImportedRecordFieldDescriptor.ForTable"/> from the .
+    /// Applies the mapping rule to each transformed value contained in the <see cref="SourceFieldTransformations"/>.<see cref="FieldTransformation.Field"/>'s <see cref="ImportedRecordFieldDescriptor.ForTable"/> from the .
     /// </summary>
     public abstract Task<IEnumerable<TransformationResult>> Apply();
 
@@ -129,11 +129,11 @@ public abstract partial class MappingRuleBase : IDisposable
     /// </returns>
     /// <remarks>
     /// The provided <paramref name="result"/> should be the result of applying all of the 
-    /// <see cref="SourceFieldTranformations" /> and consolidating their results into a single 
+    /// <see cref="SourceFieldTransformations" /> and consolidating their results into a single 
     /// <see cref="TransformationResult" />. The <see cref="TransformationResult.Value" /> should be a JSON
     /// serialized string of the values of the fields used in the mapping. Note that some rules may not
     /// be valid on collections of values. Use the 
-    /// <see cref="TranformationResultHelpers.ErrorIfCollection(TransformationResult, string)" />
+    /// <see cref="TransformationResultHelpers.ErrorIfCollection(TransformationResult, string)" />
     /// for mapping rules that are not valid on collections when implementing this method.
     /// </remarks>
     public abstract Task<TransformationResult> Apply(TransformationResult result);
@@ -157,13 +157,13 @@ public abstract partial class MappingRuleBase : IDisposable
     }
 
     /// <summary>
-    /// Gets the transformed values using the <see cref="SourceFieldTranformations"/> in use on the imported records.
+    /// Gets the transformed values using the <see cref="SourceFieldTransformations"/> in use on the imported records.
     /// </summary>
     /// <param name="importedRecords">
     /// The imported records to get the transformed values from.
     /// </param>
     /// <returns>
-    /// The transformed values using the <see cref="SourceFieldTranformations" /> in use on the imported records.
+    /// The transformed values using the <see cref="SourceFieldTransformations" /> in use on the imported records.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// Thrown when the field transformations contain fields that are not in the imported records.
@@ -224,7 +224,7 @@ public abstract partial class MappingRuleBase : IDisposable
     }
 
     /// <returns>
-    /// The transformed values using the <see cref="SourceFieldTranformations"/> that are in use on the imported record
+    /// The transformed values using the <see cref="SourceFieldTransformations"/> that are in use on the imported record
     /// data.
     /// </returns>
     /// <exception cref="ArgumentException">
@@ -326,7 +326,7 @@ public abstract partial class MappingRuleBase : IDisposable
 
     #region SourceFields Methods
     /// <summary>
-    /// Adds a new <see cref="FieldTransformation"/> to the <see cref="SourceFieldTranformations"/> 
+    /// Adds a new <see cref="FieldTransformation"/> to the <see cref="SourceFieldTransformations"/> 
     /// collection for the specified <see cref="ImportedRecordFieldDescriptor"/>.
     /// </summary>
     /// <param name="fieldDescriptor">
@@ -340,7 +340,7 @@ public abstract partial class MappingRuleBase : IDisposable
         => AddFieldTransformation(new FieldTransformation(fieldDescriptor));
 
     /// <summary>
-    /// Adds a new <see cref="FieldTransformation"/> to the <see cref="SourceFieldTranformations"/> collection.
+    /// Adds a new <see cref="FieldTransformation"/> to the <see cref="SourceFieldTransformations"/> collection.
     /// </summary>
     /// <param name="fieldTransformation">The <see cref="FieldTransformation"/> to add.</param>
     /// <returns>The added <see cref="FieldTransformation"/>.</returns>
@@ -349,14 +349,14 @@ public abstract partial class MappingRuleBase : IDisposable
     /// </exception>
     public virtual FieldTransformation AddFieldTransformation(FieldTransformation fieldTransformation)
     {
-        if (SourceFieldTranformations.Count >= MaxSourceFields)
+        if (SourceFieldTransformations.Count >= MaxSourceFields)
         {
             throw new InvalidOperationException($"The maximum number of source fields for the rule is {MaxSourceFields}.");
         }
 
-        var sourceFields = SourceFieldTranformations.ToList();
+        var sourceFields = SourceFieldTransformations.ToList();
         sourceFields.Add(fieldTransformation);
-        SourceFieldTranformations = [.. sourceFields];
+        SourceFieldTransformations = [.. sourceFields];
         return fieldTransformation;
     }
 
@@ -366,10 +366,10 @@ public abstract partial class MappingRuleBase : IDisposable
     /// </summary>
     public virtual void ReplaceFieldTransformation(FieldTransformation oldFieldTransformation, FieldTransformation newFieldTransformation)
     {
-        var sourceFields = SourceFieldTranformations.ToList();
+        var sourceFields = SourceFieldTransformations.ToList();
         var index = sourceFields.IndexOf(oldFieldTransformation);
         sourceFields[index] = newFieldTransformation;
-        SourceFieldTranformations = [.. sourceFields];
+        SourceFieldTransformations = [.. sourceFields];
     }
 
     /// <summary>
@@ -381,7 +381,7 @@ public abstract partial class MappingRuleBase : IDisposable
     /// </exception>
     public virtual void ReplaceFieldTransformation(uint index, FieldTransformation fieldTransformation)
     {
-        if (index == 0 || index >= SourceFieldTranformations.Count)
+        if (index == 0 || index >= SourceFieldTransformations.Count)
         {
             throw new ArgumentOutOfRangeException(nameof(index), "The index must be greater than or equal to 0 and less than the number of elements in the collection.");
         }
@@ -391,24 +391,24 @@ public abstract partial class MappingRuleBase : IDisposable
             throw new ArgumentOutOfRangeException(nameof(index), "The index must be less than or equal to int.MaxValue.");
         }
 
-        var sourceFields = SourceFieldTranformations.ToList();
+        var sourceFields = SourceFieldTransformations.ToList();
         sourceFields[(int)index] = fieldTransformation;
-        SourceFieldTranformations = [.. sourceFields];
+        SourceFieldTransformations = [.. sourceFields];
     }
 
     /// <summary>
-    /// Removes the <see cref="FieldTransformation"/> from the <see cref="SourceFieldTranformations"/> collection.
+    /// Removes the <see cref="FieldTransformation"/> from the <see cref="SourceFieldTransformations"/> collection.
     /// </summary>
     /// <param name="fieldTransformation">The <see cref="FieldTransformation"/> to remove.</param>
     public virtual void RemoveFieldTransformation(FieldTransformation fieldTransformation)
     {
-        var sourceFields = SourceFieldTranformations.ToList();
+        var sourceFields = SourceFieldTransformations.ToList();
         sourceFields.Remove(fieldTransformation);
-        SourceFieldTranformations = [.. sourceFields];
+        SourceFieldTransformations = [.. sourceFields];
     }
 
     /// <summary>
-    /// Removes the <see cref="FieldTransformation"/> from the <see cref="SourceFieldTranformations"/> collection.
+    /// Removes the <see cref="FieldTransformation"/> from the <see cref="SourceFieldTransformations"/> collection.
     /// </summary>
     /// <param name="index">The index of the <see cref="FieldTransformation"/> to remove.</param>
     /// <exception cref="ArgumentOutOfRangeException">
@@ -416,21 +416,21 @@ public abstract partial class MappingRuleBase : IDisposable
     /// </exception>
     public virtual void RemoveFieldTransformation(int index)
     {
-        if (index < 0 || index >= SourceFieldTranformations.Count)
+        if (index < 0 || index >= SourceFieldTransformations.Count)
         {
             throw new ArgumentOutOfRangeException(nameof(index), "The index must be greater than or equal to 0 and less than the number of elements in the collection.");
         }
 
-        var sourceFields = SourceFieldTranformations.ToList();
+        var sourceFields = SourceFieldTransformations.ToList();
         sourceFields.RemoveAt(index);
-        SourceFieldTranformations = [.. sourceFields];
+        SourceFieldTransformations = [.. sourceFields];
     }
 
     /// <summary>
-    /// Removes all <see cref="FieldTransformation"/> from the <see cref="SourceFieldTranformations"/> collection.
+    /// Removes all <see cref="FieldTransformation"/> from the <see cref="SourceFieldTransformations"/> collection.
     /// </summary>
     public virtual void ClearFieldTransformations()
-        => SourceFieldTranformations = [];
+        => SourceFieldTransformations = [];
     #endregion SourceFields Methods
 
     #region Clone Methods
@@ -441,7 +441,7 @@ public abstract partial class MappingRuleBase : IDisposable
     {
         var forRet = (MappingRuleBase)MemberwiseClone();
         forRet.OnDefinitionChanged = null;
-        forRet.SourceFieldTranformations = SourceFieldTranformations.Select(x => x.Clone()).ToImmutableList();
+        forRet.SourceFieldTransformations = SourceFieldTransformations.Select(x => x.Clone()).ToImmutableList();
         return forRet;
     }
 

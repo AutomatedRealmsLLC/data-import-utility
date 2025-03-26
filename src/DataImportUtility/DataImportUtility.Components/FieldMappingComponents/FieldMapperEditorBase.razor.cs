@@ -73,12 +73,12 @@ public abstract partial class FieldMapperEditorBase : FileImportUtilityComponent
         // TODO: Cache the mapping rules so if the user changes between them, the values are not lost
         fieldMapping.MappingRule = selectedMappingRuleType.CreateNewInstance();
 
-        // Special rule for ConstantValueRule to set SourceFieldTranformations to the first imported field.
+        // Special rule for ConstantValueRule to set SourceFieldTransformations to the first imported field.
         if (fieldMapping.MappingRule is ConstantValueRule cvr)
         {
             var newFieldTransform = new FieldTransformation(FieldDescriptors.First());
 
-            cvr.SourceFieldTranformations = [newFieldTransform];
+            cvr.SourceFieldTransformations = [newFieldTransform];
         }
 
         return NotifyFieldMappingChanged(fieldMapping);
@@ -95,14 +95,14 @@ public abstract partial class FieldMapperEditorBase : FileImportUtilityComponent
         fieldMapping.MappingRule ??= new CopyRule();
 
         var selectedFieldName = e.Value?.ToString();
-        if (string.IsNullOrWhiteSpace(selectedFieldName) && fieldMapping.MappingRule.SourceFieldTranformations.Count == 0)
+        if (string.IsNullOrWhiteSpace(selectedFieldName) && fieldMapping.MappingRule.SourceFieldTransformations.Count == 0)
         {
             return fieldMapping.UpdateValidationResults();
         }
 
         var selectedField = FieldDescriptors.FirstOrDefault(x => x.FieldName == selectedFieldName);
 
-        if (fieldMapping.MappingRule.SourceFieldTranformations.Count == 0 || fieldTransform is null)
+        if (fieldMapping.MappingRule.SourceFieldTransformations.Count == 0 || fieldTransform is null)
         {
             fieldMapping.MappingRule.AddFieldTransformation(selectedField);
         }

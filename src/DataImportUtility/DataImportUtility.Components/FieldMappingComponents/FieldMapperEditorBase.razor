@@ -71,7 +71,7 @@
                     </div>
                     @if (curField.HasValidationErrors)
                     {
-                        var message = curField.Required && (curField.MappingRule is null || curField.MappingRule.SourceFieldTranformations.Count(x => !string.IsNullOrWhiteSpace(x.Field?.FieldName)) == 0)
+                        var message = curField.Required && (curField.MappingRule is null || curField.MappingRule.SourceFieldTransformations.Count(x => !string.IsNullOrWhiteSpace(x.Field?.FieldName)) == 0)
                             // Special case for required, but no field selected
                             ? "This field requires a source value."
                             : curField.MappingRule switch
@@ -117,17 +117,17 @@
                 {
                     case MappingRuleType.CopyRule:
                         {
-                            var sourceFieldTransform = curMappingRule.SourceFieldTranformations.FirstOrDefault();
+                            var sourceFieldTransform = curMappingRule.SourceFieldTransformations.FirstOrDefault();
                             @RenderFieldPicker(curField, sourceFieldTransform)
                         }
                         break;
                     case MappingRuleType.CombineFieldsRule:
                         <div class="combine-fields-wrapper">
-                            @foreach (var sourceFieldTransform in curMappingRule.SourceFieldTranformations)
+                            @foreach (var sourceFieldTransform in curMappingRule.SourceFieldTransformations)
                             {
                                 <div class="combined-field">
                                     @RenderFieldPicker(curField, sourceFieldTransform)
-                                    @if (curMappingRule.SourceFieldTranformations.Count > 1)
+                                    @if (curMappingRule.SourceFieldTransformations.Count > 1)
                                     {
                                         <button type="button"
                                                 class="o1l-btn-remove o1l-btn-sm@(DefaultCssClass)"
@@ -139,7 +139,7 @@
                                 </div>
                             }
 
-                            @if (curMappingRule.SourceFieldTranformations.Count == 0)
+                            @if (curMappingRule.SourceFieldTransformations.Count == 0)
                             {
                                 <div class="combined-field">
                                     @RenderFieldPicker(curField, null)

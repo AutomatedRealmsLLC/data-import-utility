@@ -26,7 +26,7 @@ public partial class ValueTransformationConfiguration : FileImportUtilityCompone
     /// </summary>
     [Parameter, EditorRequired] public int TransformationRuleIndex { get; set; }
     /// <summary>
-    /// The tranformation result coming in from previous transformation operations.
+    /// The transformation result coming in from previous transformation operations.
     /// </summary>
     [Parameter, EditorRequired, AllowNull] public TransformationResult CurrentTransformationResult { get; set; }
     /// <summary>
