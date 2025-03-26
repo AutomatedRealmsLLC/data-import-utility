@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-using DataImportUtility.Abstractions;
+﻿using DataImportUtility.Abstractions;
 using DataImportUtility.Models;
 using DataImportUtility.Rules;
 
@@ -36,7 +34,6 @@ internal static partial class ImportDataObjects
 
     private static readonly object _mappingRulePreparationLock = new();
 
-    [MemberNotNull(nameof(_mappingRules))]
     private static void PrepareMappingRuleInstances()
     {
         lock (_mappingRulePreparationLock)

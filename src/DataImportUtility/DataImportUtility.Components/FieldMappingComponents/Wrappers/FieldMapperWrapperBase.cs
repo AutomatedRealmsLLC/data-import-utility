@@ -1,11 +1,11 @@
 ﻿using System.Collections.Immutable;
 
-using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
-
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Components.Extensions;
 using DataImportUtility.Models;
+
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DataImportUtility.Components.FieldMappingComponents.Wrappers;
 
@@ -76,7 +76,7 @@ public abstract class FieldMapperWrapperBase : FileImportUtilityComponentBase
 
     /// <inheritdoc />
     protected override Task OnInitializedAsync()
-    { 
+    {
         _editFieldMappings = [.. FieldMappings];
 
         // Use the field mapper editor type from the UI Options if one is specified

@@ -48,7 +48,6 @@ internal static partial class ImportDataObjects
 
     private static readonly object _dataFilePreparationLock = new();
 
-    [MemberNotNull(nameof(_dataFile))]
     private static void PrepareDataFile()
     {
         lock (_dataFilePreparationLock)

@@ -1,10 +1,10 @@
 ﻿using System.Data;
 
-using Microsoft.AspNetCore.Components;
-
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Components.State;
 using DataImportUtility.Models;
+
+using Microsoft.AspNetCore.Components;
 
 namespace DataImportUtility.Components.DataSetComponents;
 

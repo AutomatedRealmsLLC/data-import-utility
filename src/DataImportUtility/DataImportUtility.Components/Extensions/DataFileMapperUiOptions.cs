@@ -19,9 +19,9 @@ public class DataFileMapperUiOptions
     /// Thrown if the type is not a subclass of <see cref="FieldMapperEditorBase" /> 
     /// or if it is not a concrete type.
     /// </exception>
-    public Type FieldMapperEditorComponentType 
-    { 
-        get => _fieldMapperComponentType; 
+    public Type FieldMapperEditorComponentType
+    {
+        get => _fieldMapperComponentType;
         set
         {
             // Throw an exception if the type is not a subclass of <see cref="FieldMapperEditorBase" />
@@ -31,7 +31,7 @@ public class DataFileMapperUiOptions
                 _fieldMapperComponentType = typeof(FieldMapperEditor);
                 return;
             }
-            
+
             if (!typeof(FieldMapperEditorBase).IsAssignableFrom(value))
             {
                 throw new ArgumentException($"The type {value.FullName} is not a subclass of {nameof(FieldMapperEditorBase)}.", nameof(value));

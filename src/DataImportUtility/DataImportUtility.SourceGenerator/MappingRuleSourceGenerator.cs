@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using System.Collections.Immutable;
 
 using DataImportUtility.Helpers;
 using DataImportUtility.SourceGenerator.Helpers;
+
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DataImportUtility.SourceGenerator
 {

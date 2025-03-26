@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Components;
-
 using DataImportUtility.Components.Abstractions;
+
+using Microsoft.AspNetCore.Components;
 
 namespace DataImportUtility.Components.CustomErrorBoundaryComponent;
 

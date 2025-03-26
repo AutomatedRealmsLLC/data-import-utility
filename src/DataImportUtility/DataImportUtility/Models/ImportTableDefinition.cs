@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace DataImportUtility.Models;
+﻿namespace DataImportUtility.Models;
 
 /// <summary>
 /// The definition of a table to import, including its fields and mappings to a target type.
@@ -33,7 +31,7 @@ public static class ImportTableDefinitionExtensions
     /// <param name="tableName">The name of the table to search for.</param>
     /// <param name="tableDefinition">The table definition found, if any, for the table.</param>
     /// <returns>True if the collection had an element with the specified <paramref name="tableName"/>, otherwise false.</returns>
-    public static bool TryGetTableDefinition(this List<ImportTableDefinition> tableDefinitions, string tableName, [MaybeNullWhen(false), NotNullWhen(true)] out ImportTableDefinition? tableDefinition)
+    public static bool TryGetTableDefinition(this List<ImportTableDefinition> tableDefinitions, string tableName, out ImportTableDefinition? tableDefinition)
     {
         tableDefinition = tableDefinitions.FirstOrDefault(x => x.TableName == tableName);
         return tableDefinition is not null;
@@ -46,7 +44,7 @@ public static class ImportTableDefinitionExtensions
     /// <param name="tableName">The name of the table to search for.</param>
     /// <param name="fieldDescriptors">The field descriptors found, if any, for the table.</param>
     /// <returns>True if the collection had an element with the specified <paramref name="tableName"/>, otherwise false.</returns>
-    public static bool TryGetFieldDescriptors(this List<ImportTableDefinition> tableDefinitions, string tableName, [MaybeNullWhen(false), NotNullWhen(true)] out List<ImportedRecordFieldDescriptor>? fieldDescriptors)
+    public static bool TryGetFieldDescriptors(this List<ImportTableDefinition> tableDefinitions, string tableName, out List<ImportedRecordFieldDescriptor>? fieldDescriptors)
     {
         fieldDescriptors = tableDefinitions.FirstOrDefault(x => x.TableName == tableName)?.FieldDescriptors;
         return fieldDescriptors is not null;
@@ -59,7 +57,7 @@ public static class ImportTableDefinitionExtensions
     /// <param name="tableName">The name of the table to search for.</param>
     /// <param name="fieldMappings">The field mappings found, if any, for the table.</param>
     /// <returns>True if the collection had an element with the specified <paramref name="tableName"/>, otherwise false.</returns>
-    public static bool TryGetFieldMappings(this List<ImportTableDefinition> tableDefinitions, string tableName, [MaybeNullWhen(false), NotNullWhen(true)] out List<FieldMapping>? fieldMappings)
+    public static bool TryGetFieldMappings(this List<ImportTableDefinition> tableDefinitions, string tableName, out List<FieldMapping>? fieldMappings)
     {
         fieldMappings = tableDefinitions.FirstOrDefault(x => x.TableName == tableName)?.FieldMappings;
         return fieldMappings is not null;

@@ -1,8 +1,5 @@
 ﻿using System.Data;
 
-using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Logging;
-
 using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Components.DataSetComponents;
@@ -11,6 +8,9 @@ using DataImportUtility.Components.FilePickerComponent;
 using DataImportUtility.Components.Models;
 using DataImportUtility.Components.Services;
 using DataImportUtility.Models;
+
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 
 namespace DataImportUtility.Components.State;
 

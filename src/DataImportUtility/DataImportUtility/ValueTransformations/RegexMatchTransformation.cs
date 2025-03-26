@@ -71,8 +71,8 @@ public static class RegexMatchTransformationExtensions
         {
             return result with
             {
-                Value = result.Value is null 
-                    ? null 
+                Value = result.Value is null
+                    ? null
                     : JsonSerializer.Serialize(new[] { result.Value })
             };
         }

@@ -1,12 +1,11 @@
-﻿using System.Numerics;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-
-using Jace;
 
 using DataImportUtility.Abstractions;
 using DataImportUtility.Helpers;
 using DataImportUtility.Models;
+
+using Jace;
 
 namespace DataImportUtility.ValueTransformations;
 

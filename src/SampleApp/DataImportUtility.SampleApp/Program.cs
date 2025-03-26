@@ -1,8 +1,9 @@
+using DataImportUtility.Components.Extensions;
+using DataImportUtility.SampleApp;
+using DataImportUtility.SampleApp.OverriddenComponents;
+
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using DataImportUtility.SampleApp;
-using DataImportUtility.Components.Extensions;
-using DataImportUtility.SampleApp.OverriddenComponents;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

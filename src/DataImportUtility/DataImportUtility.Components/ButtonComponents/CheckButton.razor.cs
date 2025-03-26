@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.Contracts;
-
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace DataImportUtility.Components.ButtonComponents;

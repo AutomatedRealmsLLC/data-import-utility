@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using DataImportUtility.Helpers;
+using DataImportUtility.SourceGenerator.Helpers;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-using DataImportUtility.Helpers;
-using DataImportUtility.SourceGenerator.Helpers;
 
 namespace DataImportUtility.SourceGenerator
 {

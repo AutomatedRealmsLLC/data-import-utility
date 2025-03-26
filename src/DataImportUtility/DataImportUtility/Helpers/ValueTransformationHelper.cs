@@ -117,7 +117,7 @@ public static partial class ValueTransformationHelper
             }
             else
             {
-                destRow[fieldMap.FieldName] = transformedResult.Value;;
+                destRow[fieldMap.FieldName] = transformedResult.Value; ;
             }
         }
     }

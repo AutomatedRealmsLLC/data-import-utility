@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 
 using DataImportUtility.Abstractions;
-using DataImportUtility.CustomExceptions;
 using DataImportUtility.Helpers;
 
 namespace DataImportUtility.Models;
@@ -489,7 +488,7 @@ public class ImportedDataFile
         tableDef.FieldMappings = incomingFieldMappings.ToList();
         var foundDescriptors = TableDefinitions.TryGetFieldDescriptors(tableName, out var fieldDescriptors);
 
-        foreach(var fieldMapping in tableDef.FieldMappings)
+        foreach (var fieldMapping in tableDef.FieldMappings)
         {
             fieldMapping.ValidationAttributes = _targetTypeFieldMappings!.First(x => x.FieldName == fieldMapping.FieldName).ValidationAttributes;
             foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTransformations ?? []).Where(sfd => sfd?.Field is not null))
