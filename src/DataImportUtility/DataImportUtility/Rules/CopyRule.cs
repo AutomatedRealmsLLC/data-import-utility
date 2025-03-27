@@ -68,8 +68,12 @@ public class CopyRule : MappingRuleBase
     }
 
     /// <inheritdoc />
-    public override Task<TransformationResult> Apply(TransformationResult result)
-        => Task.FromResult(result.CopyField());
+    public override async Task<TransformationResult> Apply(TransformationResult result)
+    {
+        var sourceFieldResults = FieldTransformation is not null ? await FieldTransformation.Apply(result) : result;
+
+        return sourceFieldResults.CopyField();
+    }
 }
 
 /// <summary>
@@ -78,7 +82,7 @@ public class CopyRule : MappingRuleBase
 public static class CopyRuleExtensions
 {
     /// <summary>
-    /// Copies the field.
+    /// Copies the field value.
     /// </summary>
     /// <param name="result">The result of the transformations applied in order to each of the fields involved in the mapping.</param>
     /// <returns>

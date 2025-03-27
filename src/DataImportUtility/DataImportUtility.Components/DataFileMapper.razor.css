@@ -70,6 +70,10 @@ button:disabled:hover, button[disabled]:hover, button[disabled=disabled]:hover,
 .data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr {
   height: var(--o1l-use-table-thead-tr-height);
   z-index: 3;
+  white-space: nowrap;
+}
+.data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr:first-of-type {
+  height: 8ch;
 }
 .data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr:last-of-type th, .data-file-mapper-wrapper.o1l-library-style ::deep table.o1l-library-style thead tr:last-of-type td {
   border-bottom: var(--o1l-use-table-head-border);

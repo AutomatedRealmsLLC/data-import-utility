@@ -51,7 +51,7 @@ public class FieldMapping
             _fieldTypeString = value;
 
             var type = Type.GetType(value);
-            if (type == null || type == FieldType) { return; }
+            if (type is null || type == FieldType) { return; }
             _fieldType = type;
         }
     }

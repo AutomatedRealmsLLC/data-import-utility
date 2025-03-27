@@ -54,7 +54,7 @@
                         data-from-component="@nameof(DataFileMapper<TTargetType>)"
                         data-component-instance="@InstanceId"
                         data-mapper-state="@_myDataFileMapperState.MapperStateId">
-                        <td colspan="@(dataTable.Columns.Count + 1)">
+                        <td colspan="@(dataTable.Columns.Count + 1 /* selector column */ + 1 /* Row Num column */)">
                             <div class="table-title-wrapper">
                                 <span class="table-title">Data Table: @dataTable.TableName</span>
                                 <div class="main-controls">
@@ -76,6 +76,11 @@
                         <th>
                             <CheckButton Checked=@(_myDataFileMapperState.SelectedImportRows.Count == dataTable.Rows.Count) OnClick="_ => HandleToggleAllSelected()" />
                         </th>
+
+                        <th>
+                            Row #
+                        </th>
+
                         @foreach (DataColumn curCol in dataTable.Columns)
                         {
                             <th>
@@ -114,7 +119,7 @@
                             data-from-component="@nameof(DataFileMapper<TTargetType>)"
                             data-component-instance="@InstanceId"
                             data-mapper-state="@_myDataFileMapperState.MapperStateId">
-                            <td colspan="@dataTable.Columns.Count">
+                            <td colspan="@(dataTable.Columns.Count + 1 /* Row Num column */)">
                                 <div class="table-title-wrapper">
                                     <div class="main-controls">
                                         <button type="button" class="o1l-btn-field-mapper@(DefaultCssClass)" @onclick="_ => HandleTogglePreviewOutput(dataTable)" title="@($"Show {(_myDataFileMapperState.ShowTransformPreview ? "Incoming Data" : "Output Preview")}")">
@@ -129,6 +134,11 @@
                             data-from-component="@nameof(DataFileMapper<TTargetType>)"
                             data-component-instance="@InstanceId"
                             data-mapper-state="@_myDataFileMapperState.MapperStateId">
+
+                            <th>
+                                Row #
+                            </th>
+
                              @foreach (DataColumn curCol in dataTable.Columns)
                              {
                                 var hasError = dataTable.Rows.OfType<DataRow>().Any(row => !string.IsNullOrWhiteSpace(row.GetColumnError(curCol)));
@@ -163,14 +173,14 @@
                 case FieldMapperDisplayMode.Flyout:
                     <FieldMapperFlyout ShowChanged=HandleShowFieldMapperChanged
                                        FieldMappings=activeTableDefinition.FieldMappings.ToImmutableArray()
-                                       FieldDescriptors=activeTableDefinition.FieldDescriptors.ToImmutableArray()
+                                       FieldDescriptors="activeTableDefinition.FieldDescriptors.OrderBy(x => x.FieldName).ToImmutableArray()"
                                        OnCommitClicked=HandleFieldMappingsChangesCommitted
                                        ApplyDefaultCss=ApplyDefaultCss />
                     break;
                 case FieldMapperDisplayMode.Modal:
                     <FieldMapperDialog ShowChanged=HandleShowFieldMapperChanged
                                        FieldMappings=activeTableDefinition.FieldMappings.ToImmutableArray()
-                                       FieldDescriptors=activeTableDefinition.FieldDescriptors.ToImmutableArray()
+                                       FieldDescriptors="activeTableDefinition.FieldDescriptors.OrderBy(x => x.FieldName).ToImmutableArray()"
                                        OnCommitClicked=HandleFieldMappingsChangesCommitted
                                        ApplyDefaultCss=ApplyDefaultCss />
                     break;

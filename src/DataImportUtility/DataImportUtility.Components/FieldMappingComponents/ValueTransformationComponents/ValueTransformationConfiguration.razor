@@ -15,11 +15,7 @@
         <select class="@DefaultCssClass"
                 @bind=_selectedTransformationType
                 @bind:after=HandleTransformationChanged>
-            @foreach (var transformType in Enum.GetValues<ValueTransformationType>()
-#if !DEBUG
-                .Where(x => x != ValueTransformationType.ConditionalTransformation)
-#endif
-            )
+            @foreach (var transformType in ApplicationConstants.ValueTransformationTypes)
             {
                 <option value="@transformType">@transformType.GetDisplayText()</option>
             }
@@ -29,6 +25,8 @@
     <ValueTransformationRuleDetails @bind-ValueTransformation=_selectedTransformation
                                     CurrentTransformationResult=CurrentTransformationResult
                                     NewTransformationResultAvailable=NewTransformationResultAvailable
+                                    PreviewRowIndex=PreviewRowIndex
                                     @bind-ValueTransformation:after=NotifyTransformationChanged
+                                    FieldDescriptors=FieldDescriptors
                                     ApplyDefaultCss=ApplyDefaultCss />
 </div>

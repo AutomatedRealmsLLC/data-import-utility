@@ -12,8 +12,8 @@ public static class MappingRulesHelpers
     /// </summary>
     public static string RuleDescriptions { get; } = string.Join(
         Environment.NewLine,
-        Enum.GetValues(typeof(MappingRuleType))
-            .OfType<MappingRuleType>()
+        ApplicationConstants
+            .MappingRuleTypes
             .Select(ruleType => $"{ruleType}: {ruleType.GetDescription()}")
     );
 

@@ -10,28 +10,26 @@
     @switch (ValueTransformation)
     {
         case CombineFieldsTransformation combineFieldsOperation:
-            @* <CombineFieldsOperationDetails CombineFieldsOperation=combineFieldsOperation /> *@
-            <button type="button" class="@DefaultCssClass">
-                Configure Fields
-            </button>
-
-            <BasicValueTransformationInput ValueTransformation=combineFieldsOperation
-                                           Id=_id
-                                           ApplyDefaultCss=ApplyDefaultCss
-                                           OnAfterInput=HandleOperationDetailChanged />
+            <CombineFieldsTransformationInput ValueTransformation=combineFieldsOperation
+                                              Id=_id
+                                              ApplyDefaultCss=ApplyDefaultCss
+                                              PreviewRowIndex=PreviewRowIndex
+                                              OnAfterInput=HandleOperationDetailChanged />
             break;
-            /*
         case ConditionalTransformation conditionalOperation:
             <ConditionalValueTransformationInput ValueTransformation=conditionalOperation
+                                                 CurrentTransformationResult=CurrentTransformationResult
                                                  Id=_id
                                                  ApplyDefaultCss=ApplyDefaultCss
+                                                 FieldDescriptors=FieldDescriptors
+                                                 PreviewRowIndex=PreviewRowIndex
                                                  OnAfterInput=HandleOperationDetailChanged />
             break;
-            */
         case SubstringTransformation substringOperation:
             <SubstringValueTransformationInput ValueTransformation=substringOperation
                                                Id=_id
                                                ApplyDefaultCss=ApplyDefaultCss
+                                               PreviewRowIndex=PreviewRowIndex
                                                OnAfterInput=HandleOperationDetailChanged />
             break;
 
@@ -39,6 +37,7 @@
             <MapTransformationInput ValueTransformation=mapOperation
                                     Id=_id
                                     ApplyDefaultCss=ApplyDefaultCss
+                                    PreviewRowIndex=PreviewRowIndex
                                     OnAfterInput=HandleOperationDetailChanged />
 
             break;
@@ -47,16 +46,16 @@
             <CalculateValueTransformationInput ValueTransformation=calculateOperation
                                                Id=_id
                                                ApplyDefaultCss=ApplyDefaultCss
+                                               PreviewRowIndex=PreviewRowIndex
                                                OnAfterInput=HandleOperationDetailChanged />
             break;
         case RegexMatchTransformation regexMatchOperation:
         case InterpolateTransformation InterpolateTransformation:
-        // If the thing we are doing the interpolation on is a single string, we will only display items relevant to a placeholder for
-        // that string.  If it is a list of strings, we will display the list of strings and the placeholder.
         default:
             <BasicValueTransformationInput ValueTransformation=ValueTransformation
                                            Id=_id
                                            ApplyDefaultCss=ApplyDefaultCss
+                                           PreviewRowIndex=PreviewRowIndex
                                            OnAfterInput=HandleOperationDetailChanged />
             break;
     }
@@ -64,6 +63,7 @@
     <table class="@(DefaultCssClass)">
         <thead>
             <tr>
+                <th>Row #</th>
                 <th>In Value</th>
                 <th>Out Value</th>
                 <th>&nbsp;</th>
@@ -71,6 +71,7 @@
         </thead>
         <tbody>
             <tr>
+                <td>@(PreviewRowIndex + 1)</td>
                 <td>@(_myTransformationResult.OriginalValue is null ? "<null>" : string.IsNullOrWhiteSpace(_myTransformationResult.OriginalValue) ? "<blank>" : _myTransformationResult.OriginalValue)</td>
                 <td>@(_myTransformationResult.Value is null ? "<null>" : string.IsNullOrWhiteSpace(_myTransformationResult.Value) ? "<blank>" : _myTransformationResult.Value)</td>
                 <td>

@@ -26,6 +26,10 @@ public abstract class ValueTransformationInputBase<T> : ComponentBase
     /// The callback for when the input is changed.
     /// </summary>
     [Parameter] public EventCallback OnAfterInput { get; set; }
+    /// <summary>
+    /// The index of the active preview row.
+    /// </summary>
+    [Parameter] public uint PreviewRowIndex { get; set; }
 
     /// <summary>
     /// The string to use for the default CSS class.

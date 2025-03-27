@@ -26,18 +26,21 @@ public class EqualsOperation : ComparisonOperationBase
             return true;
         }
 
+        // Apply the left operand's rule to get its value
         var leftResult = await (LeftOperand?.Apply(result) ?? Task.FromResult(result with { Value = null }));
         if (leftResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate left operand for {DisplayName} operation: {leftResult.ErrorMessage}");
         }
 
+        // Apply the right operand's rule to get its value
         var rightResult = await (RightOperand?.Apply(result) ?? Task.FromResult(result with { Value = null }));
         if (rightResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate right operand for {DisplayName} operation: {rightResult.ErrorMessage}");
         }
 
+        // Check if values are equal
         return leftResult.IsEqualTo(rightResult);
     }
 }

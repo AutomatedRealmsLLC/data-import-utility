@@ -29,6 +29,11 @@
 @mixin table-thead-tr-defaults {
     height: var(--o1l-use-table-thead-tr-height);
     z-index: 3;
+    white-space: nowrap;
+
+    &:first-of-type {
+        height: 8ch;
+    }
 
     &:last-of-type {
         th, td {
@@ -75,8 +80,9 @@
     --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, #{$default-translucent-medium});
     --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, #{$default-translucent-light});
     --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, #{$default-translucent-dark});
-    height: var(--o1l-use-table-tbody-tr-height);
+    height: var(--o1l-use-table-tr-height);
     z-index: 2;
+    white-space: nowrap;
 
     th, td {
         @include table-tbody-tr-thtd-defaults;
@@ -104,6 +110,11 @@
         th, td {
             background: var(--o1l-use-table-body-row-selected-background);
         }
+    }
+
+    &.active {
+        filter: brightness(120%);
+        outline: var(--o1l-use-active-table-tr-outline);
     }
 }
 

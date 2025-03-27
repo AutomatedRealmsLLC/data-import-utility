@@ -29,7 +29,10 @@
             }
         }
 
-        table {
+        table, ::deep table {
+            @include table-defaults;
+            width: 100%;
+
             tbody {
                 tr {
                     cursor: pointer;
@@ -39,17 +42,8 @@
                             filter: brightness(90%);
                         }
                     }
-
-                    &.active {
-                        filter: brightness(120%);
-                    }
                 }
             }
-        }
-
-        table, ::deep table {
-            @include table-defaults;
-            width: 100%;
         }
     }
 }

@@ -53,5 +53,5 @@ public static class NotEqualOperationExtensions
     /// <param name="rightResult">The result of the right operand.</param>
     /// <returns>True if the left result does not equal the right result; otherwise, false.</returns>
     public static bool IsNotEqualTo(this TransformationResult leftResult, TransformationResult rightResult)
-        => leftResult.Value != rightResult.Value;
+        => !leftResult.Equals(rightResult);
 }

@@ -1,0 +1,136 @@
+@using DataImportUtility.Components.FieldMappingComponents.FieldTransformationComponents
+@using DataImportUtility.Components.FieldMappingComponents.ValueTransformationComponents
+@using DataImportUtility.Rules
+
+@inherits ValueTransformationInputBase<ValueTransformationBase>
+
+<div class="mapping-rule-config-panel">
+    @if (MappingRule is not null)
+    {
+        <div class="rule-config-container">
+            @switch (MappingRule)
+            {
+                case CopyRule copyRule:
+                    <div class="field-selector">
+                        <label for="@($"field-selector-{Id}")">Source Field:</label>
+                        <div class="field-input-container">
+                            <select id="@($"field-selector-{Id}")"
+                                    class="@DefaultCssClass"
+                                    @onchange=HandleFieldSelectionChanged>
+                                <option value="" selected="@(copyRule.FieldTransformation?.Field?.FieldName is null)">--Select a field--</option>
+                                @foreach (var field in FieldDescriptors)
+                                {
+                                    <option value="@field.FieldName"
+                                            selected="@(copyRule.FieldTransformation?.Field?.FieldName == field.FieldName)">
+                                        @field.FieldName
+                                    </option>
+                                }
+                            </select>
+                            @if (copyRule.FieldTransformation is not null && copyRule.FieldTransformation.Field is not null)
+                            {
+                                <button type="button"
+                                        class="o1l-btn-edit o1l-btn-sm @DefaultCssClass"
+                                        title="Edit the transformations for this field"
+                                        @onclick="_ => HandleEditTransformClicked(copyRule.FieldTransformation)">
+                                    @Icons.Edit()
+                                </button>
+                            }
+                        </div>
+                    </div>
+                    break;
+
+                case ConstantValueRule constantRule:
+                    <div class="constant-value-input">
+                        <label for="@($"constant-value-{Id}")">Value:</label>
+                        <input id="@($"constant-value-{Id}")"
+                               type="text"
+                               class="@DefaultCssClass"
+                               @bind=constantRule.RuleDetail
+                               @bind:event="oninput"
+                               @bind:after=HandleRuleDetailChanged />
+                    </div>
+                    break;
+
+                case CombineFieldsRule combineRule:
+                    <div class="combine-fields-config">
+                        <div class="field-pattern">
+                            <label for="@($"combine-pattern-{Id}")">Pattern:</label>
+                            <input id="@($"combine-pattern-{Id}")"
+                                   type="text"
+                                   class="@DefaultCssClass"
+                                   placeholder="Example: ${0} - ${1}"
+                                   @bind=combineRule.RuleDetail
+                                   @bind:event="oninput"
+                                   @bind:after=HandleRuleDetailChanged />
+                        </div>
+
+                        <div class="field-list">
+                            @foreach (var fieldTransform in combineRule.SourceFieldTransformations)
+                            {
+                                <div class="field-item">
+                                    <div class="field-input-container">
+                                        <select class="@DefaultCssClass"
+                                                @onchange="e => HandleCombineFieldChanged(e, fieldTransform)">
+                                            <option value="" selected="@(fieldTransform.Field?.FieldName is null)">--Select a field--</option>
+                                            @foreach (var field in FieldDescriptors)
+                                            {
+                                                <option value="@field.FieldName"
+                                                        selected="@(fieldTransform.Field?.FieldName == field.FieldName)">
+                                                    @field.FieldName
+                                                </option>
+                                            }
+                                        </select>
+                                        @if (fieldTransform.Field is not null)
+                                        {
+                                            <button type="button"
+                                                    class="o1l-btn-edit o1l-btn-sm @DefaultCssClass"
+                                                    title="Edit the transformations for this field"
+                                                    @onclick="_ => HandleEditTransformClicked(fieldTransform)">
+                                                @Icons.Edit()
+                                            </button>
+                                        }
+                                    </div>
+
+                                    @if (combineRule.SourceFieldTransformations.Count > 1)
+                                    {
+                                        <button type="button"
+                                                class="o1l-btn-remove o1l-btn-sm @DefaultCssClass"
+                                                @onclick="_ => HandleRemoveField(fieldTransform)">
+                                            -
+                                        </button>
+                                    }
+                                </div>
+                            }
+
+                            <button type="button"
+                                    class="o1l-btn-add o1l-btn-sm @DefaultCssClass"
+                                    @onclick=HandleAddField>
+                                <span>+</span>
+                            </button>
+                        </div>
+                    </div>
+                    break;
+
+                case CustomFieldlessRule customFieldlessRule:
+                    <div class="custom-fieldless-config">
+                        <button type="button" class="show-config o1l-btn-default" @onclick=HandleConfigureCustomClicked>
+                            Show Configuration
+                        </button>
+                    </div>
+                    break;
+            }
+        </div>
+    }
+
+    @if (_showFieldTransformConfig && _activeFieldTransform is not null)
+    {
+        <div class="field-transform-config-wrapper">
+            <FieldTransformationConfiguration @bind-Show=_showFieldTransformConfig
+                                              FieldMapping=_activeFieldMapping
+                                              @bind-FieldTransformation=_activeFieldTransform
+                                              FieldDescriptors=FieldDescriptors
+                                              ApplyDefaultCss="ApplyDefaultCss" />
+                                              @* NewTransformationResultAvailable="_ => MappingRuleChanged.InvokeAsync(MappingRule)" /> *@
+        </div>
+    }
+</div>

@@ -38,13 +38,5 @@
   {
     "outputFile": "FieldMappingComponents/ValueTransformationComponents/ValueTransformationRuleDetails.razor.css",
     "inputFile": "FieldMappingComponents/ValueTransformationComponents/ValueTransformationRuleDetails.razor.scss"
-  },
-  {
-    "outputFile": "DataSetComponents/DataSetDisplay.razor.css",
-    "inputFile": "DataSetComponents/DataSetDisplay.razor.scss"
-  },
-  {
-    "outputFile": "FieldMappingComponents/ValueTransformationComponents/BasicValueTransformationInput.razor.css",
-    "inputFile": "FieldMappingComponents/ValueTransformationComponents/BasicValueTransformationInput.razor.scss"
   }
 ]

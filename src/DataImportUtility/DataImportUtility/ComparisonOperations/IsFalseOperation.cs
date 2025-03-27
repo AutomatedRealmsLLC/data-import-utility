@@ -52,26 +52,5 @@ public static class IsFalseOperationExtensions
     /// Everything else is considered not false.
     /// </remarks>
     public static bool IsFalse(this TransformationResult result)
-    {
-        // First check if the result is null (treat this as a falsy value)
-        if (string.IsNullOrWhiteSpace(result.Value))
-        {
-            return true;
-        }
-
-        // If the result is a boolean, return the value
-        if (bool.TryParse(result.Value, out var boolValue))
-        {
-            return !boolValue;
-        }
-
-        // If the result is a number, return false if the number is zero
-        if (double.TryParse(result.Value, out var numberValue))
-        {
-            return numberValue == 0;
-        }
-
-        // All other values are treated as not false
-        return false;
-    }
+        => !result.IsTrue();
 }

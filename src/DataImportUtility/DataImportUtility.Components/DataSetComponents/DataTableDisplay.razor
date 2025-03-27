@@ -20,7 +20,7 @@
             else
             {
                 <tr>
-                    <td colspan="@(MyDataTable.Columns.Count + (ShowRowSelect ? 1 : 0))">
+                    <td colspan="@(MyDataTable.Columns.Count + 1 + (ShowRowSelect ? 1 : 0))">
                         <div class="table-title-wrapper">
                             <span class="table-title">Data Table: @MyDataTable.TableName</span>
                         </div>
@@ -34,6 +34,10 @@
                             <CheckButton Checked=allSelected OnClick="_ => HandleToggleRowSelected()" />
                         </th>
                     }
+
+                    <th>
+                        Row #
+                    </th>
 
                     @foreach (DataColumn curCol in MyDataTable.Columns)
                     {
@@ -79,6 +83,11 @@
                                 <CheckButton Checked=isSelected OnClick="_ => HandleToggleRowSelected(myRowIndex)" />
                             </td>
                         }
+
+                        <td>
+                            @(myRowIndex + 1)
+                        </td>
+
                         for (var i = 0; i < curRow.ItemArray.Length; i++)
                         {
                             var colNum = i;

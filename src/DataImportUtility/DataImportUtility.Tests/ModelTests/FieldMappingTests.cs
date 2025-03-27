@@ -71,7 +71,7 @@ public class FieldMappingTests
         // Add the DataTable to the ImportDataFile
         mainDataSet.Tables.Add(dataTable);
 
-        var rule = ImportDataObjects.CombineFieldsRule;
+        var rule = ImportDataObjects.CombineFieldsRule.Clone();
         rule.RuleDetail = "${0}-----${1}";
 
         var fieldDescriptors = new[]

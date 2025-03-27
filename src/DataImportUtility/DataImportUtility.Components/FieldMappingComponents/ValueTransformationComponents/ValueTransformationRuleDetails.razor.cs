@@ -1,4 +1,6 @@
-﻿using DataImportUtility.Abstractions;
+﻿using System.Collections.Immutable;
+
+using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Models;
 using DataImportUtility.ValueTransformations;
@@ -28,6 +30,14 @@ public partial class ValueTransformationRuleDetails : FileImportUtilityComponent
     /// The callback for when a new transformation result is available.
     /// </summary>
     [Parameter] public EventCallback<TransformationResult> NewTransformationResultAvailable { get; set; }
+    /// <summary>
+    /// The imported record fields.
+    /// </summary>
+    [Parameter, EditorRequired] public ImmutableArray<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = [];
+    /// <summary>
+    /// The index for the current preview row.
+    /// </summary>
+    [Parameter] public uint PreviewRowIndex { get; set; }
 
     private TransformationResult _myTransformationResult = default!; // Initialized in OnInitializedAsync
 
@@ -42,7 +52,7 @@ public partial class ValueTransformationRuleDetails : FileImportUtilityComponent
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _myTransformationResult = await ValueTransformation.Apply(CurrentTransformationResult);
+        await PerformValueUpdate();
         _debounceTimer.Elapsed += HandleDebounceTimedOut;
     }
 

@@ -16,7 +16,7 @@ public class CombineFieldsRuleTests : MappingRuleBaseTestContext
     public async Task CombineRule_ApplyOnTransformResults_ShouldReturnCombinedValues()
     {
         // Arrange
-        var rule = ImportDataObjects.CombineFieldsRule;
+        var rule = ImportDataObjects.CombineFieldsRule.Clone();
         rule.RuleDetail = "${0}------${1}";
         var input = new TransformationResult() { Value = @"[""Test Input"",""Test Input 2""]" };
 

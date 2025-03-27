@@ -70,6 +70,10 @@ public static class InOperationExtensions
     /// <returns>True if the left result is in the set of values; otherwise, false.</returns>
     public static bool In(this TransformationResult leftResult, params TransformationResult[] values)
     {
-        throw new NotImplementedException();
+        // Handle null case
+        if (leftResult.Value is null) { return false; }
+
+        // Check if any value matches
+        return values.Any(val => string.Equals(leftResult.Value, val.Value, StringComparison.Ordinal));
     }
 }

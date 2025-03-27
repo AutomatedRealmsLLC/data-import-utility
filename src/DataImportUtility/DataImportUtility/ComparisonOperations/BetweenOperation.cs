@@ -76,6 +76,31 @@ public static class BetweenOperationExtensions
     /// <returns>True if the left result is between the low and high limits (inclusive); otherwise, false.</returns>
     public static bool Between(this TransformationResult leftResult, TransformationResult lowLimitInclusive, TransformationResult highLimitInclusive)
     {
-        throw new NotImplementedException();
+        // Handle null cases
+        if (leftResult.Value is null) { return false; }
+
+        // Try to parse as numbers for numeric comparison
+        if (double.TryParse(leftResult.Value, out var leftValue)
+            && double.TryParse(lowLimitInclusive.Value, out var lowValue)
+            && double.TryParse(highLimitInclusive.Value, out var highValue))
+        {
+            return leftValue >= lowValue && leftValue <= highValue;
+        }
+
+        // For dates
+        if (DateTime.TryParse(leftResult.Value, out var leftDate)
+            && DateTime.TryParse(lowLimitInclusive.Value, out var lowDate)
+            && DateTime.TryParse(highLimitInclusive.Value, out var highDate))
+        {
+            return leftDate >= lowDate && leftDate <= highDate;
+        }
+
+        // Fall back to string comparison
+        var leftStr = leftResult.Value;
+        var lowStr = lowLimitInclusive.Value ?? string.Empty;
+        var highStr = highLimitInclusive.Value ?? string.Empty;
+
+        return string.Compare(leftStr, lowStr, StringComparison.Ordinal) >= 0
+            && string.Compare(leftStr, highStr, StringComparison.Ordinal) <= 0;
     }
 }
