@@ -37,4 +37,16 @@ public abstract class ComparisonOperationBase
     /// </summary>
     /// <returns>True if the comparison is successful, otherwise false</returns>
     public abstract Task<bool> Evaluate(TransformationResult result);
+
+    /// <summary>
+    /// Creates a deep clone of this comparison operation
+    /// </summary>
+    /// <returns>A new instance with the same properties</returns>
+    public virtual ComparisonOperationBase Clone()
+    {
+        var clone = (ComparisonOperationBase)MemberwiseClone();
+        clone.LeftOperand = LeftOperand?.Clone();
+        clone.RightOperand = RightOperand?.Clone();
+        return clone;
+    }
 }

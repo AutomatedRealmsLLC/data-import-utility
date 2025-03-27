@@ -46,5 +46,5 @@ public static class IsNotNullOperationExtensions
     /// <param name="result">The result to check.</param>
     /// <returns>True if the result is not null; otherwise, false.</returns>
     public static bool IsNotNull(this TransformationResult result)
-        => result.Value is not null;
+        => !result.IsNull();
 }

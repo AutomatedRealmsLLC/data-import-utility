@@ -20,7 +20,7 @@ public class GreaterThanOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override async Task<bool> Evaluate(TransformationResult result)
     {
-        if (LeftOperand == null || RightOperand == null)
+        if (LeftOperand is null || RightOperand is null)
         {
             throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set.");
         }
@@ -54,7 +54,24 @@ public static class GreaterThanOperationExtensions
     /// <returns>True if the left result is greater than the right result; otherwise, false.</returns>
     public static bool GreaterThan(this TransformationResult leftResult, TransformationResult rightResult)
     {
-        // Depending on the transformation result's CurrentValueType, we may need to convert the values to a common type before comparing them.
-        throw new NotImplementedException();
+        // Handle null cases
+        if (leftResult.Value is null || rightResult.Value is null) { return false; }
+
+        // Try numeric comparison
+        if (double.TryParse(leftResult.Value, out var leftValue)
+            && double.TryParse(rightResult.Value, out var rightValue))
+        {
+            return leftValue > rightValue;
+        }
+
+        // Try date comparison
+        if (DateTime.TryParse(leftResult.Value, out var leftDate)
+            && DateTime.TryParse(rightResult.Value, out var rightDate))
+        {
+            return leftDate > rightDate;
+        }
+
+        // Fall back to string comparison
+        return string.Compare(leftResult.Value, rightResult.Value, StringComparison.Ordinal) > 0;
     }
 }

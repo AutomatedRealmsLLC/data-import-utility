@@ -12,10 +12,7 @@ public class ValueTransformationTypeEnumExtensionTests
     /// The CreateNewInstance method used here must have the types manually tested.
     /// Everything else uses the created class instance to test the extension methods.
     /// </remarks>
-    public static IEnumerable<object[]> ValueTransformationTypeWithInstanceData
-    { get; } = Enum.GetValues(typeof(ValueTransformationType))
-        .OfType<ValueTransformationType>()
-        .Select(opType => new object[] { opType, opType.CreateNewInstance()! });
+    public static IEnumerable<object[]> ValueTransformationTypeWithInstanceData { get; } = ApplicationConstants.ValueTransformationTypes.Select(opType => new object[] { opType, opType.CreateNewInstance()! });
 
     /// <summary>
     /// Tests that the ValueTransformationType enum extension method <see cref="ValueTransformationTypeExtensions.CreateNewInstance(ValueTransformationType)"/> returns the correct ValueTransformationBase.

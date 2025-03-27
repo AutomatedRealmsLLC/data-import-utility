@@ -1,4 +1,6 @@
-﻿using DataImportUtility.Abstractions;
+﻿using System.Collections.Immutable;
+
+using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Models;
 
@@ -37,10 +39,14 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
     /// The imported data file.
     /// </summary>
     [Parameter] public ImportedDataFile? ImportedDataFile { get; set; }
+    /// <summary>
+    /// The imported record fields.
+    /// </summary>
+    [Parameter, EditorRequired] public ImmutableArray<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = [];
 
-    private object[] DistinctValues => Field?.ValueSet?.Distinct().ToArray() ?? Array.Empty<object>();
-    private bool HasValues => DistinctValues.Length > 0;
-    private int _previewIndex = 0;
+    private object[] AllValues => Field?.ValueSet.ToArray() ?? [];
+    private bool HasValues => AllValues.Length > 0;
+    private uint _previewIndex = 0;
 
     private ImportedRecordFieldDescriptor? Field => FieldTransformation.Field;
     private List<ValueTransformationBase> _valueTransformations = [];
@@ -62,7 +68,7 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
         return HandleValueTransformationChanged();
     }
 
-    private Task UpdatePreviewIndex(int index)
+    private Task UpdatePreviewIndex(uint index)
     {
         _previewIndex = index;
         return HandleValueTransformationChanged();
@@ -102,13 +108,13 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
         return RepopulateTransformationResults();
     }
 
-    private async Task<TransformationResult> ApplyTransformationsThrough(int? throughTransformIndex = null, int? valueIndex = null, bool resetOriginal = true)
+    private async Task<TransformationResult> ApplyTransformationsThrough(int? throughTransformIndex = null, uint? valueIndex = null, bool resetOriginal = true)
     {
         // Apply all transformations if no index is specified
         throughTransformIndex ??= _valueTransformations.Count - 1;
         valueIndex ??= _previewIndex;
 
-        if (throughTransformIndex.Value >= 0 && DistinctValues.Length > valueIndex && _transformationResults.TryGetValue((DistinctValues[valueIndex.Value]?.ToString() ?? "<null>"), out var results) && results.Count > throughTransformIndex.Value)
+        if (throughTransformIndex.Value >= 0 && AllValues.Length > valueIndex && _transformationResults.TryGetValue((AllValues[valueIndex.Value]?.ToString() ?? "<null>"), out var results) && results.Count > throughTransformIndex.Value)
         {
             var forRet = results[throughTransformIndex.Value];
             forRet = forRet with { OriginalValue = resetOriginal ? forRet.Value : forRet.OriginalValue, Value = forRet.Value };
@@ -125,15 +131,15 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
         return valueTransform with { OriginalValue = resetOriginal ? valueTransform.Value : valueTransform.OriginalValue, Value = valueTransform.Value };
     }
 
-    private TransformationResult GetInitialValueTransform(int? valueIndex = null)
+    private TransformationResult GetInitialValueTransform(uint? valueIndex = null)
     {
         valueIndex ??= _previewIndex;
 
         var retVal = HasValues
-            ? DistinctValues
-                .Skip(Math.Max(0, Math.Min(valueIndex.Value, DistinctValues.Length - 1)))
-                .First()
-            : default;
+                ? AllValues
+                    .Skip(Math.Max(0, Math.Min((int)valueIndex.Value, AllValues.Length - 1)))
+                    .First()
+                : default;
 
         return new()
         {
@@ -154,7 +160,7 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
     private readonly Dictionary<string, List<TransformationResult>> _transformationResults = [];
     private async Task RepopulateTransformationResults()
     {
-        foreach (var value in DistinctValues)
+        foreach (var value in AllValues)
         {
             var useValue = value?.ToString() ?? "<null>";
             if (!_transformationResults.TryGetValue(useValue, out var transformResults))

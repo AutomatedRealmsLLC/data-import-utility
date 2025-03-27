@@ -1,7 +1,179 @@
 @using DataImportUtility.ValueTransformations
+@using DataImportUtility.Components.FieldMappingComponents.OperandComponents
+@using DataImportUtility.Abstractions
+@using DataImportUtility.Models
 
 @inherits ValueTransformationInputBase<ConditionalTransformation>
 
 <div class="conditional-transformation-input">
+    <fieldset class="condition-section">
+        <legend>If</legend>
 
+        <!-- Left operand configuration -->
+        <div class="operand-container">
+            <div class="transformation-input">
+                <label for="@($"left-operand_{Id}")">Left Value:</label>
+                <select id="@($"left-operand_{Id}")"
+                        class="@DefaultCssClass"
+                        @bind=_selectedLeftOperandType
+                        @bind:after=HandleLeftOperandTypeChanged>
+                    @foreach (var ruleType in ApplicationConstants.MappingRuleTypes.Where(x => x != MappingRuleType.IgnoreRule))
+                    {
+                        <option value="@ruleType">@ruleType.GetDisplayText()</option>
+                    }
+                </select>
+            </div>
+            
+            @if (ValueTransformation.ComparisonOperation?.LeftOperand is not null)
+            {
+                <div class="operand-details">
+                    <MappingRuleConfigPanel MappingRule=ValueTransformation.ComparisonOperation.LeftOperand
+                                            FieldConfigurationDisplayName="Left Operand"
+                                            ValueTransformation=ValueTransformation
+                                            FieldDescriptors=FieldDescriptors
+                                            MappingRuleChanged=HandleLeftOperandChanged
+                                            ApplyDefaultCss=ApplyDefaultCss
+                                            PreviewRowIndex=PreviewRowIndex
+                                            OnAfterInput=UpdateTransformationPreview
+                                            Id="@($"left-operand-config-{Id}")" />
+                </div>
+            }
+            <div class="result-preview">
+                @if (_leftOperandPreviewResult is not null)
+                {
+                    <span>Current Value (@(PreviewRowIndex + 1)): @(_leftOperandPreviewResult.Value)</span>
+                }
+            </div>
+        </div>
+
+        <!-- Comparison operation type selection -->
+        <div class="transformation-input">
+            <select id="@($"comparison-type_{Id}")"
+                    class="@DefaultCssClass"
+                    @bind=_selectedComparisonType
+                    @bind:after=HandleComparisonTypeChanged>
+                @foreach (var opType in Enum.GetValues<ComparisonOperationType>())
+                {
+                    <option value="@opType">@opType.GetDisplayText()</option>
+                }
+            </select>
+        </div>
+
+        <!-- Right operand configuration (if needed) -->
+        @if (NeedsRightOperand)
+        {
+            <div class="operand-container">
+                <div class="transformation-input">
+                    <label for="@($"left-operand_{Id}")">Right Value:</label>
+                    <select id="@($"left-operand_{Id}")"
+                            class="@DefaultCssClass"
+                            @bind=_selectedRightOperandType
+                            @bind:after=HandleRightOperandTypeChanged>
+                        @foreach (var ruleType in ApplicationConstants.MappingRuleTypes.Where(x => x != MappingRuleType.IgnoreRule))
+                        {
+                            <option value="@ruleType">@ruleType.GetDisplayText()</option>
+                        }
+                    </select>
+                </div>
+
+                @if (ValueTransformation.ComparisonOperation?.RightOperand is not null)
+                {
+                    <div class="operand-details">
+                        <MappingRuleConfigPanel MappingRule=ValueTransformation.ComparisonOperation.RightOperand
+                                                FieldConfigurationDisplayName="Right Operand"
+                                                ValueTransformation=ValueTransformation
+                                                FieldDescriptors=FieldDescriptors
+                                                MappingRuleChanged=HandleRightOperandChanged
+                                                ApplyDefaultCss=ApplyDefaultCss
+                                                PreviewRowIndex=PreviewRowIndex
+                                                OnAfterInput=UpdateTransformationPreview
+                                                Id="@($"right-operand-config-{Id}")" />
+                    <div class="result-preview">
+                        @if (_rightOperandPreviewResult is not null)
+                        {
+                            <span>Current Value (@(PreviewRowIndex + 1)): @(_rightOperandPreviewResult.Value)</span>
+                        }
+                    </div>
+                    </div>
+                }
+            </div>
+        }
+    </fieldset>
+
+    <fieldset class="true-case-section">
+        <legend>Then</legend>
+        <div class="mapping-container">
+            <div class="transformation-input">
+                <label for="@($"true-mapping_{Id}")">Apply:</label>
+                <select id="@($"true-mapping_{Id}")"
+                        class="@DefaultCssClass"
+                        @bind=_selectedTrueMappingType
+                        @bind:after=HandleTrueMappingTypeChanged>
+                    @foreach (var ruleType in ApplicationConstants.MappingRuleTypes.Where(x => x != MappingRuleType.IgnoreRule))
+                    {
+                        <option value="@ruleType">@ruleType.GetDisplayText()</option>
+                    }
+                </select>
+            </div>
+            
+            @if (ValueTransformation.TrueMappingRule is not null)
+            {
+                <div class="mapping-details">
+                    <MappingRuleConfigPanel MappingRule=ValueTransformation.TrueMappingRule
+                                            FieldConfigurationDisplayName="True Mapping"
+                                            ValueTransformation=ValueTransformation
+                                            FieldDescriptors=FieldDescriptors
+                                            ApplyDefaultCss=ApplyDefaultCss
+                                            PreviewRowIndex=PreviewRowIndex
+                                            MappingRuleChanged=HandleTrueMappingChanged
+                                            Id="@($"true-mapping-config-{Id}")" />
+                        <div class="result-preview">
+                            @if (_trueMappingPreviewResult is not null)
+                            {
+                                <span>Current Value (@(PreviewRowIndex + 1)): @(_trueMappingPreviewResult.Value)</span>
+                            }
+                        </div>
+                </div>
+            }
+        </div>
+    </fieldset>
+
+    <fieldset class="false-case-section">
+        <legend>Else</legend>
+        <div class="mapping-container">
+            <div class="transformation-input">
+                <label for="@($"false-mapping_{Id}")">Apply:</label>
+                <select id="@($"false-mapping_{Id}")"
+                        class="@DefaultCssClass"
+                        @bind=_selectedFalseMappingType
+                        @bind:after=HandleFalseMappingTypeChanged>
+                    @foreach (var ruleType in ApplicationConstants.MappingRuleTypes.Where(x => x != MappingRuleType.IgnoreRule))
+                    {
+                        <option value="@ruleType">@ruleType.GetDisplayText()</option>
+                    }
+                </select>
+            </div>
+            
+            @if (ValueTransformation.FalseMappingRule is not null)
+            {
+                <div class="mapping-details">
+                    <MappingRuleConfigPanel MappingRule=ValueTransformation.FalseMappingRule
+                                            FieldConfigurationDisplayName="False Mapping"
+                                            ValueTransformation=ValueTransformation
+                                            FieldDescriptors=FieldDescriptors
+                                            MappingRuleChanged=HandleFalseMappingChanged
+                                            ApplyDefaultCss=ApplyDefaultCss
+                                            PreviewRowIndex=PreviewRowIndex
+                                            OnAfterInput=UpdateTransformationPreview
+                                            Id="@($"false-mapping-config-{Id}")" />
+                    <div class="result-preview">
+                        @if (_falseMappingPreviewResult is not null)
+                        {
+                            <span>Current Value (@(PreviewRowIndex + 1)): @(_falseMappingPreviewResult.Value)</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </fieldset>
 </div>

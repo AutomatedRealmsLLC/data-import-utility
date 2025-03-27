@@ -69,7 +69,5 @@ public static class NotInOperationExtensions
     /// <param name="values">The set of values to check for.</param>
     /// <returns>True if the left result is not in the set of values; otherwise, false.</returns>
     public static bool NotIn(this TransformationResult leftResult, params TransformationResult[] values)
-    {
-        throw new NotImplementedException();
-    }
+        => !leftResult.In(values);
 }

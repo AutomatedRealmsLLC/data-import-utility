@@ -18,7 +18,7 @@ public class CopyRuleTests : MappingRuleBaseTestContext
         var expectedOutput = input.Value;
 
         // Act
-        var result = (await ImportDataObjects.CopyRule.Apply(input)).Value;
+        var result = (await ImportDataObjects.CopyRule.Clone().Apply(input)).Value;
 
         // Assert
         Assert.Equal(expectedOutput, result);
@@ -34,7 +34,7 @@ public class CopyRuleTests : MappingRuleBaseTestContext
         var input = new TransformationResult() { Value = @"[""Test Input"",""Test Input 2""]" };
 
         // Act
-        var result = await ImportDataObjects.CopyRule.Apply(input);
+        var result = await ImportDataObjects.CopyRule.Clone().Apply(input);
 
         // Assert
         Assert.True(result.WasFailure);

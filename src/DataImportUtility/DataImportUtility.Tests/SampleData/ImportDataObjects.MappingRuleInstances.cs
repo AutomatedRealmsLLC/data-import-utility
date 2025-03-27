@@ -27,11 +27,7 @@ internal static partial class ImportDataObjects
     /// The combine fields rule instance to use for testing.
     /// </summary>
     internal static CombineFieldsRule CombineFieldsRule => MappingRules.OfType<CombineFieldsRule>().First().Clone<CombineFieldsRule>();
-    /// <summary>
-    /// The ignore rule instance to use for testing.
-    /// </summary>
-    internal static IgnoreRule IgnoreRule => MappingRules.OfType<IgnoreRule>().First().Clone<IgnoreRule>();
-
+    
     private static readonly object _mappingRulePreparationLock = new();
 
     private static void PrepareMappingRuleInstances()
@@ -40,9 +36,9 @@ internal static partial class ImportDataObjects
         {
             if (_mappingRules is { Count: >0 }) { return; }
 
-            _mappingRules = Enum.GetValues(typeof(MappingRuleType)).OfType<MappingRuleType>().Select(x => x.CreateNewInstance()!).ToList();
+            _mappingRules = ApplicationConstants.MappingRuleTypes.Select(x => x.CreateNewInstance()!).ToList();
 
-            foreach (var ruleType in Enum.GetValues(typeof(MappingRuleType)).OfType<MappingRuleType>())
+            foreach (var ruleType in ApplicationConstants.MappingRuleTypes)
             {
                 var newRule = ruleType.CreateNewInstance();
                 switch (newRule)

@@ -75,7 +75,5 @@ public static class NotBetweenOperationExtensions
     /// <param name="highLimitInclusive">The high limit (inclusive).</param>
     /// <returns>True if the left result is not between the low and high limits (inclusive); otherwise, false.</returns>
     public static bool NotBetween(this TransformationResult leftResult, TransformationResult lowLimitInclusive, TransformationResult highLimitInclusive)
-    {
-        throw new NotImplementedException();
-    }
+        => !leftResult.Between(lowLimitInclusive, highLimitInclusive);
 }

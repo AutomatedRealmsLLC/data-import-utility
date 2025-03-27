@@ -20,7 +20,7 @@ public class StartsWithOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override async Task<bool> Evaluate(TransformationResult result)
     {
-        if (LeftOperand == null || RightOperand == null)
+        if (LeftOperand is null || RightOperand is null)
         {
             throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set.");
         }
@@ -54,6 +54,9 @@ public static class StartsWithOperationExtensions
     /// <returns>True if the left result starts with the value; otherwise, false.</returns>
     public static bool StartsWith(this TransformationResult leftResult, TransformationResult value)
     {
-        throw new NotImplementedException();
+        // Handle null cases
+        if (leftResult.Value is null || value.Value is null) { return false; }
+
+        return leftResult.Value.StartsWith(value.Value, StringComparison.Ordinal);
     }
 }

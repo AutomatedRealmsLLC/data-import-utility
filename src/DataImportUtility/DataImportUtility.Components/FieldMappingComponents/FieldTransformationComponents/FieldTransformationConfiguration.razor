@@ -40,6 +40,8 @@
                                 <ValueTransformationConfiguration @bind-FieldTransformation=FieldTransformation
                                                                   TransformationRuleIndex=curIndex
                                                                   CurrentTransformationResult=curTransformResult
+                                                                  FieldDescriptors=FieldDescriptors
+                                                                  PreviewRowIndex=_previewIndex
                                                                   @bind-FieldTransformation:after=HandleTransformationRuleUpdated
                                                                   ApplyDefaultCss=ApplyDefaultCss />
                                 if (FieldTransformation.ValueTransformations.Count > 0)
@@ -67,7 +69,7 @@
                         <span class="results-preview-title">
                             Results Preview
                         </span>
-                        @if (DistinctValues.Length > 1)
+                        @if (AllValues.Length > 1)
                         {
                             <button type="button"
                                     class="o1l-btn-link@(DefaultCssClass)"
@@ -76,9 +78,12 @@
                             </button>
                         }
 
-                        <table class="output-preview@((_previewsExpanded && DistinctValues.Length > 1) ? " expanded" : null)">
+                        <table class="output-preview@((_previewsExpanded && AllValues.Length > 1) ? " expanded" : null)">
                             <thead>
                                 <tr>
+                                    <th class="row-num">
+                                        Row #
+                                    </th>
                                     <th class="column-title">
                                         @Field?.FieldName
                                     </th>
@@ -88,18 +93,21 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if (DistinctValues.Length == 0)
+                                @if (AllValues.Length == 0)
                                 {
                                     <tr>
-                                        <td colspan="2">
+                                        <td colspan="3">
                                             No values set
                                         </td>
                                     </tr>
                                 }
-                                else if (!_previewsExpanded || DistinctValues.Length == 1)
+                                else if (!_previewsExpanded || AllValues.Length == 1)
                                 {
                                     var thisTransformedValue = ApplyTransformationsThrough(resetOriginal: false).Result;
                                     <tr>
+                                        <td class="row-num">
+                                            @(_previewIndex + 1)
+                                        </td>
                                         <td class="value-display current-value">
                                             @thisTransformedValue.GetOriginalValueDisplay()
                                         </td>
@@ -121,11 +129,14 @@
                                 }
                                 else
                                 {
-                                    for (var i = 0; i < DistinctValues.Length; i++)
+                                    for (var i = 0; i < AllValues.Length; i++)
                                     {
-                                        var thisIndex = i;
+                                        var thisIndex = (uint)i;
                                         var thisTransformedValue = ApplyTransformationsThrough(valueIndex: thisIndex, resetOriginal: false).Result;
                                         <tr class="@(thisIndex == _previewIndex ? "active" : null)" @onclick="_ => UpdatePreviewIndex(thisIndex)">
+                                            <td class="row-num">
+                                                @(thisIndex + 1)
+                                            </td>
                                             <td class="value-display current-value">
                                                 @thisTransformedValue.GetOriginalValueDisplay()
                                             </td>

@@ -18,6 +18,6 @@ public class MappingRuleBaseTests : MappingRuleBaseTestContext
     {
         var result = await rule.Apply(input);
 
-        Assert.False(result.WasFailure);
+        Assert.False(result.WasFailure, $"Expected no failure for rule {rule.GetType().Name} with input {input}. Error Message: {result.ErrorMessage}");
     }
 }

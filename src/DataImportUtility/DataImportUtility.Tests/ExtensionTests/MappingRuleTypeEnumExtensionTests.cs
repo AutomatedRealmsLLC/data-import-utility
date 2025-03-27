@@ -12,10 +12,7 @@ public class MappingRuleTypeEnumExtensionTests
     /// The CreateNewInstance method used here must have the types manually tested.
     /// Everything else uses the created class instance to test the extension methods.
     /// </remarks>
-    public static IEnumerable<object[]> MappingRuleTypeWithInstanceData
-    { get; } = Enum.GetValues(typeof(MappingRuleType))
-        .OfType<MappingRuleType>()
-        .Select(ruleType => new object[] { ruleType, ruleType.CreateNewInstance()! });
+    public static IEnumerable<object[]> MappingRuleTypeWithInstanceData { get; } = ApplicationConstants.MappingRuleTypes.Select(ruleType => new object[] { ruleType, ruleType.CreateNewInstance()! });
 
     /// <summary>
     /// Tests that the MappingRuleType enum extension method <see cref="MappingRuleTypeExtensions.CreateNewInstance(MappingRuleType)"/> returns the correct MappingRuleBase.

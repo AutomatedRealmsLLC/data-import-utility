@@ -74,11 +74,21 @@ public abstract partial class FieldMapperEditorBase : FileImportUtilityComponent
         fieldMapping.MappingRule = selectedMappingRuleType.CreateNewInstance();
 
         // Special rule for ConstantValueRule to set SourceFieldTransformations to the first imported field.
-        if (fieldMapping.MappingRule is ConstantValueRule cvr)
+        switch (fieldMapping.MappingRule)
         {
-            var newFieldTransform = new FieldTransformation(FieldDescriptors.First());
+            case ConstantValueRule cvr when cvr.SourceFieldTransformations.Count == 0:
+                {
+                    var newFieldTransform = new FieldTransformation(FieldDescriptors.First());
+                    cvr.SourceFieldTransformations = [newFieldTransform];
+                }
+                break;
+            case CustomFieldlessRule cfr when cfr.SourceFieldTransformations.Count == 0:
+                {
 
-            cvr.SourceFieldTransformations = [newFieldTransform];
+                    var newFieldTransform = new FieldTransformation(FieldDescriptors.First());
+                    cfr.SourceFieldTransformations = [newFieldTransform];
+                }
+                break;
         }
 
         return NotifyFieldMappingChanged(fieldMapping);
@@ -143,6 +153,16 @@ public abstract partial class FieldMapperEditorBase : FileImportUtilityComponent
     protected virtual void HandleEditTransformClicked(FieldMapping fieldMapping, FieldTransformation fieldTransform)
     {
         _editFieldTransformOptions = new() { FieldMapping = fieldMapping, FieldTransform = fieldTransform };
+        _showConfigureTransform = true;
+    }
+
+    /// <summary>
+    /// Handles the click event to configure a custom field transformation.
+    /// </summary>
+    /// <param name="fieldMapping">The field mapping to update.</param>
+    protected virtual void HandleConfigureCustomClicked(FieldMapping fieldMapping)
+    {
+        _editFieldTransformOptions = new() { FieldMapping = fieldMapping, FieldTransform = new() };
         _showConfigureTransform = true;
     }
 

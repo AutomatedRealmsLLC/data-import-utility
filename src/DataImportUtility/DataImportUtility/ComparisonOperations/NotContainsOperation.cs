@@ -20,7 +20,7 @@ public class NotContainsOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override async Task<bool> Evaluate(TransformationResult result)
     {
-        if (LeftOperand == null || RightOperand == null)
+        if (LeftOperand is null || RightOperand is null)
         {
             throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set.");
         }
@@ -60,7 +60,5 @@ public static class NotContainsOperationExtensions
     /// string value from the value TransformationResult.
     /// </remarks>
     public static bool NotContains(this TransformationResult leftResult, TransformationResult value)
-    {
-        throw new NotImplementedException();
-    }
+        => !leftResult.Contains(value);
 }

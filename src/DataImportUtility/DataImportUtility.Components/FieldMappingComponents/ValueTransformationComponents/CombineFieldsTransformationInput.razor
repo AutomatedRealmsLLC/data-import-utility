@@ -1,0 +1,30 @@
+@using DataImportUtility.ValueTransformations
+
+@inherits ValueTransformationInputBase<CombineFieldsTransformation>
+
+<div class="combine-fields-transformation-input">
+    <div class="transformation-input">
+        <label for="@($"input_{Id}")">
+            <span>Pattern:</span>
+            <span class="tooltip-icon" title="Use placeholders like ${0}, ${1}, etc. to reference values from fields in the order they're added.">
+                @Icons.InfoIcon()
+            </span>
+        </label>
+        <input id="@($"input_{Id}")"
+               type="text"
+               class="@DefaultCssClass"
+               placeholder="Example: ${0}-${1}"
+               @bind=ValueTransformation.TransformationDetail
+               @bind:event="oninput"
+               @bind:after=HandleOperationDetailChanged />
+    </div>
+
+    <div class="field-pattern-help">
+        <small>
+            Enter a pattern using ${n} to reference field values:<br />
+            • ${0} refers to the first field value<br />
+            • ${1} refers to the second field value<br />
+            Example: "Name: ${0}, ID: ${1}" will combine name and ID fields
+        </small>
+    </div>
+</div>

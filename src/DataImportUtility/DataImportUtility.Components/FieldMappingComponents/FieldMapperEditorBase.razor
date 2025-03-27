@@ -31,6 +31,7 @@
                                                       FieldMapping=_editFieldTransformOptions.FieldMapping
                                                       @bind-FieldTransformation=_editFieldTransformOptions.FieldTransform
                                                       @bind-FieldTransformation:after="() => NotifyFieldMappingChanged(_editFieldTransformOptions.FieldMapping)"
+                                                      FieldDescriptors=FieldDescriptors
                                                       ApplyDefaultCss=ApplyDefaultCss />
                 </div>
             }
@@ -87,7 +88,7 @@
                 <div class="mapping-rule-picker-wrapper">
                     <select class="@DefaultCssClass"
                             @onchange="e => HandleMappingRuleChanged(e, curField)">
-                        @foreach (var curMapType in Enum.GetValues<MappingRuleType>())
+                        @foreach (var curMapType in ApplicationConstants.MappingRuleTypes)
                         {
                             <option value="@curMapType" selected="@(curField.MappingRuleType == curMapType)">@curMapType.GetDisplayText()</option>
                         }
@@ -122,43 +123,57 @@
                         }
                         break;
                     case MappingRuleType.CombineFieldsRule:
-                        <div class="combine-fields-wrapper">
-                            @foreach (var sourceFieldTransform in curMappingRule.SourceFieldTransformations)
-                            {
-                                <div class="combined-field">
-                                    @RenderFieldPicker(curField, sourceFieldTransform)
-                                    @if (curMappingRule.SourceFieldTransformations.Count > 1)
-                                    {
-                                        <button type="button"
-                                                class="o1l-btn-remove o1l-btn-sm@(DefaultCssClass)"
-                                                title="Remove this source field"
-                                                @onclick="_ => HandleRemoveSourceFieldTransformClicked(curField, sourceFieldTransform)">
-                                            <span>-</span>
-                                        </button>
-                                    }
-                                </div>
-                            }
+                        {
+                            <div class="combine-fields-wrapper">
+                                @foreach (var sourceFieldTransform in curMappingRule.SourceFieldTransformations)
+                                {
+                                    <div class="combined-field">
+                                        @RenderFieldPicker(curField, sourceFieldTransform)
+                                        @if (curMappingRule.SourceFieldTransformations.Count > 1)
+                                        {
+                                            <button type="button"
+                                                    class="o1l-btn-remove o1l-btn-sm@(DefaultCssClass)"
+                                                    title="Remove this source field"
+                                                    @onclick="_ => HandleRemoveSourceFieldTransformClicked(curField, sourceFieldTransform)">
+                                                <span>-</span>
+                                            </button>
+                                        }
+                                    </div>
+                                }
 
-                            @if (curMappingRule.SourceFieldTransformations.Count == 0)
-                            {
-                                <div class="combined-field">
-                                    @RenderFieldPicker(curField, null)
-                                </div>
-                            }
+                                @if (curMappingRule.SourceFieldTransformations.Count == 0)
+                                {
+                                    <div class="combined-field">
+                                        @RenderFieldPicker(curField, null)
+                                    </div>
+                                }
 
-                            <button type="button"
-                                    class="o1l-btn-add o1l-btn-sm@(DefaultCssClass)"
-                                    title="Add a new source field" 
-                                    @onclick="_ => HandleAddSourceFieldTransformClicked(curField)">
-                                <span>+</span>
-                            </button>
-                        </div>
+                                <button type="button"
+                                        class="o1l-btn-add o1l-btn-sm@(DefaultCssClass)"
+                                        title="Add a new source field" 
+                                        @onclick="_ => HandleAddSourceFieldTransformClicked(curField)">
+                                    <span>+</span>
+                                </button>
+                            </div>
+                        }
                         break;
                     case MappingRuleType.ConstantValueRule:
                         {
                             curField.MappingRule ??= new ConstantValueRule();
                             var mappingRule = curField.MappingRule as ConstantValueRule;
                             <input type="text" @bind=@curField.MappingRule.RuleDetail @bind:event="oninput" @bind:after="() => NotifyFieldMappingChanged(curField)"  />
+                        }
+                        break;
+                    case MappingRuleType.CustomFieldlessRule:
+                        {
+                            <div class="custom-rule-wrapper">
+                                <button type="button"
+                                        class="o1l-btn-default@(DefaultCssClass)"
+                                        title="Add a new source field"
+                                        @onclick="_ => HandleConfigureCustomClicked(curField)">
+                                    Configure...
+                                </button>
+                            </div>
                         }
                         break;
                 }
