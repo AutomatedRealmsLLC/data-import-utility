@@ -64,8 +64,8 @@
         {
             <div class="operand-container">
                 <div class="transformation-input">
-                    <label for="@($"left-operand_{Id}")">Right Value:</label>
-                    <select id="@($"left-operand_{Id}")"
+                    <label for="@($"right-operand_{Id}")">Right Value:</label>
+                    <select id="@($"right-operand_{Id}")"
                             class="@DefaultCssClass"
                             @bind=_selectedRightOperandType
                             @bind:after=HandleRightOperandTypeChanged>
