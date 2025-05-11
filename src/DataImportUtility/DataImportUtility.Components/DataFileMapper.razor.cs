@@ -1,18 +1,20 @@
 ﻿using System.Data;
 using System.Timers;
+using System.Reflection;
+using System.Linq;
 
-using DataImportUtility.Components.Abstractions;
-using DataImportUtility.Components.DataSetComponents;
-using DataImportUtility.Components.FieldMappingComponents.Wrappers;
-using DataImportUtility.Components.JsInterop;
-using DataImportUtility.Components.State;
-using DataImportUtility.Models;
+using AutomatedRealms.DataImportUtility.Core.Models; // Explicit using for ImportedDataFile
+using AutomatedRealms.DataImportUtility.Components.Abstractions;
+using AutomatedRealms.DataImportUtility.Components.DataSetComponents;
+using AutomatedRealms.DataImportUtility.Components.FieldMappingComponents.Wrappers;
+using AutomatedRealms.DataImportUtility.Components.JsInterop;
+using AutomatedRealms.DataImportUtility.Components.State;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
-namespace DataImportUtility.Components;
+namespace AutomatedRealms.DataImportUtility.Components;
 
 /// <summary>
 /// This class is used to map data fields from a source to a target type.
@@ -169,20 +171,67 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
 
     private async Task UpdatePreview(DataTable dataTable)
     {
-        if (!(LoadedDataFile?.TableDefinitions?.ContainsTable(dataTable.TableName) ?? false))
+        if (LoadedDataFile is null || !(LoadedDataFile.TableDefinitions.Any(td => td.TableName == dataTable.TableName))) // Changed == null to is null
         {
+            _previewOutput = new DataTable(); 
+            _noPreviewAvailable = true;
+            await InvokeAsync(StateHasChanged);
             return;
         }
 
         if (_importedDataTableRef is not null)
         {
-            await FileMapperJsModule.RemoveScrollSynchronization(_importedDataTableRef.Id);
-            await FileMapperJsModule.RemoveScrollMouseEventsSynchronization(_importedDataTableRef.Id);
+            // Consider awaiting these if they are truly async and critical path
+            _ = FileMapperJsModule.RemoveScrollSynchronization(_importedDataTableRef.Id);
+            _ = FileMapperJsModule.RemoveScrollMouseEventsSynchronization(_importedDataTableRef.Id);
         }
-        _previewOutput = await LoadedDataFile.GenerateOutputDataTable(dataTable.TableName);
 
-        _noPreviewAvailable = _previewOutput is null;
+        var tableDefinition = LoadedDataFile.TableDefinitions.FirstOrDefault(td => td.TableName == dataTable.TableName);
+        if (tableDefinition is null)
+        {
+            _previewOutput = new DataTable();
+            _noPreviewAvailable = true;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        var transformedData = await LoadedDataFile.GetData<TTargetType>(tableDefinition);
+        _previewOutput = ConvertListToDataTable(transformedData, dataTable.TableName + "_Preview");
+
+        _noPreviewAvailable = _previewOutput is null || _previewOutput.Rows.Count == 0;
         await InvokeAsync(StateHasChanged);
+    }
+
+    private DataTable ConvertListToDataTable<T>(IEnumerable<T> list, string tableName)
+    {
+        var table = new DataTable(tableName);
+        if (list == null || !list.Any()) return table;
+
+        var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                              .Where(p => p.CanRead)
+                              .ToArray(); 
+        
+        foreach (var prop in props)
+        {
+            table.Columns.Add(prop.Name, Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType);
+        }
+
+        foreach (var item in list)
+        {
+            var row = table.NewRow();
+            foreach (var prop in props)
+            {
+                try
+                {
+                    row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
+                }
+                catch
+                {
+                    row[prop.Name] = DBNull.Value; 
+                }
+            }
+            table.Rows.Add(row);
+        }
+        return table;
     }
 
     private Task HandleSelectedDataTableChanged(DataTableDisplay? dataTableRef)

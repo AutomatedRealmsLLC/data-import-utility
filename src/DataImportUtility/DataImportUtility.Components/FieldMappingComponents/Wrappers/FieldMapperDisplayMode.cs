@@ -1,4 +1,4 @@
-﻿namespace DataImportUtility.Components.FieldMappingComponents.Wrappers;
+﻿namespace AutomatedRealms.DataImportUtility.Components.FieldMappingComponents.Wrappers;
 
 /// <summary>
 /// The display mode for the field mapper configuration UI.

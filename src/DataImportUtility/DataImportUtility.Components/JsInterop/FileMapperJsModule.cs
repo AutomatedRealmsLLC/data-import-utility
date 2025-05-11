@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace DataImportUtility.Components.JsInterop;
+namespace AutomatedRealms.DataImportUtility.Components.JsInterop;
 
 /// <summary>
 /// The JavaScript module for the file mapper.

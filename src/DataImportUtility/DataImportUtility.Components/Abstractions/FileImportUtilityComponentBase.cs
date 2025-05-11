@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace DataImportUtility.Components.Abstractions;
+namespace AutomatedRealms.DataImportUtility.Components.Abstractions;
 
 /// <summary>
 /// Represents a component to be used with the in the File Import Utility Compnent Library.

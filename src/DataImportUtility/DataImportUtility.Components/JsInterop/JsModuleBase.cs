@@ -1,7 +1,7 @@
 ﻿// Adapted from: https://github.com/SteveSandersonMS/AudioBrowser/blob/main/MediaFilesAPI/Util/JSModule.cs
 using Microsoft.JSInterop;
 
-namespace DataImportUtility.Components.JsInterop;
+namespace AutomatedRealms.DataImportUtility.Components.JsInterop;
 
 /// <summary>
 /// Helper for loading any JavaScript (ES6) module and calling its exports

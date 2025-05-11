@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace DataImportUtility.Components.Abstractions;
+namespace AutomatedRealms.DataImportUtility.Components.Abstractions;
 
 /// <summary>
 /// The base class for state event handlers.

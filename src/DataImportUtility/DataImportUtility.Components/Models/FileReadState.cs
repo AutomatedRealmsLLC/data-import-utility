@@ -1,4 +1,4 @@
-﻿namespace DataImportUtility.Components.Models;
+﻿namespace AutomatedRealms.DataImportUtility.Components.Models;
 
 /// <summary>
 /// The states for a file read request.

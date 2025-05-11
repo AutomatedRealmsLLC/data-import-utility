@@ -7,8 +7,8 @@
 	<PropertyGroup>
 		<Product>AutomatedRealms.DataImportUtility.Components</Product>
 		<PackageId>AutomatedRealms.DataImportUtility.Components</PackageId>
-		<AssemblyName>DataImportUtility.Components</AssemblyName>
-		<RootNamespace>DataImportUtility.Components</RootNamespace>
+		<AssemblyName>AutomatedRealms.DataImportUtility.Components</AssemblyName>
+		<RootNamespace>AutomatedRealms.DataImportUtility.Components</RootNamespace>
 		<Description>The Blazor Component Library for the AutomatedRealms.DataImportUtility.</Description>
 		<PackageTags>Data Import, File Import, Utility, Blazor, Components, Excel, CSV</PackageTags>
 	</PropertyGroup>
@@ -51,7 +51,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\DataImportUtility\DataImportUtility.csproj" />
+		<ProjectReference Include="..\AutomatedRealms.DataImportUtility.Abstractions\AutomatedRealms.DataImportUtility.Abstractions.csproj" />
+		<ProjectReference Include="..\AutomatedRealms.DataImportUtility.Core\AutomatedRealms.DataImportUtility.Core.csproj" />
+		<ProjectReference Include="..\AutomatedRealms.DataImportUtility.DataReader\AutomatedRealms.DataImportUtility.DataReader.csproj" />
 	</ItemGroup>
 
 </Project>

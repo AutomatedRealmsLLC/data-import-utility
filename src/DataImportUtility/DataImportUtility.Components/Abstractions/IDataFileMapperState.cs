@@ -1,136 +1,125 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Data;
+using AutomatedRealms.DataImportUtility.Abstractions; // For IProgressReporter
+using AutomatedRealms.DataImportUtility.Core.Models; // For ImportedDataFile, FieldMapping, ImportTableDefinition
+using AutomatedRealms.DataImportUtility.Components.Models; // For ImportDataFileRequest, FileReadState
+using AutomatedRealms.DataImportUtility.Components.FieldMappingComponents.Wrappers; // For FieldMapperDisplayMode
 
-using DataImportUtility.Components.DataSetComponents;
-using DataImportUtility.Components.FieldMappingComponents.Wrappers;
-using DataImportUtility.Components.FilePickerComponent;
-using DataImportUtility.Components.Models;
-using DataImportUtility.Models;
-
-namespace DataImportUtility.Components.Abstractions;
+namespace AutomatedRealms.DataImportUtility.Components.Abstractions;
 
 /// <summary>
-/// The state for the data file mapper components.
+/// Defines the contract for the state management of the data file mapper component.
 /// </summary>
 public interface IDataFileMapperState : INotifyPropertyChanged, INotifyPropertyChanging
 {
-    #region Events
     /// <summary>
-    /// Event raised when the state changes.
+    /// Gets or sets the currently active data table being viewed or manipulated.
     /// </summary>
-    event Func<Task>? OnNotifyStateChanged;
-    /// <summary>
-    /// Event raised when a property on the state class has changed.
-    /// </summary>
-    event Func<string, Task>? OnStatePropertyChanged;
-    #endregion Events
+    DataTable? ActiveDataTable { get; set; }
 
     /// <summary>
-    /// The active data table.
-    /// </summary>
-    /// <remarks>
-    /// Changing the value of this will raise the <see cref="OnActiveDataTableChanged" /> event.
-    /// </remarks>
-    DataTable? ActiveDataTable { get; set; }
-    /// <summary>
-    /// The data file to map.
+    /// Gets the currently loaded data file, including its data and schema.
     /// </summary>
     ImportedDataFile? DataFile { get; }
-    /// <summary>
-    /// The state of the file read process.
-    /// </summary>
-    FileReadState FileReadState { get; }
-    /// <summary>
-    /// The flag to show the field mapper dialog.
-    /// </summary>
-    FieldMapperDisplayMode FieldMapperDisplayMode { get; set; }
-    /// <summary>
-    /// The flag to show the transform preview.
-    /// </summary>
-    bool ShowTransformPreview { get; set; }
-    /// <summary>
-    /// The unique identifier for the mapper state.
-    /// </summary>
-    /// <remarks>
-    /// This is used to group together components that use the same <see cref="IDataFileMapperState" />
-    /// </remarks>
-    string MapperStateId { get; }
-    /// <summary>
-    /// The selected rows in the Import table.
-    /// </summary>
-    List<int> SelectedImportRows { get; }
 
     /// <summary>
-    /// The callback for when the active data table is changed.
+    /// Gets the current state of the file reading process.
+    /// </summary>
+    FileReadState FileReadState { get; }
+
+    /// <summary>
+    /// Gets any error message that occurred during file processing.
+    /// </summary>
+    string? ErrorMessage { get; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show the transformed data preview.
+    /// </summary>
+    bool ShowTransformPreview { get; set; }
+
+    /// <summary>
+    /// Gets or sets the display mode for the field mapper.
+    /// </summary>
+    FieldMapperDisplayMode FieldMapperDisplayMode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of selected rows from the import data.
+    /// </summary>
+    ImmutableList<DataRow>? SelectedImportRows { get; set; }
+
+    /// <summary>
+    /// Gets the active table definition, including field mappings.
+    /// </summary>
+    ImportTableDefinition? ActiveTableDefinition { get; }
+
+    /// <summary>
+    /// Occurs when the active data table changes.
     /// </summary>
     event Func<Task>? OnActiveDataTableChanged;
+
     /// <summary>
-    /// The callback for when the data file is changed.
+    /// Occurs when the data file changes (e.g., a new file is loaded).
     /// </summary>
     event Func<Task>? OnDataFileChanged;
+
     /// <summary>
-    /// The callback for when the field mappings change.
+    /// Occurs when the file read state changes.
     /// </summary>
-    event Func<Task>? OnFieldMappingsChanged;
+    event Func<FileReadState, Task>? OnFileReadStateChanged;
+
     /// <summary>
-    /// The callback for when an error occurrs while a file is read.
+    /// Occurs when an error is encountered during file reading or processing.
     /// </summary>
-    event Func<Exception, Task>? OnFileReadError;
+    event Func<Exception?, Task>? OnFileReadError;
+
     /// <summary>
-    /// The callback for when the file read state changes.
-    /// </summary>
-    event Func<Task>? OnFileReadStateChanged;
-    /// <summary>
-    /// The callback for when the show field mapper dialog flag changes.
+    /// Occurs when the field mapper display mode changes.
     /// </summary>
     event Func<Task>? OnFieldMapperDisplayModeChanged;
+
     /// <summary>
-    /// The callback for when the show transform preview flag changes.
+    /// Occurs when the field mappings change.
+    /// </summary>
+    event Func<Task>? OnFieldMappingsChanged;
+
+    /// <summary>
+    /// Occurs when the visibility of the transform preview changes.
     /// </summary>
     event Func<Task>? OnShowTransformPreviewChanged;
 
     /// <summary>
-    /// Registers the data file mapper component.
+    /// Occurs when a specific property in the state has changed.
+    /// The string argument is the name of the property.
     /// </summary>
-    /// <typeparam name="TTargetType">The type of the target object to map to.</typeparam>
-    /// <param name="importedDataFileDisplay">The data file mapper component to register.</param>
-    void RegisterDataFileMapper<TTargetType>(DataFileMapper<TTargetType> importedDataFileDisplay)
-        where TTargetType : class, new();
+    event Func<string, Task>? OnStatePropertyChanged;
 
     /// <summary>
-    /// Registers the data set display component.
+    /// Asynchronously sets the file to be processed.
     /// </summary>
-    /// <param name="dataSetDisplay">
-    /// The data set display component to register.
-    /// </param>
-    void RegisterDataSetDisplay(DataSetDisplay dataSetDisplay);
+    /// <param name="request">The request containing the file and import options.</param>
+    /// <param name="progressReporter">An optional progress reporter to track the import process.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task SetFileAsync(ImportDataFileRequest request, IProgressReporter? progressReporter = null);
 
     /// <summary>
-    /// Registers the file picker component.
+    /// Sets the target type for data mapping.
     /// </summary>
-    /// <param name="dataFilePicker">The file picker component to register.</param>
-    void RegisterFilePicker(DataFilePicker dataFilePicker);
+    /// <typeparam name="T">The target type.</typeparam>
+    /// <param name="autoMatchFields">Whether to automatically match fields between the source and target.</param>
+    void SetTargetType<T>(bool autoMatchFields = true) where T : class, new();
 
     /// <summary>
-    /// Sets the field mappings for a table.
+    /// Replaces the field mappings for a specified table.
     /// </summary>
-    /// <param name="tableName">The name of the table.</param>
-    /// <param name="incomingFieldMappings">The field mappings to set.</param>
+    /// <param name="tableName">The name of the table whose mappings are to be replaced.</param>
+    /// <param name="incomingFieldMappings">The new set of field mappings.</param>
     void ReplaceFieldMappings(string tableName, IEnumerable<FieldMapping> incomingFieldMappings);
 
     /// <summary>
-    /// Updates the data file and shows the transform preview.
+    /// Refreshes the field mappings, optionally overwriting existing ones or auto-matching.
     /// </summary>
-    Task UpdateAndShowTransformPreview();
-
-    /// <summary>
-    /// Updates the header row flag.
-    /// </summary>
-    /// <param name="hasHeaderRow">
-    /// The new value for the header row flag.
-    /// </param>
-    /// <returns>
-    /// A <see cref="Task" /> representing the asynchronous operation.
-    /// </returns>
-    Task UpdateHeaderRowFlag(bool hasHeaderRow);
+    /// <param name="overwriteExisting">If true, existing mappings are overwritten.</param>
+    /// <param name="autoMatch">If true, fields are automatically matched.</param>
+    void RefreshFieldMappings(bool overwriteExisting = false, bool autoMatch = false);
 }

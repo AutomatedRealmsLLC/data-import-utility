@@ -1,13 +1,13 @@
 ﻿using System.Data;
 
-using DataImportUtility.Components.Abstractions;
-using DataImportUtility.Components.JsInterop;
-using DataImportUtility.Components.State;
+using AutomatedRealms.DataImportUtility.Components.Abstractions; // For FileImportUtilityComponentBase
+using AutomatedRealms.DataImportUtility.Components.JsInterop; // For FileMapperJsModule
+using AutomatedRealms.DataImportUtility.Components.State; // For DataFileMapperState
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace DataImportUtility.Components.DataSetComponents;
+namespace AutomatedRealms.DataImportUtility.Components.DataSetComponents;
 
 /// <summary>
 /// The Component to display a <see cref="DataTable" />.
