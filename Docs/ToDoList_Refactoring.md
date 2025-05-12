@@ -38,13 +38,10 @@ This document outlines the tasks required for the data-import-utility refactorin
 
 4.  **Resolve `JsonConverter<>` Not Found Errors (CS0246)**
     *   **Issue:** The type or namespace name `JsonConverter<>` cannot be found in:
-        *   `AutomatedRealms.DataImportUtility.Abstractions/CustomConverters/MappingRuleBaseConverter.cs`
-        *   `AutomatedRealms.DataImportUtility.Abstractions/CustomConverters/ValueTransformationBaseConverter.cs`
-    *   **Action:**
-        *   Add a package reference to `System.Text.Json` (or `Newtonsoft.Json` if that's the preferred library) in the `AutomatedRealms.DataImportUtility.Abstractions.csproj` file.
-        *   Add the necessary `using` directive (e.g., `using System.Text.Json.Serialization;`) in the affected files.
-
-## Phase 2: Core Refactoring for Extensibility
+        *   `AutomatedRealms.DataImportUtility.Abstractions\CustomConverters\MappingRuleBaseConverter.cs`
+        *   `AutomatedRealms.DataImportUtility.Abstractions\CustomConverters\ValueTransformationBaseConverter.cs`
+    *   **Resolution:** Added a package reference to `System.Text.Json` (version `9.0.4` for `netstandard2.0` compatibility and to address vulnerabilities) to the `AutomatedRealms.DataImportUtility.Abstractions.csproj` and `AutomatedRealms.DataImportUtility.Core.csproj` projects. Ensured `using System.Text.Json.Serialization;` is present in the converter files. This task is now considered complete, pending build verification.
+    *   **Status:** `DONE` (pending build verification)
 
 5.  **Refactor Extensible Types (`MappingRuleBase`, `ValueTransformationBase`, etc.) for a Registration-Based, `TypeId`-Driven Extensibility Model**
     *   **Goal:** Transition from an enum-driven approach to a robust, performant, and developer-friendly registration-based model. This model will use a string `TypeId` for serialization and deserialization, allowing consumers to define and use their own custom implementations seamlessly, with a strong emphasis on minimizing startup performance impact.
@@ -80,6 +77,11 @@ This document outlines the tasks required for the data-import-utility refactorin
         *   Update UI components in `AutomatedRealms.DataImportUtility.Components` that are used for configuring mapping rules to work with the new extensible system.
         *   Update core processing logic that applies these rules.
         *   Ensure test projects are updated to reflect these changes.
+
+10. **NuGet Package Vulnerability Warnings**
+    *   **Issue:** Build output shows warnings for NuGet package vulnerabilities (e.g., `System.Text.Json` prior to `9.0.4`).
+    *   **Resolution:** Updated `System.Text.Json` to `9.0.4` in relevant projects (`Abstractions`, `Core`). Other vulnerabilities will be reviewed and addressed as necessary.
+    *   **Status:** `IN PROGRESS`
 
 ## Phase 3: Further Development and Cleanup
 

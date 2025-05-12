@@ -13,7 +13,7 @@
     <ProjectReference Include="..\AutomatedRealms.DataImportUtility.Abstractions\AutomatedRealms.DataImportUtility.Abstractions.csproj" />
     <PackageReference Include="Jace" Version="1.0.0" />
     <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
-    <PackageReference Include="System.Text.Json" Version="6.0.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.4" /> <!-- Updated to 9.0.4 to match Abstractions and use latest stable -->
   </ItemGroup>
 
 </Project>
