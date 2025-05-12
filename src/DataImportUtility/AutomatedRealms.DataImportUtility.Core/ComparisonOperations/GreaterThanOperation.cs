@@ -1,10 +1,8 @@
+using System.Globalization;
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // For ITransformationContext
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
-using System.Globalization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -33,12 +31,12 @@ public class GreaterThanOperation : ComparisonOperationBase
         if (LeftOperand is null || RightOperand is null)
         {
             // TODO: Log this failure more formally if a logging mechanism is integrated.
-            return false; 
+            return false;
         }
 
         // This should now call MappingRuleBase.Apply(ITransformationContext context)
         TransformationResult? leftOpResult = await LeftOperand.Apply(contextResult);
-        
+
         if (leftOpResult is null || leftOpResult.WasFailure)
         {
             // TODO: Log leftOpResult?.ErrorMessage or null operand
@@ -52,7 +50,7 @@ public class GreaterThanOperation : ComparisonOperationBase
             // TODO: Log rightOpResult?.ErrorMessage or null operand
             return false;
         }
-        
+
         return leftOpResult.GreaterThan(rightOpResult); // Extension method on TransformationResult
     }
 
@@ -117,8 +115,8 @@ public static class GreaterThanOperationExtensions
                 decimal dRight = Convert.ToDecimal(rightVal, CultureInfo.InvariantCulture);
                 return dLeft > dRight;
             }
-            catch (OverflowException) 
-            { 
+            catch (OverflowException)
+            {
                 try
                 {
                     double dblLeft = Convert.ToDouble(leftVal, CultureInfo.InvariantCulture);
@@ -137,7 +135,7 @@ public static class GreaterThanOperationExtensions
 
         var sLeft = leftVal.ToString();
         var sRight = rightVal.ToString();
-        if (sLeft == null || sRight == null) return false; 
+        if (sLeft == null || sRight == null) return false;
         return string.Compare(sLeft, sRight, StringComparison.OrdinalIgnoreCase) > 0;
     }
 }

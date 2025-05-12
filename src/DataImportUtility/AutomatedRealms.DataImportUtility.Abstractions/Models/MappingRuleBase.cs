@@ -1,11 +1,7 @@
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+
+using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Models
 {
@@ -39,8 +35,8 @@ namespace AutomatedRealms.DataImportUtility.Abstractions.Models
         /// Gets or sets the source field.
         /// </summary>
         public string? SourceField { get; set; }        /// <summary>
-        /// Gets or sets the target field.
-        /// </summary>
+                                                        /// Gets or sets the target field.
+                                                        /// </summary>
         public string? TargetField { get; set; }
 
         /// <summary>
@@ -67,7 +63,7 @@ namespace AutomatedRealms.DataImportUtility.Abstractions.Models
         /// <summary>
         /// Gets or sets the source field transformations.
         /// </summary>
-        public List<ValueTransformationBase> SourceFieldTransformations { get; set; } = new List<ValueTransformationBase>();
+        public List<ValueTransformationBase> SourceFieldTransformations { get; set; } = [];
 
         /// <summary>
         /// Gets the display name of the mapping rule.
@@ -180,13 +176,13 @@ namespace AutomatedRealms.DataImportUtility.Abstractions.Models
             target.TargetField = this.TargetField;
             target.RuleDetail = this.RuleDetail;
             // Ensure ValueTransformationBase has a Clone() method that returns ValueTransformationBase or derived.
-            target.SourceFieldTransformations = this.SourceFieldTransformations.Select(t => t.Clone()).ToList();
+            target.SourceFieldTransformations = [.. this.SourceFieldTransformations.Select(t => t.Clone())];
             // RuleType and EnumMemberName are abstract and should be defined by the concrete type itself.
         }        /// <summary>
-        /// Maps from MappingRuleType to RuleType.
-        /// </summary>
-        /// <param name="mappingRuleType">The MappingRuleType to map.</param>
-        /// <returns>The corresponding RuleType.</returns>
+                 /// Maps from MappingRuleType to RuleType.
+                 /// </summary>
+                 /// <param name="mappingRuleType">The MappingRuleType to map.</param>
+                 /// <returns>The corresponding RuleType.</returns>
         protected static RuleType MapToRuleType(MappingRuleType mappingRuleType)
         {
             return mappingRuleType switch

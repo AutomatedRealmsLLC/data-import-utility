@@ -1,4 +1,4 @@
-using DataImportUtility.SampleApp.Client.Models;
+using DataImportUtility.SampleApp.Models;
 
 namespace DataImportUtility.SampleApp.Pages;
 

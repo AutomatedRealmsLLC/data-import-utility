@@ -1,9 +1,7 @@
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
-using AutomatedRealms.DataImportUtility.Abstractions.Models; 
-using System.Text.Json.Serialization; 
-using System;
-using System.Threading.Tasks;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -99,7 +97,7 @@ public static class BetweenOperationExtensions
         object? lowCurrentValue = lowLimitInclusive.CurrentValue;
         object? highCurrentValue = highLimitInclusive.CurrentValue;
 
-        if (leftCurrentValue is null) { return false; } 
+        if (leftCurrentValue is null) { return false; }
 
         if (lowCurrentValue is null || highCurrentValue is null) { return false; }
 
@@ -108,9 +106,9 @@ public static class BetweenOperationExtensions
         {
             try
             {
-                var val = Convert.ToDecimal(leftCurrentValue); 
-                var low = Convert.ToDecimal(lowCurrentValue);   
-                var high = Convert.ToDecimal(highCurrentValue); 
+                var val = Convert.ToDecimal(leftCurrentValue);
+                var low = Convert.ToDecimal(lowCurrentValue);
+                var high = Convert.ToDecimal(highCurrentValue);
                 return val >= low && val <= high;
             }
             catch (Exception) { /* Fall through */ }
@@ -121,19 +119,19 @@ public static class BetweenOperationExtensions
         {
             try
             {
-                var dateVal = Convert.ToDateTime(leftCurrentValue); 
-                var dateLow = Convert.ToDateTime(lowCurrentValue);   
-                var dateHigh = Convert.ToDateTime(highCurrentValue); 
+                var dateVal = Convert.ToDateTime(leftCurrentValue);
+                var dateLow = Convert.ToDateTime(lowCurrentValue);
+                var dateHigh = Convert.ToDateTime(highCurrentValue);
                 // Corrected: dateVal <= dateHigh
-                return dateVal >= dateLow && dateVal <= dateHigh; 
+                return dateVal >= dateLow && dateVal <= dateHigh;
             }
             catch (Exception) { /* Fall through */ }
         }
 
         // Fallback to string comparison
         string? leftStr = leftCurrentValue.ToString();
-        string? lowStr = lowCurrentValue.ToString(); 
-        string? highStr = highCurrentValue.ToString(); 
+        string? lowStr = lowCurrentValue.ToString();
+        string? highStr = highCurrentValue.ToString();
 
         if (leftStr is null) return false;
 

@@ -1,9 +1,8 @@
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
 // No direct need for ITransformationContext here as Evaluate takes TransformationResult
-using AutomatedRealms.DataImportUtility.Abstractions.Models; 
-using System.Text.Json.Serialization;
-using System;
-using System.Threading.Tasks;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -36,7 +35,7 @@ public class EqualsOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override async Task<bool> Evaluate(TransformationResult contextResult) // Changed back to TransformationResult
     {
-        if (LeftOperand is null || RightOperand is null) 
+        if (LeftOperand is null || RightOperand is null)
         {
             // Consider logging contextResult.AddLogMessage("Error: Operands not set for EqualsOperation.");
             throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set for {nameof(EqualsOperation)}.");

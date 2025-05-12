@@ -1,13 +1,10 @@
-using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
 using System.Data;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+
+using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Enums;
+
 using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models;
-using System;
-using System.Collections.Generic; // Added for IEnumerable
-using System.Linq; // Added for AsEnumerable
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules;
 
@@ -48,12 +45,12 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
     public override async Task<AbstractionsModels.TransformationResult?> Apply(DataRow dataRow)
     {
         var context = AbstractionsModels.TransformationResult.Success(
-            originalValue: null, 
-            originalValueType: null, 
-            currentValue: null, 
+            originalValue: null,
+            originalValueType: null,
+            currentValue: null,
             currentValueType: typeof(object), // Placeholder, will be nullified by IgnoreRule logic
-            appliedTransformations: new List<string>(), 
-            record: dataRow, 
+            appliedTransformations: new List<string>(),
+            record: dataRow,
             tableDefinition: null, // Or ParentTableDefinition
             sourceRecordContext: null,
             targetFieldType: null // Ignored field doesn't have a target type in the same way
@@ -76,8 +73,8 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
             originalValueType: null,
             currentValue: null, // Current value is null as it's ignored
             currentValueType: context.TargetFieldType ?? typeof(object), // Retain target type for context if available
-            appliedTransformations: new[] { "Field ignored by IgnoreRule." }, 
-            record: context.Record, 
+            appliedTransformations: ["Field ignored by IgnoreRule."],
+            record: context.Record,
             tableDefinition: context.TableDefinition,
             sourceRecordContext: context.SourceRecordContext,
             targetFieldType: context.TargetFieldType
@@ -92,10 +89,10 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
         foreach (DataRow row in data.Rows)
         {
             var rowContext = AbstractionsModels.TransformationResult.Success(
-                originalValue: null, originalValueType: null, 
+                originalValue: null, originalValueType: null,
                 currentValue: null, currentValueType: typeof(object),
-                appliedTransformations: new List<string>(), 
-                record: row, 
+                appliedTransformations: new List<string>(),
+                record: row,
                 tableDefinition: null, // Or ParentTableDefinition
                 sourceRecordContext: null,
                 targetFieldType: null
@@ -110,10 +107,10 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
     {
         // Apply for an IgnoreRule without specific record context.
         var emptyContext = AbstractionsModels.TransformationResult.Success(
-            originalValue: null, originalValueType: null, 
+            originalValue: null, originalValueType: null,
             currentValue: null, currentValueType: typeof(object),
-            appliedTransformations: new List<string>(), 
-            record: null, 
+            appliedTransformations: new List<string>(),
+            record: null,
             tableDefinition: null,
             sourceRecordContext: null,
             targetFieldType: null
@@ -127,12 +124,12 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
     {
         Type effectiveTargetType = targetField?.FieldType ?? typeof(object);
         var context = AbstractionsModels.TransformationResult.Success(
-            originalValue: null, 
+            originalValue: null,
             originalValueType: null,
-            currentValue: null, 
+            currentValue: null,
             currentValueType: effectiveTargetType,
             appliedTransformations: new List<string>(),
-            record: null, 
+            record: null,
             tableDefinition: null,
             sourceRecordContext: sourceRecord,
             targetFieldType: effectiveTargetType
@@ -140,7 +137,7 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
 
         var task = Apply(context);
         AbstractionsModels.TransformationResult? result = task.ConfigureAwait(false).GetAwaiter().GetResult();
-        
+
         return result ?? AbstractionsModels.TransformationResult.Failure(
             originalValue: null,
             targetType: effectiveTargetType,
@@ -154,7 +151,7 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
     public override AbstractionsModels.MappingRuleBase Clone()
     {
         var clone = new IgnoreRule();
-        base.CloneBaseProperties(clone); 
+        base.CloneBaseProperties(clone);
         return clone;
     }
 }

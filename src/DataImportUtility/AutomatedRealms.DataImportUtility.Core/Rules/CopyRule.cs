@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
+
+using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules
 {
@@ -38,7 +35,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         /// Gets the description of the mapping rule.
         /// </summary>
         public override string Description => $"Copies the value from the source field '{this.SourceField ?? "[undefined]"}'.";
-        
+
         /// <summary>
         /// Gets the type of the mapping rule.
         /// </summary>
@@ -87,7 +84,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
 
             object? sourceValue = dataRow[SourceField];
             Type? sourceValueType = sourceValue?.GetType();
-            
+
             TransformationResult currentProcessingResult = TransformationResult.Success(
                 originalValue: sourceValue,
                 originalValueType: sourceValueType,
@@ -95,7 +92,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                 currentValueType: sourceValueType,
                 appliedTransformations: new List<string>(),
                 record: dataRow,
-                tableDefinition: null 
+                tableDefinition: null
             );
 
             return currentProcessingResult;
@@ -110,9 +107,9 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         {
             if (string.IsNullOrEmpty(SourceField))
             {
-                return TransformationResult.Failure(null, typeof(object), "Source field name is not configured for CopyRule.", 
-                    originalValueType: null, 
-                    record: (context as TransformationResult)?.Record, 
+                return TransformationResult.Failure(null, typeof(object), "Source field name is not configured for CopyRule.",
+                    originalValueType: null,
+                    record: (context as TransformationResult)?.Record,
                     tableDefinition: (context as TransformationResult)?.TableDefinition);
             }
 
@@ -122,9 +119,9 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
 
             if (dataRow == null || !dataRow.Table.Columns.Contains(SourceField))
             {
-                return TransformationResult.Failure(null, typeof(object), $"Source field '{SourceField}' not found in DataRow or DataRow is null.", 
-                    originalValueType: null, 
-                    record: dataRow, 
+                return TransformationResult.Failure(null, typeof(object), $"Source field '{SourceField}' not found in DataRow or DataRow is null.",
+                    originalValueType: null,
+                    record: dataRow,
                     tableDefinition: tableDefinition);
             }
 
@@ -132,7 +129,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
 
             object? sourceValue = dataRow[SourceField];
             Type? sourceValueType = sourceValue?.GetType();
-            
+
             TransformationResult currentProcessingResult = TransformationResult.Success(
                 originalValue: sourceValue,
                 originalValueType: sourceValueType,
@@ -140,7 +137,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                 currentValueType: sourceValueType,
                 appliedTransformations: new List<string>(),
                 record: dataRow,
-                tableDefinition: tableDefinition 
+                tableDefinition: tableDefinition
             );
 
             return currentProcessingResult;
@@ -158,7 +155,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
             foreach (DataRow row in data.Rows)
             {
                 var rowContext = TransformationResult.Success(null, null, null, null, record: row, tableDefinition: null);
-                results.Add(await Apply(rowContext).ConfigureAwait(false)); 
+                results.Add(await Apply(rowContext).ConfigureAwait(false));
             }
             return results;
         }

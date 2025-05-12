@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
+
+using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules;
 
@@ -16,8 +13,8 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules;
 /// </summary>
 public class CustomFieldlessRule : MappingRuleBase
 {    /// <summary>
-    /// Gets or sets an optional detail or initial value for the rule, which might be used by transformations.
-    /// </summary>
+     /// Gets or sets an optional detail or initial value for the rule, which might be used by transformations.
+     /// </summary>
     public new string? RuleDetail { get; set; }
 
     /// <summary>
@@ -122,7 +119,7 @@ public class CustomFieldlessRule : MappingRuleBase
                 return currentProcessingResult;
             }
         }
-        
+
         return currentProcessingResult;
     }
 
@@ -211,9 +208,9 @@ public class CustomFieldlessRule : MappingRuleBase
                 explicitTargetFieldType: effectiveTargetType
             );
         }
-        
-        if (targetField?.FieldType != null && 
-            resultFromApply.CurrentValue != null && 
+
+        if (targetField?.FieldType != null &&
+            resultFromApply.CurrentValue != null &&
             resultFromApply.CurrentValueType != targetField.FieldType)
         {
             try
@@ -223,9 +220,9 @@ public class CustomFieldlessRule : MappingRuleBase
             }
             catch (Exception ex)
             {
-                return resultFromApply with 
-                { 
-                    ErrorMessage = (!string.IsNullOrEmpty(resultFromApply.ErrorMessage) ? resultFromApply.ErrorMessage + " " : "") + $"Failed to convert final value to target type '{targetField.FieldType.Name}': {ex.Message}" 
+                return resultFromApply with
+                {
+                    ErrorMessage = (!string.IsNullOrEmpty(resultFromApply.ErrorMessage) ? resultFromApply.ErrorMessage + " " : "") + $"Failed to convert final value to target type '{targetField.FieldType.Name}': {ex.Message}"
                 };
             }
         }

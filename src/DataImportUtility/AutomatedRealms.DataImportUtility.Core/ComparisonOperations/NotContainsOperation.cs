@@ -1,10 +1,8 @@
+using System.Collections; // For IEnumerable
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // For ITransformationContext
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
-using System.Collections; // For IEnumerable
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -57,21 +55,21 @@ public class NotContainsOperation : ComparisonOperationBase
         object? leftValue = leftResult.CurrentValue;
         object? rightValue = rightResult.CurrentValue;
 
-        if (leftValue == null) 
+        if (leftValue == null)
         {
             // null does not contain anything, unless rightValue is also null (which is debatable for 'contains')
             // If rightValue is null, previous Contains logic said true (everything contains null).
             // So, !(null contains null) = !true = false.
             // If rightValue is not null, previous Contains logic said false (null does not contain non-null).
             // So, !(null contains non-null) = !false = true.
-            return rightValue != null; 
+            return rightValue != null;
         }
 
         if (rightValue == null)
         {
             // Previous Contains logic: everything contains null (empty string) -> true.
             // So, NotContains null is false.
-            return false; 
+            return false;
         }
 
         string leftString = leftValue.ToString() ?? ""; // Ensure not null for operations

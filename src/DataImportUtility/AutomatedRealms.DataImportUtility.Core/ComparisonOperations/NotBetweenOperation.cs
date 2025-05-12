@@ -1,10 +1,8 @@
+using System.Globalization;
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // For ITransformationContext
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
-using System.Globalization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -105,7 +103,7 @@ public class NotBetweenOperation : ComparisonOperationBase
                 return valNum >= lowNum && valNum <= highNum;
             }
         }
-        
+
         // Fallback to string comparison
         var valStr = value.ToString();
         var lowStr = lowLimit.ToString();
@@ -121,7 +119,7 @@ public class NotBetweenOperation : ComparisonOperationBase
             return string.Compare(valStr, lowStr, StringComparison.Ordinal) >= 0 &&
                    string.Compare(valStr, highStr, StringComparison.Ordinal) <= 0;
         }
-        
+
         return false;
     }
 
@@ -156,9 +154,9 @@ public class NotBetweenOperation : ComparisonOperationBase
         return new NotBetweenOperation
         {
             LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(), 
-            LowLimit = this.LowLimit?.Clone() as MappingRuleBase,
-            HighLimit = this.HighLimit?.Clone() as MappingRuleBase,
+            RightOperand = RightOperand?.Clone(),
+            LowLimit = this.LowLimit?.Clone(),
+            HighLimit = this.HighLimit?.Clone(),
             EnumMemberOrder = EnumMemberOrder
         };
     }

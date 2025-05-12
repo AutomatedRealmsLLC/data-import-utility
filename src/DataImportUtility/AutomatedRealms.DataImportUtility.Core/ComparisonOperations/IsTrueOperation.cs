@@ -1,10 +1,8 @@
+using System.Globalization; // Added for CultureInfo.InvariantCulture
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // Added for TransformationResult
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
-using System.Globalization; // Added for CultureInfo.InvariantCulture
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -50,7 +48,7 @@ public class IsTrueOperation : ComparisonOperationBase
         {
             throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
         }
-        
+
         if (leftResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
@@ -111,11 +109,11 @@ public class IsTrueOperation : ComparisonOperationBase
             }
             catch (InvalidCastException)
             {
-                 // Should not happen if type checks are correct, but as a fallback.
+                // Should not happen if type checks are correct, but as a fallback.
                 return false;
             }
         }
-        
+
         // For any other type, it's not considered true in this context.
         return false;
     }
@@ -126,7 +124,7 @@ public class IsTrueOperation : ComparisonOperationBase
         return new IsTrueOperation
         {
             LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(), 
+            RightOperand = RightOperand?.Clone(),
             EnumMemberOrder = EnumMemberOrder
         };
     }

@@ -1,9 +1,8 @@
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -57,7 +56,7 @@ public class StartsWithOperation : ComparisonOperationBase
             if (leftString == null || rightString == null) { return false; }
             return leftString.StartsWith(rightString, StringComparison.Ordinal);
         }
-        
+
         return false; // Operands are not strings
     }
 

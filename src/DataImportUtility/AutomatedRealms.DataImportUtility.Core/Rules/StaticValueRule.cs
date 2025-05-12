@@ -1,13 +1,10 @@
 // Filepath: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Core\Rules\StaticValueRule.cs
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+
+using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Enums;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules
 {
@@ -35,9 +32,9 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                 RuleDetail = value?.ToString();
             }
         }        /// <summary>
-        /// Gets or sets the string representation of the static value.
-        /// This is primarily for serialization and informational purposes.
-        /// </summary>
+                 /// Gets or sets the string representation of the static value.
+                 /// This is primarily for serialization and informational purposes.
+                 /// </summary>
         public new string? RuleDetail { get; set; }
 
         /// <summary>
@@ -79,9 +76,9 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         /// Gets the order value for the enum member.
         /// </summary>
         public override int EnumMemberOrder => 7;        /// <summary>
-        /// Initializes a new instance of the <see cref="StaticValueRule"/> class with a specific static value.
-        /// </summary>
-        /// <param name="value">The static value this rule should represent.</param>
+                                                         /// Initializes a new instance of the <see cref="StaticValueRule"/> class with a specific static value.
+                                                         /// </summary>
+                                                         /// <param name="value">The static value this rule should represent.</param>
         public StaticValueRule(object? value)
         {
             this.Value = value; // Uses the property setter to initialize related fields
@@ -131,7 +128,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                         if (targetType.IsValueType && Nullable.GetUnderlyingType(targetType) == null)
                         {
                             return TransformationResult.Failure(
-                                originalValue: _staticValue, 
+                                originalValue: _staticValue,
                                 targetType: targetType, // This is the intended target type for conversion
                                 errorMessage: $"Cannot assign null static value to non-nullable target type '{targetType.Name}'.",
                                 originalValueType: _staticValueType,
@@ -140,7 +137,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                                 explicitTargetFieldType: targetType // Pass it as explicitTargetFieldType
                             );
                         }
-                        finalValueType = targetType; 
+                        finalValueType = targetType;
                         log.Add($"Static value is null, target type '{targetType.Name}' allows null.");
                     }
                     else if (_staticValueType == null || !targetType.IsAssignableFrom(_staticValueType))
@@ -155,7 +152,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                         log.Add($"Static value type '{_staticValueType?.Name}' is assignable to target type '{targetType.Name}'. No conversion needed.");
                     }
                 }
-                
+
                 return TransformationResult.Success(
                     originalValue: _staticValue,
                     originalValueType: _staticValueType,
@@ -170,7 +167,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
             catch (Exception ex)
             {
                 return TransformationResult.Failure(
-                    originalValue: _staticValue, 
+                    originalValue: _staticValue,
                     targetType: targetType, // This is the intended target type for conversion
                     errorMessage: $"Failed to process static value for target type '{targetType?.Name ?? "unknown"}': {ex.Message}",
                     originalValueType: _staticValueType,
@@ -184,7 +181,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         /// <inheritdoc />
         public override Task<TransformationResult?> Apply(ITransformationContext context)
         {
-            Type? targetType = context?.TargetFieldType ?? _staticValueType; 
+            Type? targetType = context?.TargetFieldType ?? _staticValueType;
             return Task.FromResult<TransformationResult?>(CreateTransformationResult(targetType, context));
         }
 
@@ -206,7 +203,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         public override async Task<IEnumerable<TransformationResult?>> Apply(DataTable data)
         {
             if (data == null) return new List<TransformationResult?>();
-            
+
             var results = new List<TransformationResult?>();
             foreach (DataRow row in data.Rows)
             {
@@ -247,9 +244,9 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         {
             var clone = new StaticValueRule
             {
-                Value = this.Value 
+                Value = this.Value
             };
-            base.CloneBaseProperties(clone); 
+            base.CloneBaseProperties(clone);
             return clone;
         }
     }

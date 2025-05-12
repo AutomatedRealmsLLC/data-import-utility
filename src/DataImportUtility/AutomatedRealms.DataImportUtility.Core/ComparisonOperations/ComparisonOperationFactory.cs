@@ -1,9 +1,8 @@
-using System;
-using System.Threading.Tasks;
-using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using System.Data; // Required for DataRow
+
+using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Enums;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 using AutomatedRealms.DataImportUtility.Core.Rules; // Required for FieldAccessRule, StaticValueRule
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
@@ -22,9 +21,9 @@ public static class ComparisonOperationFactory
     /// <param name="ruleContextIdentifier">A string identifier for the rule using this factory, for logging/debugging.</param>
     /// <returns>A configured ComparisonOperationBase instance or null if creation fails.</returns>
     public static Task<ComparisonOperationBase?> CreateOperationAsync(
-        ConditionalRule conditionalRule, 
-        DataRow row, 
-        ImportTableDefinition? tableDefinition, 
+        ConditionalRule conditionalRule,
+        DataRow row,
+        ImportTableDefinition? tableDefinition,
         string ruleContextIdentifier)
     {
         if (conditionalRule.SourceField == null || string.IsNullOrEmpty(conditionalRule.SourceField.FieldName))
@@ -55,7 +54,7 @@ public static class ComparisonOperationFactory
             // Depending on the operation, we might still proceed if it's a unary operation that was misconfigured,
             // or return null if the operation is invalid without it.
         }
-        
+
         // Secondary right operand - for operations like 'Between'
         MappingRuleBase? secondaryRightOperandRule = null;
         if (conditionalRule.SecondaryComparisonValue != null)
@@ -128,15 +127,15 @@ public static class ComparisonOperationFactory
                 operation = new IsNotNullOrWhiteSpaceOperation { LeftOperand = leftOperandAccessRule };
                 break;
             case ComparisonOperationType.IsBetween: // Corrected from Between to IsBetween
-                if (rightOperandRule == null || secondaryRightOperandRule == null) 
-                { 
-                    LogOperandMissing(conditionalRule.OperationType, "RightOperand (LowLimit) and/or SecondaryRightOperand (HighLimit)", ruleContextIdentifier); 
-                    return Task.FromResult<ComparisonOperationBase?>(null); 
+                if (rightOperandRule == null || secondaryRightOperandRule == null)
+                {
+                    LogOperandMissing(conditionalRule.OperationType, "RightOperand (LowLimit) and/or SecondaryRightOperand (HighLimit)", ruleContextIdentifier);
+                    return Task.FromResult<ComparisonOperationBase?>(null);
                 }
                 operation = new BetweenOperation { LeftOperand = leftOperandAccessRule, LowLimit = rightOperandRule, HighLimit = secondaryRightOperandRule };
                 break;
             case ComparisonOperationType.RegexMatch:
-                 if (rightOperandRule == null) { LogOperandMissing(conditionalRule.OperationType, "RegexPattern (RightOperand)", ruleContextIdentifier); return Task.FromResult<ComparisonOperationBase?>(null); }
+                if (rightOperandRule == null) { LogOperandMissing(conditionalRule.OperationType, "RegexPattern (RightOperand)", ruleContextIdentifier); return Task.FromResult<ComparisonOperationBase?>(null); }
                 operation = new RegexMatchOperation { LeftOperand = leftOperandAccessRule, RightOperand = rightOperandRule };
                 break;
             default:

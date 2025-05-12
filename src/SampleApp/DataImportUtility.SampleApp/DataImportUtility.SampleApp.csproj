@@ -26,7 +26,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\DataImportUtility\DataImportUtility.Components\DataImportUtility.Components.csproj" />
+		<ProjectReference Include="..\..\DataImportUtility\AutomatedRealms.DataImportUtility.Components\AutomatedRealms.DataImportUtility.Components.csproj" />
 	</ItemGroup>
 
 </Project>

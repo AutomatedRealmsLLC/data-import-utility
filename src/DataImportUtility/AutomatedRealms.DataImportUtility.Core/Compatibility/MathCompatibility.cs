@@ -7,11 +7,10 @@
 // ===================================================================================================
 
 using System.Runtime.CompilerServices;
-using System; // For ArgumentException
 
 namespace AutomatedRealms.DataImportUtility.Core.Compatibility; // Changed namespace
 
-/// <inheritdoc cref="System.Math" />
+/// <inheritdoc cref="Math" />
 public static partial class MathCompatibility
 {
 #if !NETCOREAPP2_0_OR_GREATER

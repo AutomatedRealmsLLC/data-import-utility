@@ -1,11 +1,7 @@
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -63,7 +59,7 @@ public class InOperation : ComparisonOperationBase
             valueResults.Add(valueEvaluationResult);
         }
 
-        return leftResult.In(valueResults.ToArray());
+        return leftResult.In([.. valueResults]);
     }
 
     /// <inheritdoc />
@@ -73,7 +69,7 @@ public class InOperation : ComparisonOperationBase
         {
             LeftOperand = LeftOperand?.Clone(),
             RightOperand = RightOperand?.Clone(),
-            Values = Values?.Select(v => (MappingRuleBase)v.Clone()).ToList(),
+            Values = Values?.Select(v => v.Clone()).ToList(),
         };
     }
 }
@@ -91,8 +87,8 @@ public static class InOperationExtensions
     /// <returns>True if the left result is in the set of values; otherwise, false.</returns>
     public static bool In(this TransformationResult leftResult, params TransformationResult[] values)
     {
-        if (leftResult.CurrentValue is null) 
-        { 
+        if (leftResult.CurrentValue is null)
+        {
             return values.Any(val => val.CurrentValue is null);
         }
 

@@ -1,12 +1,9 @@
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
-using System.Linq; // Added for Select
 using System.Collections; // Added for IEnumerable
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Helpers; // Required for TransformationResultHelpers
+
 using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models;
-using System.Collections.Generic; // Added for List<string>
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -80,21 +77,21 @@ public class InterpolateTransformation : ValueTransformationBase
             string?[] valuesToUse;
             if (previousResult.CurrentValue == null)
             {
-                valuesToUse = Array.Empty<string?>();
+                valuesToUse = [];
             }
             else if (previousResult.CurrentValue is IEnumerable<string> stringEnumerable)
             {
-                valuesToUse = stringEnumerable.ToArray();
+                valuesToUse = [.. stringEnumerable];
             }
             else if (previousResult.CurrentValue is IEnumerable enumerableValue && !(previousResult.CurrentValue is string))
             {
-                valuesToUse = enumerableValue.Cast<object>().Select(o => o?.ToString()).ToArray();
+                valuesToUse = [.. enumerableValue.Cast<object>().Select(o => o?.ToString())];
             }
             else
             {
-                valuesToUse = new[] { previousResult.CurrentValue.ToString() };
+                valuesToUse = [previousResult.CurrentValue.ToString()];
             }
-            
+
             // pattern is guaranteed not null or whitespace here due to the earlier check.
             string interpolatedValue = pattern!;
 
@@ -121,10 +118,10 @@ public class InterpolateTransformation : ValueTransformationBase
         {
             return Task.FromResult(AbstractionsModels.TransformationResult.Failure(
                 originalValue: previousResult.OriginalValue,
-                targetType: OutputType, 
+                targetType: OutputType,
                 errorMessage: ex.Message,
                 originalValueType: previousResult.OriginalValueType,
-                currentValueType: null, 
+                currentValueType: null,
                 appliedTransformations: previousResult.AppliedTransformations,
                 record: previousResult.Record,
                 tableDefinition: previousResult.TableDefinition,
@@ -133,22 +130,22 @@ public class InterpolateTransformation : ValueTransformationBase
             ));
         }
     }
-    
+
     /// <inheritdoc />
     public override async Task<AbstractionsModels.TransformationResult> Transform(object? value, Type targetType)
     {
         var initialResult = AbstractionsModels.TransformationResult.Success(
-            originalValue: value, 
-            originalValueType: value?.GetType() ?? typeof(object), 
-            currentValue: value, 
+            originalValue: value,
+            originalValueType: value?.GetType() ?? typeof(object),
+            currentValue: value,
             currentValueType: value?.GetType() ?? typeof(object),
             appliedTransformations: new List<string>(),
-            record: null, 
+            record: null,
             tableDefinition: null,
             sourceRecordContext: null,
             targetFieldType: targetType
             );
-        
+
         return await ApplyTransformationAsync(initialResult); // ApplyTransformationAsync is now Task-based
     }
 

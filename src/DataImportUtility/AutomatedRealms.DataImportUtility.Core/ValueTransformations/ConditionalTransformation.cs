@@ -1,11 +1,9 @@
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
+
 using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models;
 using CoreRules = AutomatedRealms.DataImportUtility.Core.Rules;
-using System.Data;
-using System.Collections.Generic;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -220,9 +218,9 @@ public partial class ConditionalTransformation : ValueTransformationBase
         var clone = (ConditionalTransformation)MemberwiseClone();
         clone.TransformationDetail = TransformationDetail;
 
-        clone.ComparisonOperation = ComparisonOperation?.Clone() as ComparisonOperationBase;
-        clone.TrueMappingRule = TrueMappingRule?.Clone() as AbstractionsModels.MappingRuleBase;
-        clone.FalseMappingRule = FalseMappingRule?.Clone() as AbstractionsModels.MappingRuleBase;
+        clone.ComparisonOperation = ComparisonOperation?.Clone();
+        clone.TrueMappingRule = TrueMappingRule?.Clone();
+        clone.FalseMappingRule = FalseMappingRule?.Clone();
         return clone;
     }
 }

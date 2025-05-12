@@ -1,15 +1,9 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
 // Alias for Abstractions.Models to avoid ambiguity with any potential Core.Models.TransformationResult
 using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Core.Helpers; // For TransformationResultHelpers extensions
 
 // Assuming FieldTransformation will be in Core.Models. This using is specific.
 // If FieldTransformation moves, this will need to change.
@@ -84,19 +78,19 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
             string?[] valuesToInterpolate;
             if (previousResult.CurrentValue == null)
             {
-                valuesToInterpolate = Array.Empty<string?>();
+                valuesToInterpolate = [];
             }
             else if (previousResult.CurrentValue is IEnumerable<string> stringEnumerable)
             {
-                valuesToInterpolate = stringEnumerable.ToArray();
+                valuesToInterpolate = [.. stringEnumerable];
             }
             else if (previousResult.CurrentValue is IEnumerable enumerableValue && !(previousResult.CurrentValue is string))
             {
-                valuesToInterpolate = enumerableValue.Cast<object>().Select(o => o?.ToString() ?? string.Empty).ToArray();
+                valuesToInterpolate = [.. enumerableValue.Cast<object>().Select(o => o?.ToString() ?? string.Empty)];
             }
             else
             {
-                valuesToInterpolate = new[] { previousResult.CurrentValue.ToString() ?? string.Empty };
+                valuesToInterpolate = [previousResult.CurrentValue.ToString() ?? string.Empty];
             }
 
             // pattern is guaranteed not null here due to the IsNullOrWhiteSpace check above.
@@ -146,10 +140,10 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
             currentValue: value, // This is the collection of values to be combined
             currentValueType: value?.GetType() ?? typeof(object),
             appliedTransformations: new List<string>(),
-            record: null, 
+            record: null,
             tableDefinition: null,
             sourceRecordContext: null,
-            targetFieldType: targetType 
+            targetFieldType: targetType
         );
         // ApplyTransformationAsync expects previousResult.CurrentValue to be the list/array of items.
         return await ApplyTransformationAsync(initialResult);

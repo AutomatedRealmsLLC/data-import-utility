@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Data; // Added for DataRow
 using System.Text.Json.Serialization;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Models;
 
@@ -57,7 +53,7 @@ public partial record TransformationResult : ITransformationContext // Implement
     /// This provides context for rules that need to access other fields from the same row.
     /// </summary>
     [JsonIgnore]
-    public System.Data.DataRow? Record { get; set; }
+    public DataRow? Record { get; set; }
 
     /// <summary>
     /// The definition of the table from which the record originates, if applicable.
@@ -81,12 +77,12 @@ public partial record TransformationResult : ITransformationContext // Implement
     /// Creates a new successful TransformationResult.
     /// </summary>
     public static TransformationResult Success(
-        object? originalValue, 
-        Type? originalValueType, 
-        object? currentValue, 
-        Type? currentValueType, 
-        IEnumerable<string>? appliedTransformations = null, 
-        System.Data.DataRow? record = null, 
+        object? originalValue,
+        Type? originalValueType,
+        object? currentValue,
+        Type? currentValueType,
+        IEnumerable<string>? appliedTransformations = null,
+        DataRow? record = null,
         ImportTableDefinition? tableDefinition = null,
         List<ImportedRecordFieldDescriptor>? sourceRecordContext = null, // Added
         Type? targetFieldType = null) // Added
@@ -109,13 +105,13 @@ public partial record TransformationResult : ITransformationContext // Implement
     /// Creates a new failed TransformationResult.
     /// </summary>
     public static TransformationResult Failure(
-        object? originalValue, 
+        object? originalValue,
         Type? targetType, // This is likely the TargetFieldType for context of failure
-        string errorMessage, 
-        Type? originalValueType = null, 
+        string errorMessage,
+        Type? originalValueType = null,
         Type? currentValueType = null, // Usually null on failure
-        IEnumerable<string>? appliedTransformations = null, 
-        System.Data.DataRow? record = null, 
+        IEnumerable<string>? appliedTransformations = null,
+        DataRow? record = null,
         ImportTableDefinition? tableDefinition = null,
         List<ImportedRecordFieldDescriptor>? sourceRecordContext = null, // Added
         Type? explicitTargetFieldType = null) // Added, renamed from targetType to avoid conflict if targetType param is used for something else

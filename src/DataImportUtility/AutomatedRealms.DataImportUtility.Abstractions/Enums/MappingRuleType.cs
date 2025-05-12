@@ -28,11 +28,11 @@ namespace AutomatedRealms.DataImportUtility.Abstractions.Enums
         /// <summary>
         /// Rule that defines a condition for other rules.
         /// </summary>
-        ConditionalRule, 
+        ConditionalRule,
         /// <summary>
         /// Rule for custom logic not covered by other types.
         /// </summary>
-        CustomRule,      
+        CustomRule,
         /// <summary>
         /// Rule for custom logic that does not require a source field.
         /// </summary>

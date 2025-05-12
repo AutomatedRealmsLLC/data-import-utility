@@ -1,14 +1,10 @@
 // Filepath: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Core\Rules\FieldAccessRule.cs
-using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
+
+using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Enums;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules
 {
@@ -18,9 +14,9 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
     /// </summary>
     public class FieldAccessRule : MappingRuleBase
     {        /// <summary>
-        /// Initializes a new instance of the <see cref="FieldAccessRule"/> class.
-        /// </summary>
-        /// <param name="sourceFieldName">The name of the field to access.</param>
+             /// Initializes a new instance of the <see cref="FieldAccessRule"/> class.
+             /// </summary>
+             /// <param name="sourceFieldName">The name of the field to access.</param>
         public FieldAccessRule(string sourceFieldName)
         {
             this.SourceField = sourceFieldName;
@@ -190,7 +186,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                     targetFieldType: context.TargetFieldType ?? valueType // Use actual value type if target not specified
                 ));
             }
-            
+
             // If neither DataRow nor SourceRecordContext is available, or field not found in available context
             return Task.FromResult<TransformationResult?>(TransformationResult.Failure(
                 originalValue: null,
@@ -215,8 +211,8 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
             if (string.IsNullOrEmpty(this.SourceField))
             {
                 var failureTemplate = TransformationResult.Failure(
-                    originalValue: null, 
-                    targetType: typeof(object), 
+                    originalValue: null,
+                    targetType: typeof(object),
                     errorMessage: "FieldAccessRule is not configured: SourceField is missing.",
                     explicitTargetFieldType: typeof(object)
                     );
@@ -271,18 +267,18 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
             Type effectiveTargetType = targetField?.FieldType ?? typeof(object);
 
             var context = TransformationResult.Success(
-                originalValue: null, 
+                originalValue: null,
                 originalValueType: null,
-                currentValue: null, 
-                currentValueType: null, 
+                currentValue: null,
+                currentValueType: null,
                 appliedTransformations: new List<string>(),
                 record: null, // No DataRow in this specific GetValue signature.
-                tableDefinition: null, 
+                tableDefinition: null,
                 sourceRecordContext: sourceRecordContextList,
                 targetFieldType: effectiveTargetType
             );
 
-            var task = Apply(context); 
+            var task = Apply(context);
             TransformationResult? result = task.ConfigureAwait(false).GetAwaiter().GetResult();
 
             return result ?? TransformationResult.Failure(

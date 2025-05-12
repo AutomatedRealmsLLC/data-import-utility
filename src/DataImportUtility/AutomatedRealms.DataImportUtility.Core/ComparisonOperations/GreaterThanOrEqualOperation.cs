@@ -1,10 +1,8 @@
+using System.Globalization;
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions; // For ITransformationContext, ComparisonOperationBase
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Ensure ITransformationContext is known
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
-using System.Globalization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -33,12 +31,12 @@ public class GreaterThanOrEqualOperation : ComparisonOperationBase
         if (LeftOperand is null || RightOperand is null)
         {
             // TODO: Log this failure.
-            return false; 
+            return false;
         }
 
         // This should now call MappingRuleBase.Apply(ITransformationContext context)
         TransformationResult? leftOpResult = await LeftOperand.Apply(contextResult);
-        
+
         if (leftOpResult is null || leftOpResult.WasFailure)
         {
             // TODO: Log leftOpResult?.ErrorMessage or null operand
@@ -52,7 +50,7 @@ public class GreaterThanOrEqualOperation : ComparisonOperationBase
             // TODO: Log rightOpResult?.ErrorMessage or null operand
             return false;
         }
-        
+
         return leftOpResult.GreaterThanOrEqual(rightOpResult); // Extension method
     }
 
@@ -138,7 +136,7 @@ public static class GreaterThanOrEqualOperationExtensions
         var sLeft = leftVal.ToString();
         var sRight = rightVal.ToString();
         if (sLeft == null || sRight == null) return false;
-        
+
         return string.Compare(sLeft, sRight, StringComparison.OrdinalIgnoreCase) >= 0;
     }
 }

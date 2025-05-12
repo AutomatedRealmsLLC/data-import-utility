@@ -1,9 +1,8 @@
 // Original file path: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Abstractions\ValueTransformationBase.cs
 using System.Text.Json.Serialization; // For JsonIgnoreAttribute
-using System.Threading.Tasks; 
-using System; // For IDisposable and HashCode
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
+
 using AutomatedRealms.DataImportUtility.Abstractions.Enums; // For ValueTransformationType
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
 
 namespace AutomatedRealms.DataImportUtility.Abstractions;
 

@@ -1,5 +1,4 @@
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using System.Threading.Tasks;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions;
 
@@ -42,7 +41,7 @@ public abstract class ComparisonOperationBase
     /// The upper limit for range comparisons (e.g., 'IsBetween'). This is a rule that provides the value.
     /// </summary>
     public virtual MappingRuleBase? HighLimit { get; set; }
-    
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ComparisonOperationBase"/> class.
     /// </summary>
@@ -68,19 +67,19 @@ public abstract class ComparisonOperationBase
         var clone = (ComparisonOperationBase)MemberwiseClone();
         if (LeftOperand != null)
         {
-            clone.LeftOperand = (MappingRuleBase)LeftOperand.Clone();
+            clone.LeftOperand = LeftOperand.Clone();
         }
         if (RightOperand != null)
         {
-            clone.RightOperand = (MappingRuleBase)RightOperand.Clone();
+            clone.RightOperand = RightOperand.Clone();
         }
         if (LowLimit != null)
         {
-            clone.LowLimit = (MappingRuleBase)LowLimit.Clone();
+            clone.LowLimit = LowLimit.Clone();
         }
         if (HighLimit != null)
         {
-            clone.HighLimit = (MappingRuleBase)HighLimit.Clone();
+            clone.HighLimit = HighLimit.Clone();
         }
         return clone;
     }

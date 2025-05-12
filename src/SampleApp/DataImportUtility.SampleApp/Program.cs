@@ -1,4 +1,5 @@
-using DataImportUtility.Components.Extensions;
+using AutomatedRealms.DataImportUtility.Components.Extensions;
+
 using DataImportUtility.SampleApp;
 using DataImportUtility.SampleApp.OverriddenComponents;
 

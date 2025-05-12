@@ -1,13 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using System; // For Exception, Type
-using System.Linq; // For .OfType, .Select, .ToArray, .FirstOrDefault
-using System.Threading.Tasks; // For Task
+
 using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers; // Required for List<string> in TransformationResult
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
-using AutomatedRealms.DataImportUtility.Core.Helpers;
-using System.Collections.Generic; // Required for List<string> in TransformationResult
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -75,13 +72,13 @@ public class RegexMatchTransformation : ValueTransformationBase
                     targetFieldType: checkedResult.TargetFieldType
                 ));
             }
-        
-            if (string.IsNullOrEmpty(currentInputValue)) 
+
+            if (string.IsNullOrEmpty(currentInputValue))
             {
                 return Task.FromResult(TransformationResult.Success(
                     originalValue: checkedResult.OriginalValue,
                     originalValueType: checkedResult.OriginalValueType,
-                    currentValue: string.Empty, 
+                    currentValue: string.Empty,
                     currentValueType: typeof(string),
                     appliedTransformations: checkedResult.AppliedTransformations,
                     record: checkedResult.Record,
@@ -130,11 +127,11 @@ public class RegexMatchTransformation : ValueTransformationBase
             {
                 finalValue = JsonSerializer.Serialize(matches);
             }
-            
+
             return Task.FromResult(TransformationResult.Success(
                 originalValue: checkedResult.OriginalValue,
                 originalValueType: checkedResult.OriginalValueType,
-                currentValue: finalValue, 
+                currentValue: finalValue,
                 currentValueType: typeof(string), // Output is always string (or JSON string)
                 appliedTransformations: checkedResult.AppliedTransformations,
                 record: checkedResult.Record,
@@ -169,12 +166,12 @@ public class RegexMatchTransformation : ValueTransformationBase
             currentValue: value,
             currentValueType: value?.GetType() ?? typeof(object),
             appliedTransformations: new List<string>(), // Initialize with empty list
-            record: null, 
+            record: null,
             tableDefinition: null,
             sourceRecordContext: null,
             targetFieldType: targetType
         );
-        
+
         // ApplyTransformationAsync is non-async in its core logic but returns Task, so await it.
         return await ApplyTransformationAsync(initialResult);
     }
@@ -196,7 +193,7 @@ public class RegexMatchTransformation : ValueTransformationBase
     public override ValueTransformationBase Clone()
     {
         var clone = (RegexMatchTransformation)MemberwiseClone();
-        clone.TransformationDetail = this.TransformationDetail; 
+        clone.TransformationDetail = this.TransformationDetail;
         return clone;
     }
 }

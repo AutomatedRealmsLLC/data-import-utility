@@ -1,14 +1,12 @@
 using System.Text.Json.Serialization;
-using System.Collections.Generic; // For List<T>
-using System.Linq; // For .Select, .ToList, .FirstOrDefault, .Where
-using System.Threading.Tasks; // For Task
-using System;
-using AutomatedRealms.DataImportUtility.Abstractions;
-using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models; // Alias for Abstractions.Models
-using AutomatedRealms.DataImportUtility.Core.Helpers; 
-using AutomatedRealms.DataImportUtility.Core.Models;   // For ValueMap
 
-namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations; 
+using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;   // For ValueMap
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models; // Alias for Abstractions.Models
+
+namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
 /// <summary>
 /// This class is used to map a value from one value to another.
@@ -45,7 +43,7 @@ public class MapTransformation : ValueTransformationBase
     /// The list of value mappings to use.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public List<ValueMap> ValueMappings { get; set; } = new(); 
+    public List<ValueMap> ValueMappings { get; set; } = [];
 
     /// <summary>
     /// The field name to map the value to. (Currently not used by the Map extension logic, but kept for potential future use or if logic changes)
@@ -57,7 +55,7 @@ public class MapTransformation : ValueTransformationBase
     public string? FieldName { get; set; }
 
     /// <inheritdoc />
-    public override Task<AbstractionsModels.TransformationResult> ApplyTransformationAsync(AbstractionsModels.TransformationResult previousResult) // Removed async
+    public override Task<TransformationResult> ApplyTransformationAsync(TransformationResult previousResult) // Removed async
     {
         try
         {
@@ -66,14 +64,14 @@ public class MapTransformation : ValueTransformationBase
                 return Task.FromResult(previousResult);
             }
 
-            AbstractionsModels.TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(previousResult, ValueTransformationBase.OperationInvalidForCollectionsMessage);
+            TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(previousResult, ValueTransformationBase.OperationInvalidForCollectionsMessage);
             if (checkedResult.WasFailure)
             {
                 return Task.FromResult(checkedResult);
             }
 
             if (ValueMappings == null || !ValueMappings.Any())
-            { 
+            {
                 return Task.FromResult(checkedResult); // No mappings provided, return original (potentially error-checked) result
             }
 
@@ -86,7 +84,7 @@ public class MapTransformation : ValueTransformationBase
                 return Task.FromResult(AbstractionsModels.TransformationResult.Success(
                     originalValue: checkedResult.OriginalValue,
                     originalValueType: checkedResult.OriginalValueType,
-                    currentValue: mappedEntry.ToValue, 
+                    currentValue: mappedEntry.ToValue,
                     currentValueType: mappedEntry.ToValue?.GetType() ?? typeof(string),
                     appliedTransformations: checkedResult.AppliedTransformations,
                     record: checkedResult.Record,
@@ -102,10 +100,10 @@ public class MapTransformation : ValueTransformationBase
         {
             return Task.FromResult(AbstractionsModels.TransformationResult.Failure(
                 originalValue: previousResult.OriginalValue,
-                targetType: OutputType, 
+                targetType: OutputType,
                 errorMessage: ex.Message,
                 originalValueType: previousResult.OriginalValueType,
-                currentValueType: null, 
+                currentValueType: null,
                 appliedTransformations: previousResult.AppliedTransformations,
                 record: previousResult.Record,
                 tableDefinition: previousResult.TableDefinition,
@@ -116,7 +114,7 @@ public class MapTransformation : ValueTransformationBase
     }
 
     /// <inheritdoc />
-    public override async Task<AbstractionsModels.TransformationResult> Transform(object? value, Type targetType)
+    public override async Task<TransformationResult> Transform(object? value, Type targetType)
     {
         var initialResult = AbstractionsModels.TransformationResult.Success(
             originalValue: value,
@@ -138,9 +136,9 @@ public class MapTransformation : ValueTransformationBase
     public override ValueTransformationBase Clone()
     {
         var clone = (MapTransformation)MemberwiseClone();
-        clone.FieldName = this.FieldName; 
+        clone.FieldName = this.FieldName;
         // ValueMappings is a list of complex objects (ValueMap), requires deep cloning.
-        clone.ValueMappings = this.ValueMappings.Select(x => x.Clone()).ToList(); // Assumes ValueMap has a Clone method
+        clone.ValueMappings = [.. this.ValueMappings.Select(x => x.Clone())]; // Assumes ValueMap has a Clone method
         // TransformationDetail is not directly used by MapTransformation properties but is part of base, clone if necessary.
         clone.TransformationDetail = this.TransformationDetail;
         return clone;

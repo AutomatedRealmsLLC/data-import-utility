@@ -1,13 +1,9 @@
 using System.Data;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
-using System.Collections.Generic; // Added for IEnumerable
-using System.Linq; // Added for AsEnumerable
 
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Enums;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules;
 
@@ -16,8 +12,8 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules;
 /// </summary>
 public partial class ConstantValueRule : MappingRuleBase
 {    /// <summary>
-    /// Gets or sets the constant value for this rule.
-    /// </summary>
+     /// Gets or sets the constant value for this rule.
+     /// </summary>
     public new string? RuleDetail { get; set; }
 
     /// <summary>
@@ -119,7 +115,7 @@ public partial class ConstantValueRule : MappingRuleBase
             originalValueType: RuleDetail?.GetType() ?? typeof(string),
             currentValue: this.RuleDetail,
             currentValueType: valueType,
-            appliedTransformations: new[] { "ConstantValueRule applied." },
+            appliedTransformations: ["ConstantValueRule applied."],
             record: context.Record,
             tableDefinition: context.TableDefinition,
             sourceRecordContext: context.SourceRecordContext,
@@ -193,8 +189,8 @@ public partial class ConstantValueRule : MappingRuleBase
             currentValue: this.RuleDetail,
             currentValueType: targetType,
             appliedTransformations: new List<string>(),
-            record: null, 
-            tableDefinition: null, 
+            record: null,
+            tableDefinition: null,
             sourceRecordContext: sourceRecordContext,
             targetFieldType: targetType
         );

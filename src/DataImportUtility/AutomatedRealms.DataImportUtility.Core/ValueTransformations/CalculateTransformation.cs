@@ -1,15 +1,14 @@
+using System.Collections; // Added for IEnumerable
+using System.Globalization;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers; // Added for CultureInfo
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
-using AutomatedRealms.DataImportUtility.Core.Helpers;     // For StringHelpers.TryGetPlaceholderMatches and TransformationResultHelpers.ResultValueAsArray
 using AutomatedRealms.DataImportUtility.Core.Compatibility; // For MathCompatibility
+
 using Jace;
-using System; // For Math.Clamp, Exception, Task, ArgumentException, Type
-using System.Linq; // For .Select
-using System.Threading.Tasks; // For Task
-using System.Collections; // Added for IEnumerable
-using System.Globalization; // Added for CultureInfo
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -64,7 +63,7 @@ public class CalculateTransformation : ValueTransformationBase
                 return Task.FromResult(TransformationResult.Success(
                     originalValue: previousResult.OriginalValue,
                     originalValueType: previousResult.OriginalValueType,
-                    currentValue: string.Empty, 
+                    currentValue: string.Empty,
                     currentValueType: typeof(decimal),
                     appliedTransformations: previousResult.AppliedTransformations,
                     record: previousResult.Record,
@@ -77,21 +76,21 @@ public class CalculateTransformation : ValueTransformationBase
             string[] valuesToUse;
             if (previousResult.CurrentValue == null)
             {
-                valuesToUse = Array.Empty<string>();
+                valuesToUse = [];
             }
             else if (previousResult.CurrentValue is IEnumerable<string> stringEnumerable)
             {
-                valuesToUse = stringEnumerable.ToArray();
+                valuesToUse = [.. stringEnumerable];
             }
             else if (previousResult.CurrentValue is IEnumerable enumerableValue && !(previousResult.CurrentValue is string))
             {
-                valuesToUse = enumerableValue.Cast<object>().Select(o => o?.ToString() ?? "0").ToArray();
+                valuesToUse = [.. enumerableValue.Cast<object>().Select(o => o?.ToString() ?? "0")];
             }
             else // Single object (including string if not caught by IEnumerable<string>)
             {
-                valuesToUse = new[] { previousResult.CurrentValue.ToString() ?? "0" };
+                valuesToUse = [previousResult.CurrentValue.ToString() ?? "0"];
             }
-            
+
             // resultValueText is guaranteed non-null here due to the earlier IsNullOrWhiteSpace check.
             string currentFormula = resultValueText!;
             if (valuesToUse.Any())
@@ -110,7 +109,7 @@ public class CalculateTransformation : ValueTransformationBase
                     currentFormula = currentFormula.Replace(match.Value, "0");
                 }
             }
-            
+
             int clampedDecimalPlaces = DecimalPlaces;
 #if !NETCOREAPP2_0_OR_GREATER
             clampedDecimalPlaces = MathCompatibility.Clamp(-1, clampedDecimalPlaces, 15);
@@ -129,7 +128,7 @@ public class CalculateTransformation : ValueTransformationBase
             return Task.FromResult(TransformationResult.Success(
                 originalValue: previousResult.OriginalValue,
                 originalValueType: previousResult.OriginalValueType,
-                currentValue: finalValueString, 
+                currentValue: finalValueString,
                 currentValueType: typeof(decimal),
                 appliedTransformations: previousResult.AppliedTransformations,
                 record: previousResult.Record,
@@ -166,9 +165,9 @@ public class CalculateTransformation : ValueTransformationBase
         // Create an initial TransformationResult where 'value' is both original and current.
         // Context is null as this is the start of a transformation sequence for this specific call.
         var initialContext = TransformationResult.Success(
-            originalValue: value, 
-            originalValueType: value?.GetType() ?? typeof(object), 
-            currentValue: value, 
+            originalValue: value,
+            originalValueType: value?.GetType() ?? typeof(object),
+            currentValue: value,
             currentValueType: value?.GetType() ?? typeof(object),
             appliedTransformations: new List<string>(),
             record: null, // No DataRow context for an isolated Transform call

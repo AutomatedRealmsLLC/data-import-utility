@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 
@@ -17,7 +12,7 @@ namespace AutomatedRealms.DataImportUtility.Abstractions.Models;
 /// </summary>
 public class FieldMapping
 {
-    private readonly Dictionary<string, List<ValidationResult>?> _valueValidationResults = new Dictionary<string, List<ValidationResult>?>();
+    private readonly Dictionary<string, List<ValidationResult>?> _valueValidationResults = [];
 
     /// <summary>
     /// The name of the field.
@@ -142,7 +137,7 @@ public class FieldMapping
     {
         if (transformedResult?.CurrentValue is null)
         {
-            validationResults = Required ? new List<ValidationResult> { new ValidationResult("The field is required.", new List<string> { FieldName }) } : null;
+            validationResults = Required ? [new ValidationResult("The field is required.", new List<string> { FieldName })] : null;
             if (validationResults != null && validationResults.Count > 0)
             {
                 if (!_valueValidationResults.ContainsKey("<null>"))
@@ -200,7 +195,7 @@ public class FieldMapping
             {
                 if (!_valueValidationResults.ContainsKey("<null>"))
                 {
-                    _valueValidationResults.Add("<null>", new List<ValidationResult> { new ValidationResult("A value for this field is required.", new List<string> { FieldName }) });
+                    _valueValidationResults.Add("<null>", [new ValidationResult("A value for this field is required.", new List<string> { FieldName })]);
                 }
             }
             else

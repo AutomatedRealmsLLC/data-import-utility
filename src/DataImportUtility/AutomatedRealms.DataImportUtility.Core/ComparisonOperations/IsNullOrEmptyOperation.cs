@@ -1,9 +1,6 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Enums; // Added for ComparisonOperationType
-using AutomatedRealms.DataImportUtility.Abstractions.Models; 
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
-using System; 
-using System.Threading.Tasks;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
 {
@@ -48,10 +45,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
             }
 
             var leftOperandValueResult = await this.LeftOperand.Apply(contextResult);
-            
+
             if (leftOperandValueResult == null)
             {
-                 throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
+                throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
             }
 
             if (leftOperandValueResult.WasFailure)
@@ -72,7 +69,7 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
             {
                 return string.IsNullOrEmpty(stringValue);
             }
-            
+
             // For non-string, non-null types, consider them not "null or empty" in the string sense.
             // E.g., an integer value of 0 is not an empty string.
             return false;

@@ -1,12 +1,8 @@
+using System.Globalization; // For CultureInfo and NumberStyles
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // For ITransformationContext
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Globalization; // For CultureInfo and NumberStyles
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -116,7 +112,7 @@ public class NotInOperation : ComparisonOperationBase
             }
             return false;
         }
-        
+
         if ((IsNumericType(leftValue) && rightValue is string) || (leftValue is string && IsNumericType(rightValue)))
         {
             return false;
@@ -163,8 +159,8 @@ public class NotInOperation : ComparisonOperationBase
         return new NotInOperation
         {
             LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(), 
-            Values = Values?.Select(v => v.Clone() as MappingRuleBase).ToList(), // Ensure correct cast for cloned values
+            RightOperand = RightOperand?.Clone(),
+            Values = Values?.Select(v => v.Clone()).ToList(), // Ensure correct cast for cloned values
             EnumMemberOrder = EnumMemberOrder
         };
     }

@@ -1,9 +1,7 @@
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -71,15 +69,19 @@ public static class IsFalseOperationExtensions
     {
         if (result.CurrentValue == null) return true;
         if (result.CurrentValue is bool boolVal) return !boolVal;
-        
+
         var stringVal = result.CurrentValue.ToString();
         if (string.IsNullOrEmpty(stringVal)) return true;
         if (string.Equals(stringVal, "false", StringComparison.OrdinalIgnoreCase)) return true;
         if (stringVal == "0") return true;
-        if (result.CurrentValue is IConvertible convertible) {
-            try {
+        if (result.CurrentValue is IConvertible convertible)
+        {
+            try
+            {
                 return convertible.ToDouble(System.Globalization.CultureInfo.InvariantCulture) == 0;
-            } catch {
+            }
+            catch
+            {
                 // Not a number, or not convertible to double
             }
         }

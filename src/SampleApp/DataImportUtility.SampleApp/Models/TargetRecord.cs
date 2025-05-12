@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DataImportUtility.SampleApp.Client.Models;
+namespace DataImportUtility.SampleApp.Models;
 
 public class TargetRecord
 {

@@ -1,10 +1,8 @@
+using System.Globalization; // For CultureInfo and NumberStyles
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // For ITransformationContext
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
-using System.Globalization; // For CultureInfo and NumberStyles
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -92,7 +90,7 @@ public class NotEqualOperation : ComparisonOperationBase
                 return leftDecimal == rightDecimal;
             }
             // Fallback to double if decimal parsing fails or if types are mixed (e.g. int and double string)
-             if (TryParseDouble(leftValue, out var leftDouble) && TryParseDouble(rightValue, out var rightDouble))
+            if (TryParseDouble(leftValue, out var leftDouble) && TryParseDouble(rightValue, out var rightDouble))
             {
                 // Using a small epsilon for floating-point comparison might be needed if precision issues are a concern.
                 // For now, direct comparison.
@@ -101,14 +99,14 @@ public class NotEqualOperation : ComparisonOperationBase
             // If numeric types but cannot parse to a common comparable type, consider them not equal.
             return false;
         }
-        
+
         // Fallback to string comparison (case-insensitive as per original likely intent for "Equals")
         // If one is numeric and the other is string (and not parsable as numeric), they are not equal by type.
         if ((IsNumericType(leftValue) && rightValue is string) || (leftValue is string && IsNumericType(rightValue)))
         {
-             // If one is clearly numeric and the other is a string that wasn't parsed as numeric above,
-             // they are not equal. (e.g. 5 vs "apple")
-             // This check assumes TryParseDouble/Decimal would have handled cases like 5 vs "5.0"
+            // If one is clearly numeric and the other is a string that wasn't parsed as numeric above,
+            // they are not equal. (e.g. 5 vs "apple")
+            // This check assumes TryParseDouble/Decimal would have handled cases like 5 vs "5.0"
             return false;
         }
 

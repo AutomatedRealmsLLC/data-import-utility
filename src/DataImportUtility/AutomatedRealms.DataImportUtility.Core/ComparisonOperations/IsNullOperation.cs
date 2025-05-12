@@ -1,9 +1,7 @@
+using System.Text.Json.Serialization;
+
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Abstractions.Interfaces;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -48,7 +46,7 @@ public class IsNullOperation : ComparisonOperationBase
         {
             throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
         }
-        
+
         if (leftResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
 using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Models;
@@ -130,7 +126,7 @@ public class ConditionalRule : IDisposable, IEquatable<ConditionalRule>
         hashCode = hashCode * 23 + OperationType.GetHashCode();
         hashCode = hashCode * 23 + (ComparisonValue?.GetHashCode() ?? 0);
         hashCode = hashCode * 23 + (SecondaryComparisonValue?.GetHashCode() ?? 0);
-        
+
         return hashCode;
     }
 }

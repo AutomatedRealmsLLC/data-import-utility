@@ -1,5 +1,4 @@
-using System;
-using System.Linq;
+using System.Data;
 using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Models;
@@ -17,7 +16,7 @@ public class ImportedRecordFieldDescriptor
     /// <summary>
     /// The imported field name.
     /// </summary>
-    public string FieldName { get; init; } = string.Empty; // Removed 'required', added initializer
+    public string FieldName { get; set; /*init;*/ } = string.Empty; // Removed 'required', added initializer
 
     private Type _fieldType = typeof(object);
     /// <summary>
@@ -101,7 +100,7 @@ public class ImportedRecordFieldDescriptor
             return FieldName == other.FieldName &&
                    ForTableName == other.ForTableName &&
                    FieldTypeString == other.FieldTypeString &&
-                   ((_valueSet == null && other._valueSet == null) || 
+                   ((_valueSet == null && other._valueSet == null) ||
                     (_valueSet != null && other._valueSet != null && _valueSet.SequenceEqual(other._valueSet)));
         }
         return false;
@@ -120,4 +119,16 @@ public class ImportedRecordFieldDescriptor
         // For now, omitting ValueSet from hash code for performance and simplicity.
         return hash;
     }
+
+    /// <summary>
+    /// The data file that the field is imported from.
+    /// </summary>
+    [JsonIgnore]
+    public ImportedDataFile? ImportedDataFile { get; set; } // ImportedDataFile is in Core.Models
+
+    /// <summary>
+    /// The table that the field is in.
+    /// </summary>
+    [JsonIgnore]
+    public DataTable? ForTable => ImportedDataFile?.DataSet?.Tables[ForTableName!];
 }
