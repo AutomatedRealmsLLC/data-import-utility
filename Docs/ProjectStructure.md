@@ -21,6 +21,7 @@
 │  │  │  ├─ MappingRuleBase.cs
 │  │  │  ├─ ValueTransformationBase.cs
 │  │  │  ├─ Compatibility/
+│  │  │  │  ├─ CompilerServicesPolyfills.cs
 │  │  │  │  └─ IsExternalInit.cs
 │  │  │  ├─ CustomConverters/
 │  │  │  │  ├─ MappingRuleBaseConverter.cs
@@ -33,7 +34,6 @@
 │  │  │  │  ├─ RuleType.cs
 │  │  │  │  └─ ValueTransformationType.cs
 │  │  │  ├─ Helpers/
-│  │  │  │  ├─ CompilerServicesPolyfills.cs
 │  │  │  │  ├─ DataTableExtensions.cs
 │  │  │  │  ├─ FileReaderHelpers.cs
 │  │  │  │  ├─ MappingRulesHelpers.cs
