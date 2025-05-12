@@ -1,7 +1,9 @@
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // Updated from Core.Models
+using AutomatedRealms.DataImportUtility.Core.Models; // Added for ImportedDataFile
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using AutomatedRealms.DataImportUtility.Abstractions; // Added for IImportDataFileRequest
 
 namespace AutomatedRealms.DataImportUtility.DataReader.Abstractions; // Updated namespace
 

@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutomatedRealms.DataImportUtility.Abstractions\AutomatedRealms.DataImportUtility.Abstractions.csproj" />
+    <ProjectReference Include="..\AutomatedRealms.DataImportUtility.Core\AutomatedRealms.DataImportUtility.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

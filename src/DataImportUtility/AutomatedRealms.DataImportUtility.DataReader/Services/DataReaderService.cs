@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Core.Models; // Added for ImportedDataFile
 using AutomatedRealms.DataImportUtility.DataReader.Abstractions;
 using AutomatedRealms.DataImportUtility.DataReader.Helpers; // Updated to use DataReader.Helpers
 using AutomatedRealms.DataImportUtility.Core.Helpers; // Retained for other helpers like ToStandardComparisonString
@@ -31,17 +32,20 @@ public class DataReaderService : IDataReaderService
     {
         if (ct.IsCancellationRequested) { return await Task.FromCanceled<ImportedDataFile>(ct); }
 
-        if (!_acceptedFileTypes.Contains(dataRequest.ContentType))
+        if (!_acceptedFileTypes.Contains(dataRequest.ContentType ?? string.Empty))
         {
             throw new ArgumentException("The file must be a CSV or Excel file.");
         }
 
-        using var fileStream = dataRequest.OpenReadStream(cancellationToken: ct);
-
-        ArgumentNullException.ThrowIfNull(fileStream);
+        using var fileStreamNullable = dataRequest.OpenReadStream(cancellationToken: ct);
+        if (fileStreamNullable is null)
+        {
+            throw new InvalidOperationException("The stream from OpenReadStream cannot be null.");
+        }
+        var fileStream = fileStreamNullable; // fileStream is now non-nullable
 
         // Determine the file type and process it
-        var dataSet = dataRequest.ContentType switch
+        var dataSet = (dataRequest.ContentType ?? string.Empty) switch
         {
             "text/csv" => await FileReaderHelpers.ReadFromCsvFileAsync(fileStream, dataRequest.HasHeaderRow, ct),
             "application/vnd.ms-excel" or "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" => await FileReaderHelpers.ReadFromExcelFileAsync(fileStream, dataRequest.HasHeaderRow, ct),
@@ -55,7 +59,7 @@ public class DataReaderService : IDataReaderService
     public Task TryMatchingFields(ImportedDataFile importedDataFile, string tableName, IEnumerable<FieldMapping> mappableFields, CancellationToken ct = default)
     {
         var dataTable = (importedDataFile.DataSet?.Tables[tableName]) ?? throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
-        importedDataFile.RefreshFieldDescriptors(forTable: tableName);
+        importedDataFile.RefreshFieldDescriptors(tableName: tableName);
 
         if (!importedDataFile.TableDefinitions.TryGetFieldDescriptors(dataTable.TableName, out var fieldDescriptors) || fieldDescriptors is null)
         {
@@ -70,12 +74,18 @@ public class DataReaderService : IDataReaderService
                 mappableFields.FirstOrDefault(x => x.FieldName.ToStandardComparisonString() == colNameInvariant && x.FieldType == fieldDescriptor.FieldType)
                 ?? mappableFields.FirstOrDefault(x => x.FieldName.ToStandardComparisonString() == colNameInvariant);
 
-            if (matchingField?.MappingRule is null || (matchingField.MappingRule.SourceFieldTransformations?.Any(x => x.Field is not null) ?? false))
+            if (matchingField?.MappingRule is null)
+            {
+                continue;
+            }
+
+            // If the rule already has transformations, it's considered complex, so don't overwrite its SourceField.
+            if (matchingField.MappingRule.SourceFieldTransformations.Any())
             {
                 continue;
             }
             
-            matchingField.MappingRule.AddFieldTransformation(fieldDescriptor);
+            matchingField.MappingRule.SourceField = fieldDescriptor.FieldName;
         }
 
         return Task.CompletedTask;
