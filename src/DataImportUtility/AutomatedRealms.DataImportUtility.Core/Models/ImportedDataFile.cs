@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 
 using AutomatedRealms.DataImportUtility.Abstractions; // Updated
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // Added for FieldMapping
 using AutomatedRealms.DataImportUtility.Core.CustomExceptions; // Added for MissingFieldMappingException
 using AutomatedRealms.DataImportUtility.Core.Helpers; // Updated, assuming Helpers will be in Core
 
@@ -228,17 +229,9 @@ public class ImportedDataFile
             var obj = new T();
             foreach (var fieldMapping in tableDefinition.FieldMappings)
             {
-                if (fieldMapping.IgnoreMapping) { continue; }                if (fieldMapping.MappingRule is null)
-                {
-                    if (fieldMapping.Required)
-                    {
-                        throw new MissingFieldMappingException(new[] { fieldMapping });
-                    }
-                    continue;
-                }
-
+                if (fieldMapping.IgnoreMapping) { continue; }
                 var transformedResult = await fieldMapping.Apply(row);
-                if (transformedResult is null || transformedResult.Value is null) // TODO: Change to CurrentValue
+                if (transformedResult is null || transformedResult.CurrentValue is null)
                 {
                     if (fieldMapping.Required)
                     {
@@ -252,7 +245,7 @@ public class ImportedDataFile
 
                 try
                 {
-                    var convertedValue = ReflectionHelpers.ChangeType(transformedResult.Value, prop.PropertyType); // TODO: Change to CurrentValue
+                    var convertedValue = ReflectionHelpers.ChangeType(transformedResult.CurrentValue, prop.PropertyType);
                     prop.SetValue(obj, convertedValue);
                 }
                 catch (Exception ex) when (ex is FormatException || ex is InvalidCastException || ex is OverflowException)

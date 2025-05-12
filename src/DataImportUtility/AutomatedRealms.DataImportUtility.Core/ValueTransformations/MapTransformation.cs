@@ -57,43 +57,81 @@ public class MapTransformation : ValueTransformationBase
     public string? FieldName { get; set; }
 
     /// <inheritdoc />
-    public override async Task<AbstractionsModels.TransformationResult> ApplyTransformationAsync(AbstractionsModels.TransformationResult previousResult)
+    public override Task<AbstractionsModels.TransformationResult> ApplyTransformationAsync(AbstractionsModels.TransformationResult previousResult) // Removed async
     {
         try
         {
-            AbstractionsModels.TransformationResult transformedResult = previousResult.Map(ValueMappings, FieldName);
-            return await Task.FromResult(transformedResult);
+            if (previousResult.WasFailure)
+            {
+                return Task.FromResult(previousResult);
+            }
+
+            AbstractionsModels.TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(previousResult, ValueTransformationBase.OperationInvalidForCollectionsMessage);
+            if (checkedResult.WasFailure)
+            {
+                return Task.FromResult(checkedResult);
+            }
+
+            if (ValueMappings == null || !ValueMappings.Any())
+            { 
+                return Task.FromResult(checkedResult); // No mappings provided, return original (potentially error-checked) result
+            }
+
+            var currentInputValueString = checkedResult.CurrentValue?.ToString();
+
+            var mappedEntry = ValueMappings.FirstOrDefault(x => string.Equals(x.FromValue, currentInputValueString, StringComparison.Ordinal)); // Consider StringComparison option
+
+            if (mappedEntry != null)
+            {
+                return Task.FromResult(AbstractionsModels.TransformationResult.Success(
+                    originalValue: checkedResult.OriginalValue,
+                    originalValueType: checkedResult.OriginalValueType,
+                    currentValue: mappedEntry.ToValue, 
+                    currentValueType: mappedEntry.ToValue?.GetType() ?? typeof(string),
+                    appliedTransformations: checkedResult.AppliedTransformations,
+                    record: checkedResult.Record,
+                    tableDefinition: checkedResult.TableDefinition,
+                    sourceRecordContext: checkedResult.SourceRecordContext,
+                    targetFieldType: checkedResult.TargetFieldType
+                ));
+            }
+
+            return Task.FromResult(checkedResult); // No match found, return original (error-checked) result
         }
         catch (Exception ex)
         {
-            return previousResult with 
-            { 
-                ErrorMessage = ex.Message,
-                CurrentValue = previousResult.CurrentValue,
-                CurrentValueType = previousResult.CurrentValueType 
-            };
+            return Task.FromResult(AbstractionsModels.TransformationResult.Failure(
+                originalValue: previousResult.OriginalValue,
+                targetType: OutputType, 
+                errorMessage: ex.Message,
+                originalValueType: previousResult.OriginalValueType,
+                currentValueType: null, 
+                appliedTransformations: previousResult.AppliedTransformations,
+                record: previousResult.Record,
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                explicitTargetFieldType: previousResult.TargetFieldType
+            ));
         }
     }
 
     /// <inheritdoc />
-    public override Task<AbstractionsModels.TransformationResult> Transform(object? value, Type targetType)
+    public override async Task<AbstractionsModels.TransformationResult> Transform(object? value, Type targetType)
     {
         var initialResult = AbstractionsModels.TransformationResult.Success(
             originalValue: value,
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value,
-            currentValueType: value?.GetType() ?? typeof(object)
+            currentValueType: value?.GetType() ?? typeof(object),
+            appliedTransformations: new List<string>(),
+            record: null,
+            tableDefinition: null,
+            sourceRecordContext: null,
+            targetFieldType: targetType
         );
-
-        try
-        {
-            AbstractionsModels.TransformationResult transformedResult = initialResult.Map(ValueMappings, FieldName);
-            return Task.FromResult(transformedResult);
-        }
-        catch (Exception ex)
-        {
-            return Task.FromResult(initialResult with { ErrorMessage = ex.Message });
-        }
+        // ApplyTransformationAsync now returns Task<TransformationResult>, so it can be awaited or returned directly if the signature matches.
+        // Since Transform is async, we await it.
+        return await ApplyTransformationAsync(initialResult);
     }
 
     /// <inheritdoc />
@@ -106,58 +144,5 @@ public class MapTransformation : ValueTransformationBase
         // TransformationDetail is not directly used by MapTransformation properties but is part of base, clone if necessary.
         clone.TransformationDetail = this.TransformationDetail;
         return clone;
-    }
-}
-
-/// <summary>
-/// The extension methods for the <see cref="MapTransformation" /> to be used with the scripting engine.
-/// </summary>
-public static class MapTransformationExtensions
-{
-    /// <summary>
-    /// Maps the value of the source field to a new value using a mapping list.
-    /// </summary>
-    /// <param name="result">The result of the previous transformation. <see cref="AbstractionsModels.TransformationResult.CurrentValue"/> is used as the value to map.</param>
-    /// <param name="valueMappings">The mapping list. Each <see cref="ValueMap"/> contains a FromValue and ToValue.</param>
-    /// <param name="fieldName">The field name to map the value to. (Currently, the extension logic primarily uses FromValue for matching, not fieldName from ValueMap model directly in filter).</param>
-    /// <returns>A <see cref="AbstractionsModels.TransformationResult"/> with the <see cref="AbstractionsModels.TransformationResult.CurrentValue"/> updated to the mapped value if a match is found; otherwise, the original <see cref="AbstractionsModels.TransformationResult.CurrentValue"/>.</returns>
-    /// <remarks>
-    /// If the mapping list is empty, or no match is found for the <see cref="AbstractionsModels.TransformationResult.CurrentValue"/>, the original <paramref name="result"/> is returned unchanged.
-    /// The comparison for mapping is typically case-sensitive. Consider adding options for case-insensitivity if needed.
-    /// </remarks>
-    public static AbstractionsModels.TransformationResult Map(this AbstractionsModels.TransformationResult result, List<ValueMap> valueMappings, string? fieldName)
-    {
-        AbstractionsModels.TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(result, ValueTransformationBase.OperationInvalidForCollectionsMessage);
-        if (checkedResult.WasFailure)
-        {
-            return checkedResult;
-        }
-
-        if (valueMappings == null || !valueMappings.Any())
-        { 
-            return checkedResult; // No mappings provided, return original result
-        }
-
-        var currentInputValueString = checkedResult.CurrentValue?.ToString(); // Convert current value to string for comparison
-
-        // The FieldName property on MapTransformation isn't directly used here to filter valueMappings by ValueMap.ImportedFieldName.
-        // The existing logic seems to imply FieldName might be for a different purpose or future use.
-        // The filtering `lookups.FirstOrDefault(x => x.FromValue == lookupValue)` directly uses the CurrentValue.
-        // If `fieldName` from the parameters was intended to filter `valueMappings` based on `ValueMap.ImportedFieldName`, that logic would be: 
-        // var relevantMappings = string.IsNullOrWhiteSpace(fieldName) ? valueMappings : valueMappings.Where(m => m.ImportedFieldName == fieldName).ToList();
-        // For now, sticking to matching based on FromValue against CurrentValue.
-
-        var mappedEntry = valueMappings.FirstOrDefault(x => x.FromValue == currentInputValueString);
-
-        if (mappedEntry != null)
-        {
-            return checkedResult with 
-            { 
-                CurrentValue = mappedEntry.ToValue, 
-                CurrentValueType = mappedEntry.ToValue?.GetType() ?? typeof(string) // Type of the mapped value
-            };
-        }
-
-        return checkedResult; // No match found, return original result
     }
 }

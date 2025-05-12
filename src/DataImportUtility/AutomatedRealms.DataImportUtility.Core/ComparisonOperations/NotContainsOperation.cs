@@ -1,8 +1,10 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // For ITransformationContext
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System;
+using System.Collections; // For IEnumerable
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -21,35 +23,79 @@ public class NotContainsOperation : ComparisonOperationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override string Description { get; } = "Checks if a value does not contain another value.";
+    public override string Description { get; } = "Checks if a value does not contain another value (case-insensitive).";
 
+    /// <summary>
+    /// Gets or sets the order of this operation if it's part of an enumerated list of operations.
+    /// </summary>
     public int EnumMemberOrder { get; set; }
 
     /// <inheritdoc />
-    public override async Task<TransformationResult<bool>> Evaluate(ITransformationContext context)
+    public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is an ITransformationContext
     {
-        if (LeftOperand is null || RightOperand is null)
+        if (LeftOperand is null)
         {
-            return TransformationResult<bool>.CreateFailure($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set for {DisplayName} operation.");
+            throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
+        }
+        if (RightOperand is null)
+        {
+            throw new InvalidOperationException($"{nameof(RightOperand)} must be set for {DisplayName} operation.");
         }
 
-        var leftResult = await (LeftOperand?.Apply(context) ?? Task.FromResult(TransformationResult.CreateSuccess<string?>(null, context)));
-        if (leftResult.WasFailure)
+        var leftResult = await LeftOperand.Apply(contextResult);
+        var rightResult = await RightOperand.Apply(contextResult);
+
+        if (leftResult == null || leftResult.WasFailure)
         {
-            return TransformationResult<bool>.CreateFailure($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult?.ErrorMessage ?? "Result was null."}");
+        }
+        if (rightResult == null || rightResult.WasFailure)
+        {
+            throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        var rightResult = await (RightOperand?.Apply(context) ?? Task.FromResult(TransformationResult.CreateSuccess<string?>(null, context)));
-        if (rightResult.WasFailure)
+        object? leftValue = leftResult.CurrentValue;
+        object? rightValue = rightResult.CurrentValue;
+
+        if (leftValue == null) 
         {
-            return TransformationResult<bool>.CreateFailure($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightResult.ErrorMessage}");
+            // null does not contain anything, unless rightValue is also null (which is debatable for 'contains')
+            // If rightValue is null, previous Contains logic said true (everything contains null).
+            // So, !(null contains null) = !true = false.
+            // If rightValue is not null, previous Contains logic said false (null does not contain non-null).
+            // So, !(null contains non-null) = !false = true.
+            return rightValue != null; 
         }
 
-        return TransformationResult<bool>.CreateSuccess(leftResult.NotContains(rightResult), context);
+        if (rightValue == null)
+        {
+            // Previous Contains logic: everything contains null (empty string) -> true.
+            // So, NotContains null is false.
+            return false; 
+        }
+
+        string leftString = leftValue.ToString() ?? ""; // Ensure not null for operations
+        string rightString = rightValue.ToString() ?? "";
+
+        // Handle if leftValue is a collection (e.g., string array from a multi-select or split)
+        if (leftValue is IEnumerable enumerable && !(leftValue is string))
+        {
+            foreach (var item in enumerable)
+            {
+                if (item?.ToString()?.IndexOf(rightString, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return false; // Found a match in the collection, so "NotContains" is false.
+                }
+            }
+            return true; // No match in the collection, so "NotContains" is true.
+        }
+
+        // Standard string contains check (case-insensitive)
+        return leftString.IndexOf(rightString, StringComparison.OrdinalIgnoreCase) < 0;
     }
 
     /// <inheritdoc />
-    public override IComparisonOperation Clone()
+    public override ComparisonOperationBase Clone() // Changed return type
     {
         return new NotContainsOperation
         {
@@ -58,26 +104,4 @@ public class NotContainsOperation : ComparisonOperationBase
             EnumMemberOrder = EnumMemberOrder
         };
     }
-}
-
-/// <summary>
-/// Extension methods for the NotContains operation.
-/// </summary>
-public static class NotContainsOperationExtensions
-{
-    /// <summary>
-    /// Checks if the left result does not contain the value.
-    /// </summary>
-    /// <param name="leftResult">The result of the left operand.</param>
-    /// <param name="value">The value to check for.</param>
-    /// <returns>True if the left result does not contain the value; otherwise, false.</returns>
-    /// <remarks>
-    /// If the input value is an array, it will check if the left result does not contain the
-    /// string value from the value TransformationResult.<br />
-    /// <br />
-    /// If the input value is a single string, it will check if the left result does not contain the
-    /// string value from the value TransformationResult.
-    /// </remarks>
-    public static bool NotContains(this TransformationResult<string?> leftResult, TransformationResult<string?> value)
-        => !leftResult.Contains(value); // Assumes Contains() extension method is available for TransformationResult<string?>
 }

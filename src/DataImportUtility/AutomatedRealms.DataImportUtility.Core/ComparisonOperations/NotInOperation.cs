@@ -1,10 +1,12 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // For ITransformationContext
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Globalization; // For CultureInfo and NumberStyles
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -23,73 +25,147 @@ public class NotInOperation : ComparisonOperationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override string Description { get; } = "Checks if a value is not in a set of values.";
+    public override string Description { get; } = "Checks if a value is not in a set of values (case-insensitive for strings).";
 
+    /// <summary>
+    /// Gets or sets the order of this operation if it's part of an enumerated list of operations.
+    /// </summary>
     public int EnumMemberOrder { get; set; }
 
     /// <summary>
-    /// The set of values to check against.
+    /// The set of rules providing values to check against.
     /// </summary>
     public IEnumerable<MappingRuleBase>? Values { get; set; }
 
     /// <inheritdoc />
-    public override async Task<TransformationResult<bool>> Evaluate(ITransformationContext context)
+    public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is an ITransformationContext
     {
         if (LeftOperand is null)
         {
-            return TransformationResult<bool>.CreateFailure($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
+            throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
         }
 
         if (Values is null || !Values.Any())
         {
-            return TransformationResult<bool>.CreateFailure($"{nameof(Values)} must be set and contain at least one value for {DisplayName} operation.");
+            // If there are no values to check against, the LeftOperand cannot be "in" the set.
+            // Therefore, "NotIn" should be true.
+            return true;
         }
 
-        var leftResult = await (LeftOperand?.Apply(context) ?? Task.FromResult(TransformationResult.CreateSuccess<string?>(null, context)));
+        var leftResult = await LeftOperand.Apply(contextResult);
 
-        if (leftResult.WasFailure)
+        if (leftResult == null || leftResult.WasFailure)
         {
-            return TransformationResult<bool>.CreateFailure($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        var valueResults = new List<TransformationResult<string?>>();
-        foreach (var value in Values)
+        object? leftValue = leftResult.CurrentValue;
+
+        foreach (var valueRule in Values)
         {
-            var valueResult = await value.Apply(context);
-            if (valueResult.WasFailure)
+            if (valueRule == null) continue; // Skip null rules in the list
+
+            var valueRuleResult = await valueRule.Apply(contextResult);
+            if (valueRuleResult == null || valueRuleResult.WasFailure)
             {
-                return TransformationResult<bool>.CreateFailure($"Failed to evaluate a value in {nameof(Values)} for {DisplayName} operation: {valueResult.ErrorMessage}");
+                // If any value rule in the list fails to evaluate, it's an issue.
+                // Depending on desired behavior, could throw, log, or treat as non-match.
+                // For now, let's throw, as it indicates a configuration or data problem.
+                throw new InvalidOperationException($"Failed to evaluate a value in {nameof(Values)} for {DisplayName} operation: {valueRuleResult?.ErrorMessage ?? "Result was null."}");
             }
-            valueResults.Add(valueResult);
+
+            if (AreValuesEqual(leftValue, valueRuleResult.CurrentValue, contextResult.TargetFieldType))
+            {
+                return false; // Left value is IN the set, so NOT IN is false.
+            }
         }
 
-        return TransformationResult<bool>.CreateSuccess(leftResult.NotIn(valueResults.ToArray()), context);
+        return true; // Left value was not found in any of the values, so NOT IN is true.
+    }
+
+    // Using the same AreValuesEqual helper from EqualsOperation/NotEqualOperation for consistency.
+    private static bool AreValuesEqual(object? leftValue, object? rightValue, Type? targetFieldType)
+    {
+        if (leftValue == null && rightValue == null)
+        {
+            return true;
+        }
+        if (leftValue == null || rightValue == null)
+        {
+            return false;
+        }
+
+        if (targetFieldType == typeof(DateTime) || leftValue is DateTime || rightValue is DateTime)
+        {
+            if (TryParseDateTime(leftValue, out var leftDate) && TryParseDateTime(rightValue, out var rightDate))
+            {
+                return leftDate.Equals(rightDate);
+            }
+            return false;
+        }
+
+        if (IsNumericType(leftValue) && IsNumericType(rightValue))
+        {
+            if (TryParseDecimal(leftValue, out var leftDecimal) && TryParseDecimal(rightValue, out var rightDecimal))
+            {
+                return leftDecimal == rightDecimal;
+            }
+            if (TryParseDouble(leftValue, out var leftDouble) && TryParseDouble(rightValue, out var rightDouble))
+            {
+                return leftDouble.Equals(rightDouble);
+            }
+            return false;
+        }
+        
+        if ((IsNumericType(leftValue) && rightValue is string) || (leftValue is string && IsNumericType(rightValue)))
+        {
+            return false;
+        }
+
+        return string.Equals(leftValue.ToString(), rightValue.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsNumericType(object? value)
+    {
+        if (value == null) return false;
+        return value is sbyte || value is byte || value is short || value is ushort || value is int || value is uint || value is long || value is ulong || value is float || value is double || value is decimal;
+    }
+
+    private static bool TryParseDateTime(object? obj, out DateTime result)
+    {
+        result = default;
+        if (obj == null) return false;
+        if (obj is DateTime dt) { result = dt; return true; }
+        return DateTime.TryParse(obj.ToString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowWhiteSpaces, out result);
+    }
+
+    private static bool TryParseDouble(object? obj, out double result)
+    {
+        result = default;
+        if (obj == null) return false;
+        if (obj is double d) { result = d; return true; }
+        if (obj is IConvertible convertible) { try { result = convertible.ToDouble(CultureInfo.InvariantCulture); return true; } catch { /* Fall through */ } }
+        return double.TryParse(obj.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out result);
+    }
+
+    private static bool TryParseDecimal(object? obj, out decimal result)
+    {
+        result = default;
+        if (obj == null) return false;
+        if (obj is decimal dec) { result = dec; return true; }
+        if (obj is IConvertible convertible) { try { result = convertible.ToDecimal(CultureInfo.InvariantCulture); return true; } catch { /* Fall through */ } }
+        return decimal.TryParse(obj.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out result);
     }
 
     /// <inheritdoc />
-    public override IComparisonOperation Clone()
+    public override ComparisonOperationBase Clone() // Ensure return type is ComparisonOperationBase
     {
         return new NotInOperation
         {
             LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(), // Though NotInOperation doesn't typically use RightOperand, clone it for consistency if base class has it.
-            Values = Values?.Select(v => (MappingRuleBase)v.Clone()).ToList(),
+            RightOperand = RightOperand?.Clone(), 
+            Values = Values?.Select(v => v.Clone() as MappingRuleBase).ToList(), // Ensure correct cast for cloned values
             EnumMemberOrder = EnumMemberOrder
         };
     }
-}
-
-/// <summary>
-/// Extension methods for the NotIn operation.
-/// </summary>
-public static class NotInOperationExtensions
-{
-    /// <summary>
-    /// Checks if the left result is not in the set of values.
-    /// </summary>
-    /// <param name="leftResult">The result of the left operand.</param>
-    /// <param name="values">The set of values to check for.</param>
-    /// <returns>True if the left result is not in the set of values; otherwise, false.</returns>
-    public static bool NotIn(this TransformationResult<string?> leftResult, params TransformationResult<string?>[] values)
-        => !leftResult.In(values); // Assumes In() extension method is available for TransformationResult<string?>
 }

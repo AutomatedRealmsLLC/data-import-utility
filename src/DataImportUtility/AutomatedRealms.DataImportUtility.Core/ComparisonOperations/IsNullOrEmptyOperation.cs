@@ -1,6 +1,7 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Enums; // Added for ComparisonOperationType
 using AutomatedRealms.DataImportUtility.Abstractions.Models; 
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
 using System; 
 using System.Threading.Tasks;
 
@@ -31,44 +32,33 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
         /// </summary>
         public IsNullOrEmptyOperation() : base()
         {
-            // Operands will be set by the configuring rule (e.g., CopyRuleCore)
+            // Operands will be set by the configuring rule
         }
 
         /// <summary>
         /// Evaluates if the LeftOperand's resolved value is null or an empty string.
-        /// The 'result' parameter provides context (like the DataRow) for operand resolution.
         /// </summary>
-        /// <param name="transformationResult">The transformation result context, which includes the DataRow for operand resolution.</param>
+        /// <param name="contextResult">The transformation context.</param>
         /// <returns>True if the LeftOperand's value is null or empty; otherwise, false.</returns>
-        public override async Task<bool> Evaluate(TransformationResult transformationResult) // Renamed parameter for clarity
+        public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is an ITransformationContext
         {
             if (this.LeftOperand == null)
             {
-                // This indicates a configuration error if an operation requiring a left operand doesn't have one.
-                // Consider logging this or throwing a more specific configuration exception.
-                throw new InvalidOperationException("LeftOperand cannot be null for IsNullOrEmptyOperation. It must be configured by the calling rule.");
+                throw new InvalidOperationException($"LeftOperand cannot be null for {DisplayName}. It must be configured by the calling rule.");
             }
 
-            if (transformationResult.Record == null)
-            {
-                // Cannot evaluate if Record is null, as FieldAccessRule (common LeftOperand) would need it.
-                // If LeftOperand could be a StaticValueRule, this might be permissible,
-                // but GetValue still expects a DataRow.
-                // For now, assume if Record is null, we can't proceed.
-                // Consider logging: "DataRow (Record) is null in TransformationResult for IsNullOrEmptyOperation."
-                return false; // Or throw an exception if this state is truly unexpected.
-            }
-
-            // Retrieve the value from the LeftOperand.
-            // The type requested (string) is a hint; GetValue should handle conversions if possible/necessary.
-            var leftOperandValueResult = await this.LeftOperand.GetValue(transformationResult.Record, typeof(string));
+            var leftOperandValueResult = await this.LeftOperand.Apply(contextResult);
             
+            if (leftOperandValueResult == null)
+            {
+                 throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
+            }
+
             if (leftOperandValueResult.WasFailure)
             {
-                // If the operand itself failed to evaluate (e.g., field not found by FieldAccessRule),
-                // the condition effectively cannot be met in a 'true' sense.
-                // Consider logging: leftOperandValueResult.ErrorMessage
-                return false; 
+                // If the operand evaluation failed, we cannot determine if it's null or empty.
+                // Throwing an exception provides more details on the failure.
+                throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOperandValueResult.ErrorMessage}");
             }
 
             object? valueToCheck = leftOperandValueResult.CurrentValue;
@@ -87,5 +77,7 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
             // E.g., an integer value of 0 is not an empty string.
             return false;
         }
+
+        // Clone method is inherited from ComparisonOperationBase
     }
 }

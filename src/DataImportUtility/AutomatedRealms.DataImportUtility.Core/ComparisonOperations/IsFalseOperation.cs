@@ -1,5 +1,6 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System;
@@ -23,34 +24,31 @@ public class IsFalseOperation : ComparisonOperationBase
     [JsonIgnore]
     public override string Description { get; } = "Checks if a value is false.";
 
-    public int EnumMemberOrder { get; set; }
-
     /// <inheritdoc />
-    public override async Task<TransformationResult<bool>> Evaluate(ITransformationContext context)
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
         if (LeftOperand is null)
         {
-            return TransformationResult<bool>.CreateFailure($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
+            throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
         }
 
-        var leftResult = await LeftOperand.Apply(context);
+        var leftResult = await LeftOperand.Apply(contextResult);
 
-        if (leftResult.WasFailure)
+        if (leftResult == null || leftResult.WasFailure)
         {
-            return TransformationResult<bool>.CreateFailure($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        return TransformationResult<bool>.CreateSuccess(leftResult.IsFalse(), context);
+        return leftResult.IsFalse();
     }
 
     /// <inheritdoc />
-    public override IComparisonOperation Clone()
+    public override ComparisonOperationBase Clone()
     {
         return new IsFalseOperation
         {
             LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(), // Cloning RightOperand for consistency with base class
-            EnumMemberOrder = EnumMemberOrder
+            RightOperand = RightOperand?.Clone()
         };
     }
 }
@@ -61,15 +59,31 @@ public class IsFalseOperation : ComparisonOperationBase
 public static class IsFalseOperationExtensions
 {
     /// <summary>
-    /// Checks if the result is false.
+    /// Checks if the result's current value is considered false.
     /// </summary>
-    /// <param name="result">The result to check.</param>
-    /// <returns>True if the result is false; otherwise, false.</returns>
+    /// <param name="result">The transformation result to check.</param>
+    /// <returns>True if the result's current value is false; otherwise, false.</returns>
     /// <remarks>
-    /// A result is considered false if it is null, an empty string,
-    /// or a falsy value (zero stored as a string, the string "false").
-    /// Everything else is considered not false.
+    /// A value is considered false if it is null, an empty string,
+    /// a boolean false, the number 0, or the string "false" (case-insensitive).
     /// </remarks>
-    public static bool IsFalse(this TransformationResult<string?> result)
-        => !result.IsTrue(); // Assumes IsTrue() extension method is also updated/available for TransformationResult<string?>
+    public static bool IsFalse(this TransformationResult result)
+    {
+        if (result.CurrentValue == null) return true;
+        if (result.CurrentValue is bool boolVal) return !boolVal;
+        
+        var stringVal = result.CurrentValue.ToString();
+        if (string.IsNullOrEmpty(stringVal)) return true;
+        if (string.Equals(stringVal, "false", StringComparison.OrdinalIgnoreCase)) return true;
+        if (stringVal == "0") return true;
+        if (result.CurrentValue is IConvertible convertible) {
+            try {
+                return convertible.ToDouble(System.Globalization.CultureInfo.InvariantCulture) == 0;
+            } catch {
+                // Not a number, or not convertible to double
+            }
+        }
+
+        return false;
+    }
 }

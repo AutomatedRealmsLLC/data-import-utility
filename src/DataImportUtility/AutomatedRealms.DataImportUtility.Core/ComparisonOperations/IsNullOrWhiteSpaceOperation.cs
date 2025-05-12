@@ -1,7 +1,9 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
 using System.Threading.Tasks;
+using System;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
 {
@@ -35,24 +37,25 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
         /// <summary>
         /// Evaluates whether the left operand's value is null or consists only of white-space characters.
         /// </summary>
-        /// <param name="transformationResult">The transformation result context, which includes the DataRow for operand resolution.</param>
+        /// <param name="contextResult">The transformation context.</param>
         /// <returns>True if the value is null or white space, otherwise false.</returns>
-        public override async Task<bool> Evaluate(TransformationResult transformationResult)
+        public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is an ITransformationContext
         {
             if (LeftOperand == null)
             {
-                return false; // Misconfigured
+                throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
             }
 
-            if (transformationResult.Record == null)
+            var leftValueResult = await LeftOperand.Apply(contextResult);
+
+            if (leftValueResult == null)
             {
-                return false; // Cannot evaluate without a DataRow if LeftOperand needs it.
+                throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
             }
 
-            var leftValueResult = await LeftOperand.GetValue(transformationResult.Record, typeof(string));
             if (leftValueResult.WasFailure)
             {
-                return false; // Failed to get value
+                throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftValueResult.ErrorMessage}");
             }
 
             object? leftValue = leftValueResult.CurrentValue;

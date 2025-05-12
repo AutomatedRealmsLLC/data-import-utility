@@ -8,6 +8,8 @@ using Jace;
 using System; // For Math.Clamp, Exception, Task, ArgumentException, Type
 using System.Linq; // For .Select
 using System.Threading.Tasks; // For Task
+using System.Collections; // Added for IEnumerable
+using System.Globalization; // Added for CultureInfo
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -16,6 +18,8 @@ namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 /// </summary>
 public class CalculateTransformation : ValueTransformationBase
 {
+    private static readonly CalculationEngine _calculationEngine = new(CultureInfo.InvariantCulture);
+
     /// <inheritdoc />
     public override string EnumMemberName { get; } = nameof(CalculateTransformation);
 
@@ -50,143 +54,139 @@ public class CalculateTransformation : ValueTransformationBase
     public override Type OutputType => typeof(decimal);
 
     /// <inheritdoc />
-    public override async Task<TransformationResult> ApplyTransformationAsync(TransformationResult previousResult)
+    public override Task<TransformationResult> ApplyTransformationAsync(TransformationResult previousResult)
     {
         try
         {
-            // The Calculate extension method modifies the passed-in result and returns it.
-            TransformationResult calculatedResult = previousResult.Calculate(TransformationDetail, DecimalPlaces);
-            return await Task.FromResult(calculatedResult); // Keep async nature if Calculate becomes async later
+            string? resultValueText = TransformationDetail;
+            if (string.IsNullOrWhiteSpace(resultValueText))
+            {
+                return Task.FromResult(TransformationResult.Success(
+                    originalValue: previousResult.OriginalValue,
+                    originalValueType: previousResult.OriginalValueType,
+                    currentValue: string.Empty, 
+                    currentValueType: typeof(decimal),
+                    appliedTransformations: previousResult.AppliedTransformations,
+                    record: previousResult.Record,
+                    tableDefinition: previousResult.TableDefinition,
+                    sourceRecordContext: previousResult.SourceRecordContext,
+                    targetFieldType: previousResult.TargetFieldType
+                ));
+            }
+
+            string[] valuesToUse;
+            if (previousResult.CurrentValue == null)
+            {
+                valuesToUse = Array.Empty<string>();
+            }
+            else if (previousResult.CurrentValue is IEnumerable<string> stringEnumerable)
+            {
+                valuesToUse = stringEnumerable.ToArray();
+            }
+            else if (previousResult.CurrentValue is IEnumerable enumerableValue && !(previousResult.CurrentValue is string))
+            {
+                valuesToUse = enumerableValue.Cast<object>().Select(o => o?.ToString() ?? "0").ToArray();
+            }
+            else // Single object (including string if not caught by IEnumerable<string>)
+            {
+                valuesToUse = new[] { previousResult.CurrentValue.ToString() ?? "0" };
+            }
+            
+            // resultValueText is guaranteed non-null here due to the earlier IsNullOrWhiteSpace check.
+            string currentFormula = resultValueText!;
+            if (valuesToUse.Any())
+            {
+                for (int i = 0; i < valuesToUse.Length; i++)
+                {
+                    string valToReplace = valuesToUse[i] ?? "0"; // Default nulls to "0"
+                    currentFormula = currentFormula.Replace($"${{{i}}}", valToReplace);
+                }
+            }
+
+            if (StringHelpers.TryGetPlaceholderMatches(currentFormula, out var placeholderMatches))
+            {
+                foreach (Match match in placeholderMatches.Cast<Match>())
+                {
+                    currentFormula = currentFormula.Replace(match.Value, "0");
+                }
+            }
+            
+            int clampedDecimalPlaces = DecimalPlaces;
+#if !NETCOREAPP2_0_OR_GREATER
+            clampedDecimalPlaces = MathCompatibility.Clamp(-1, clampedDecimalPlaces, 15);
+#else
+            clampedDecimalPlaces = Math.Clamp(clampedDecimalPlaces, -1, 15);
+#endif
+
+            double calculatedVal = _calculationEngine.Calculate(currentFormula);
+            if (clampedDecimalPlaces >= 0)
+            {
+                calculatedVal = Math.Round(calculatedVal, clampedDecimalPlaces, MidpointRounding.AwayFromZero);
+            }
+
+            string finalValueString = calculatedVal.ToString(clampedDecimalPlaces >= 0 ? $"F{clampedDecimalPlaces}" : "G", CultureInfo.InvariantCulture);
+
+            return Task.FromResult(TransformationResult.Success(
+                originalValue: previousResult.OriginalValue,
+                originalValueType: previousResult.OriginalValueType,
+                currentValue: finalValueString, 
+                currentValueType: typeof(decimal),
+                appliedTransformations: previousResult.AppliedTransformations,
+                record: previousResult.Record,
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                targetFieldType: previousResult.TargetFieldType
+            ));
         }
         catch (Exception ex)
         {
-            return previousResult with
+            string errorMessage = ex switch
             {
-                ErrorMessage = ex switch
-                {
-                    ParseException _ => InvalidFormatMessage, // Jace.ParseException
-                    _ => $"{ex.GetType().FullName} - {ex.Message}" // Use FullName for clarity
-                },
-                CurrentValueType = previousResult.CurrentValueType, // Preserve type on error
-                CurrentValue = previousResult.CurrentValue // Preserve value on error
+                ParseException _ => InvalidFormatMessage,
+                _ => $"{ex.GetType().FullName} - {ex.Message}"
             };
+            return Task.FromResult(TransformationResult.Failure(
+                originalValue: previousResult.OriginalValue,
+                targetType: previousResult.TargetFieldType, // Using TargetFieldType from context
+                errorMessage: errorMessage,
+                originalValueType: previousResult.OriginalValueType,
+                currentValueType: previousResult.CurrentValueType, // Preserve current type info if any, or it will be null
+                appliedTransformations: previousResult.AppliedTransformations,
+                record: previousResult.Record,
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                explicitTargetFieldType: previousResult.TargetFieldType
+            ));
         }
     }
 
     /// <inheritdoc />
-    public override Task<TransformationResult> Transform(object? value, Type targetType)
+    public override async Task<TransformationResult> Transform(object? value, Type targetType) // targetType is not used here, but part of base signature
     {
-        var initialResult = TransformationResult.Success(
-            originalValue: value,
-            originalValueType: value?.GetType() ?? typeof(object),
-            currentValue: value, // Initial value before transformation
-            currentValueType: value?.GetType() ?? typeof(object)
+        // Create an initial TransformationResult where 'value' is both original and current.
+        // Context is null as this is the start of a transformation sequence for this specific call.
+        var initialContext = TransformationResult.Success(
+            originalValue: value, 
+            originalValueType: value?.GetType() ?? typeof(object), 
+            currentValue: value, 
+            currentValueType: value?.GetType() ?? typeof(object),
+            appliedTransformations: new List<string>(),
+            record: null, // No DataRow context for an isolated Transform call
+            tableDefinition: null, // No TableDefinition context
+            sourceRecordContext: null, // No SourceRecordContext
+            targetFieldType: targetType // targetType is the intended target type for this transformation
         );
-
-        try
-        {
-            // The Calculate extension method (defined below) modifies the passed-in result and returns it.
-            TransformationResult calculatedResult = initialResult.Calculate(TransformationDetail, DecimalPlaces);
-            return Task.FromResult(calculatedResult);
-        }
-        catch (Exception ex)
-        {
-            return Task.FromResult(initialResult with
-            {
-                ErrorMessage = ex switch
-                {
-                    ParseException _ => InvalidFormatMessage, // Jace.ParseException
-                    _ => $"{ex.GetType().FullName} - {ex.Message}" // Use FullName for clarity
-                }
-            });
-        }
+        return await ApplyTransformationAsync(initialContext);
     }
-}
 
-/// <summary>
-/// The extension methods for the <see cref="CalculateTransformation" /> to be used with the scripting engine.
-/// </summary>
-public static class CalculateOperationExtensions
-{
-    private readonly static CalculationEngine _calculationEngine = new();
-    /// <summary>
-    /// Calculates the value of a field based on the values of other fields.
-    /// </summary>
-    /// <param name="result">The result of the previous transformation.</param>
-    /// <param name="transformationDetail">
-    /// The transformation detail that contains the calculation to perform.
-    /// </param>
-    /// <param name="decimalPlaces">
-    /// The number of decimal places to round the result to.
-    /// </param>
-    /// <returns>The calculated value.</returns>
-    /// <remarks>
-    /// This value must be between -1 and 15 for the <see cref="Math.Round(double)"/> method. A
-    /// value of -1 will not perform any rounding and use the value returned from the calculation
-    /// engine.<br/>
-    /// <br/>
-    /// If the input value is null or empty, the placeholders for the transformation detail will default
-    /// to 0. This will also happen for any placeholders that are not found in the input value.
-    /// </remarks>
-    public static TransformationResult Calculate(this TransformationResult result, string? transformationDetail, int decimalPlaces)
+    /// <inheritdoc />
+    public override ValueTransformationBase Clone()
     {
-        var resultValueText = transformationDetail;
-        if (string.IsNullOrWhiteSpace(resultValueText))
+        var clone = new CalculateTransformation
         {
-            return result with { CurrentValue = string.Empty, CurrentValueType = typeof(decimal) };
-        }
-
-        // Use CurrentValue from the result for calculations
-        var currentInputValue = result.CurrentValue?.ToString();
-        if (string.IsNullOrWhiteSpace(currentInputValue))
-        {
-            // If CurrentValue is null/empty, but we have a transformationDetail (formula),
-            // we might still proceed if the formula doesn't rely on ${index} placeholders
-            // or if those placeholders are intended to default to 0.
-            // However, the existing logic for replacing ${index} relies on valuesToUse from CurrentValue.
-            // For now, let's assume if CurrentValue is empty, we can't proceed with indexed placeholders.
-            // If the formula is static (e.g. "2+2"), it could still work.
-        }
-
-        var valuesToUse = result.ResultValueAsArray(); // This helper likely uses CurrentValue
-
-        if (valuesToUse is not null)
-        {
-            // Replace the transformation detail placeholders with the actual values
-            foreach (var (index, val) in valuesToUse.Select((val, index) => (index, val)))
-            {
-                resultValueText = resultValueText!.Replace($"${{{index}}}", val);
-            }
-        }
-
-        // If there are any placeholders left, replace them with "0"
-        if (resultValueText.TryGetPlaceholderMatches(out var placeholderMatches)) // From Core.Helpers.StringHelpers
-        {
-            foreach (Match match in placeholderMatches)
-            {
-                resultValueText = resultValueText!.Replace(match.Value, "0");
-            }
-        }
-
-#if !NETCOREAPP2_0_OR_GREATER
-        decimalPlaces = MathCompatibility.Clamp(-1, decimalPlaces, 15); // From Core.Compatibility
-#else
-        decimalPlaces = Math.Clamp(-1, decimalPlaces, 15); // From System
-#endif
-
-        var calculatedVal = _calculationEngine.Calculate(resultValueText);
-        if (decimalPlaces >= 0)
-        {
-            calculatedVal = Math.Round(
-                calculatedVal,
-                decimalPlaces
-            );
-        }
-
-        return result with
-        {
-            CurrentValue = calculatedVal.ToString($"{(decimalPlaces >= 0 ? $"F{decimalPlaces}" : null)}"),
-            CurrentValueType = typeof(decimal),
+            DecimalPlaces = this.DecimalPlaces
         };
+        base.CloneBaseProperties(clone);
+        return clone;
     }
 }

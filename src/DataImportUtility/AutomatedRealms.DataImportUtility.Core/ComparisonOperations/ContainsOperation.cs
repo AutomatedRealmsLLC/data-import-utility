@@ -1,20 +1,23 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Helpers; // Assuming JsonHelpers will be here
-using AutomatedRealms.DataImportUtility.Core.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // Updated for TransformationResult
 using System.Text.Json.Serialization;
+using System;
+using System.Threading.Tasks;
+using System.Collections; // For IEnumerable
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
 /// <summary>
 /// Checks if a value contains another value.
+/// If the primary value is a collection, it checks for element existence.
+/// If the primary value is a string, it checks for substring existence.
 /// </summary>
 public class ContainsOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    public override int EnumMemberOrder { get; } = 1;
+    // EnumMemberOrder removed
 
     /// <inheritdoc />
-    public override string EnumMemberName { get; } = nameof(ContainsOperation);
+    public override string EnumMemberName { get; } = nameof(ContainsOperation); // Or a more specific enum if ComparisonOperatorType is introduced
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -22,39 +25,50 @@ public class ContainsOperation : ComparisonOperationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override string Description { get; } = "Checks if a value contains another value.";
+    public override string Description { get; } = "Checks if a value (string or collection) contains another value.";
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ContainsOperation"/> class.
+    /// </summary>
+    public ContainsOperation() : base()
+    {
+        // Operands (LeftOperand, RightOperand) are set via properties.
+    }
 
     /// <inheritdoc />
-    public override async Task<bool> Evaluate(TransformationResult result)
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
         if (LeftOperand is null || RightOperand is null)
         {
-            throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set.");
+            // Consider logging contextResult.AddLogMessage("Error: Operands not set for ContainsOperation.");
+            throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set for {nameof(ContainsOperation)}.");
         }
 
-        var leftResult = await LeftOperand.Apply(result);
-        if (leftResult.WasFailure)
+        // contextResult is already an ITransformationContext
+        // No need to check contextResult.Record == null specifically here, as Apply methods should handle context appropriately.
+
+        var leftOperandActualResult = await LeftOperand.Apply(contextResult);
+        if (leftOperandActualResult == null || leftOperandActualResult.WasFailure)
         {
-            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
+            // Consider logging
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOperandActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        var rightResult = await RightOperand.Apply(result);
-        if (rightResult.WasFailure)
+        var rightOperandActualResult = await RightOperand.Apply(contextResult);
+        if (rightOperandActualResult == null || rightOperandActualResult.WasFailure)
         {
-            throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightResult.ErrorMessage}");
+            // Consider logging
+            throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOperandActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        return leftResult.Contains(rightResult);
+        return ContainsOperationExtensions.Contains(leftOperandActualResult, rightOperandActualResult);
     }
 
     /// <inheritdoc />
     public override ComparisonOperationBase Clone()
     {
-        var clone = (ContainsOperation)MemberwiseClone();
-        clone.LeftOperand = LeftOperand?.Clone();
-        clone.RightOperand = RightOperand?.Clone();
-        clone.ExpectedValue = ExpectedValue; // string, shallow copy is fine
-        return clone;
+        // Base Clone() handles LeftOperand, RightOperand and MemberwiseClone.
+        return (ContainsOperation)base.Clone();
     }
 }
 
@@ -64,38 +78,48 @@ public class ContainsOperation : ComparisonOperationBase
 public static class ContainsOperationExtensions
 {
     /// <summary>
-    /// Checks if the left result contains the value.
+    /// Checks if the main value (from leftResult) contains the sub-value (from valueToFind).
+    /// If mainValue is an IEnumerable (and not a string), it checks for element equality.
+    /// Otherwise, it performs a string.Contains check on their string representations.
     /// </summary>
-    /// <param name="leftResult">The result of the left operand.</param>
-    /// <param name="value">The value to check for.</param>
-    /// <returns>True if the left result contains the value; otherwise, false.</returns>
-    /// <remarks>
-    /// If the input value is an array, it will check if the left result contains the
-    /// string value from the value TransformationResult.<br />
-    /// <br />
-    /// If the input value is a single string, it will check if the left result contains the
-    /// string value from the value TransformationResult.
-    /// </remarks>
-    public static bool Contains(this TransformationResult leftResult, TransformationResult value)
+    /// <param name="leftResult">The transformation result containing the main value.</param>
+    /// <param name="valueToFind">The transformation result containing the value to find.</param>
+    /// <returns>True if the main value contains the sub-value; otherwise, false.</returns>
+    public static bool Contains(this TransformationResult leftResult, TransformationResult valueToFind)
     {
-        // Handle null cases
-        if (leftResult.Value is null || value.Value is null) { return false; }
+        object? mainValue = leftResult.CurrentValue;
+        object? subValue = valueToFind.CurrentValue;
 
-        // If the left result is a JSON array
-        if (JsonHelpers.IsJsonArray(leftResult.Value)) // Assuming JsonHelpers.IsJsonArray takes string
+        if (mainValue == null || subValue == null)
         {
-            try
-            {
-                var values = JsonHelpers.ResultValueAsArray(leftResult.Value); // Assuming JsonHelpers.ResultValueAsArray takes string
-                return values?.Contains(value.Value) ?? false;
-            }
-            catch
-            {
-                // If we can't parse the JSON, fall back to string contains
-            }
+            return false; // Cannot perform 'contains' if either value is null.
         }
 
-        // Default string contains check
-        return leftResult.Value.Contains(value.Value);
+        // Case 1: mainValue is a collection (but not a string, as string is also IEnumerable<char>)
+        if (mainValue is IEnumerable enumerableMainValue && mainValue is not string)
+        {
+            foreach (var item in enumerableMainValue)
+            {
+                if (object.Equals(item, subValue)) // Use object.Equals for type-aware comparison
+                {
+                    return true;
+                }
+            }
+            return false; // subValue not found in the collection
+        }
+
+        // Case 2: Treat as strings (covers string mainValue and other types converted to string)
+        string? mainString = mainValue.ToString();
+        string? subString = subValue.ToString();
+
+        // After ToString(), check for null again (though unlikely if original objects were not null)
+        if (mainString == null || subString == null)
+        {
+            return false;
+        }
+
+        // Using OrdinalIgnoreCase for a common case-insensitive string search.
+        // Change to StringComparison.Ordinal for case-sensitive.
+        return mainString.IndexOf(subString, StringComparison.OrdinalIgnoreCase) >= 0;
     }
 }

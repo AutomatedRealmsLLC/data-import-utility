@@ -101,6 +101,18 @@ public abstract partial class ValueTransformationBase : IDisposable
     protected string? _operationDetail;
 
     /// <summary>
+    /// Validates the transformation detail.
+    /// </summary>
+    /// <param name="detail">The detail to validate.</param>
+    protected virtual void ValidateDetail(string? detail)
+    {
+        // Base implementation does no validation.
+        // Derived classes should override this method to provide specific validation logic.
+        // If validation fails, set the ErrorMessage property.
+        ErrorMessage = null; // Clear previous errors
+    }
+
+    /// <summary>
     /// Applies the transformation to the given input value.
     /// </summary>
     /// <param name="previousResult">The result of the previous transformation or the initial state.</param>
@@ -120,18 +132,6 @@ public abstract partial class ValueTransformationBase : IDisposable
     public abstract Type OutputType { get; }
 
     /// <summary>
-    /// Validates the transformation detail.
-    /// </summary>
-    /// <param name="detail">The detail to validate.</param>
-    protected virtual void ValidateDetail(string? detail)
-    {
-        // Base implementation does no validation.
-        // Derived classes should override this method to provide specific validation logic.
-        // If validation fails, set the ErrorMessage property.
-        ErrorMessage = null; // Clear previous errors
-    }
-
-    /// <summary>
     /// Transforms the value.
     /// </summary>
     /// <param name="value">The value to transform.</param>
@@ -144,6 +144,17 @@ public abstract partial class ValueTransformationBase : IDisposable
     /// </summary>
     /// <returns>A new object that is a copy of this instance.</returns>
     public abstract ValueTransformationBase Clone();
+
+    /// <summary>
+    /// Helper method to clone base properties. Derived classes should call this in their Clone implementation.
+    /// </summary>
+    /// <param name="target">The target transformation to clone properties to.</param>
+    protected virtual void CloneBaseProperties(ValueTransformationBase target)
+    {
+        target.TransformationDetail = this.TransformationDetail; // This will also trigger ValidateDetail
+        // EnumMemberOrder, EnumMemberName, DisplayName, ShortName, Description are abstract or get-only, defined by concrete types.
+        // ErrorMessage is protected set, typically not cloned directly unless state is part of the clone.
+    }
 
     /// <summary>
     /// Returns a string that represents the current object.

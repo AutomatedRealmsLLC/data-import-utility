@@ -37,29 +37,23 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
         /// <summary>
         /// Evaluates whether the left operand's string value matches the regex pattern provided by the right operand.
         /// </summary>
-        /// <param name="transformationResult">The transformation result context, including the DataRow for operand resolution.</param>
+        /// <param name="contextResult">The transformation result context.</param>
         /// <returns>True if the input string matches the pattern, otherwise false.</returns>
-        public override async Task<bool> Evaluate(TransformationResult transformationResult)
+        public override async Task<bool> Evaluate(TransformationResult contextResult)
         {
             if (LeftOperand == null || RightOperand == null)
             {
                 return false; // Misconfigured, requires both input and pattern
             }
 
-            if (transformationResult.Record == null)
-            {
-                // Cannot evaluate if Record is null, as operands might need it.
-                return false; 
-            }
-
-            var leftValueResult = await LeftOperand.GetValue(transformationResult.Record, typeof(string));
-            if (leftValueResult.WasFailure || leftValueResult.CurrentValue == null)
+            var leftValueResult = await LeftOperand.Apply(contextResult);
+            if (leftValueResult == null || leftValueResult.WasFailure || leftValueResult.CurrentValue == null)
             {
                 return false; // Failed to get input value or it's null
             }
 
-            var rightValueResult = await RightOperand.GetValue(transformationResult.Record, typeof(string));
-            if (rightValueResult.WasFailure || rightValueResult.CurrentValue == null)
+            var rightValueResult = await RightOperand.Apply(contextResult);
+            if (rightValueResult == null || rightValueResult.WasFailure || rightValueResult.CurrentValue == null)
             {
                 return false; // Failed to get pattern value or it's null
             }
@@ -84,6 +78,24 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
 
             // If types are not string, regex match is not applicable.
             return false;
+        }
+
+        /// <summary>
+        /// Creates a new object that is a copy of the current instance.
+        /// </summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        public override ComparisonOperationBase Clone()
+        {
+            var clone = new RegexMatchOperation();
+            if (LeftOperand != null)
+            {
+                clone.LeftOperand = LeftOperand.Clone();
+            }
+            if (RightOperand != null)
+            {
+                clone.RightOperand = RightOperand.Clone();
+            }
+            return clone;
         }
     }
 }

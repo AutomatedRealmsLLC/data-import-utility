@@ -1,61 +1,69 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // Updated for TransformationResult
 using System.Text.Json.Serialization;
+using System;
+using System.Threading.Tasks;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
 /// <summary>
-/// Checks if a value ends with another value.
+/// Checks if a string value ends with another string value.
 /// </summary>
 public class EndsWithOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    public override int EnumMemberOrder { get; } = 2;
+    // EnumMemberOrder removed
 
     /// <inheritdoc />
-    public override string EnumMemberName { get; } = nameof(EndsWithOperation);
-
-    /// <inheritdoc />
-    [JsonIgnore]
-    public override string DisplayName { get; } = "Ends with";
+    public override string EnumMemberName { get; } = nameof(EndsWithOperation); // Or a more specific enum if ComparisonOperatorType is introduced
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override string Description { get; } = "Checks if a value ends with another value.";
+    public override string DisplayName { get; } = "Ends With";
 
     /// <inheritdoc />
-    public override async Task<bool> Evaluate(TransformationResult result)
+    [JsonIgnore]
+    public override string Description { get; } = "Checks if a string value ends with another string value.";
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EndsWithOperation"/> class.
+    /// </summary>
+    public EndsWithOperation() : base()
+    {
+        // Operands (LeftOperand, RightOperand) are set via properties.
+    }
+
+    /// <inheritdoc />
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
         if (LeftOperand is null || RightOperand is null)
         {
-            throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set.");
+            // Consider logging contextResult.AddLogMessage("Error: Operands not set for EndsWithOperation.");
+            throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set for {nameof(EndsWithOperation)}.");
         }
 
-        var leftResult = await LeftOperand.Apply(result);
-        if (leftResult.WasFailure)
+        // contextResult is already an ITransformationContext
+        var leftOperandActualResult = await LeftOperand.Apply(contextResult);
+        if (leftOperandActualResult == null || leftOperandActualResult.WasFailure)
         {
-            // Consider using leftResult.ErrorMessage
-            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
+            // Consider logging
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOperandActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        var rightResult = await RightOperand.Apply(result);
-        if (rightResult.WasFailure)
+        var rightOperandActualResult = await RightOperand.Apply(contextResult);
+        if (rightOperandActualResult == null || rightOperandActualResult.WasFailure)
         {
-            // Consider using rightResult.ErrorMessage
-            throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightResult.ErrorMessage}");
+            // Consider logging
+            throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOperandActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        return leftResult.EndsWith(rightResult);
+        return EndsWithOperationExtensions.EndsWith(leftOperandActualResult, rightOperandActualResult);
     }
 
     /// <inheritdoc />
     public override ComparisonOperationBase Clone()
     {
-        var clone = (EndsWithOperation)MemberwiseClone();
-        clone.LeftOperand = LeftOperand?.Clone();
-        clone.RightOperand = RightOperand?.Clone();
-        clone.ExpectedValue = ExpectedValue; // string, shallow copy is fine
-        return clone;
+        // Base Clone() handles LeftOperand, RightOperand and MemberwiseClone.
+        return (EndsWithOperation)base.Clone();
     }
 }
 
@@ -65,16 +73,31 @@ public class EndsWithOperation : ComparisonOperationBase
 public static class EndsWithOperationExtensions
 {
     /// <summary>
-    /// Checks if the left result ends with the value.
+    /// Checks if the string representation of the left result's current value ends with the string representation of the right result's current value.
     /// </summary>
-    /// <param name="leftResult">The result of the left operand.</param>
-    /// <param name="value">The value to check for.</param>
-    /// <returns>True if the left result ends with the value; otherwise, false.</returns>
-    public static bool EndsWith(this TransformationResult leftResult, TransformationResult value)
+    /// <param name="leftResult">The transformation result containing the main string value.</param>
+    /// <param name="valueToCheck">The transformation result containing the suffix value.</param>
+    /// <returns>True if the main string ends with the suffix string (case-insensitive); otherwise, false.</returns>
+    public static bool EndsWith(this TransformationResult leftResult, TransformationResult valueToCheck)
     {
-        // Handle null cases
-        if (leftResult.Value is null || value.Value is null) { return false; }
+        object? mainValue = leftResult.CurrentValue;
+        object? suffixValue = valueToCheck.CurrentValue;
 
-        return leftResult.Value.EndsWith(value.Value, StringComparison.Ordinal);
+        if (mainValue == null || suffixValue == null)
+        {
+            return false; // Cannot perform 'EndsWith' if either value is null.
+        }
+
+        string? mainString = mainValue.ToString();
+        string? suffixString = suffixValue.ToString();
+
+        if (mainString == null || suffixString == null) // Should be redundant if mainValue/suffixValue are not null, but good practice.
+        {
+            return false;
+        }
+
+        // Using OrdinalIgnoreCase for a common case-insensitive check.
+        // Change to StringComparison.Ordinal for case-sensitive.
+        return mainString.EndsWith(suffixString, StringComparison.OrdinalIgnoreCase);
     }
 }

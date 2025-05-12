@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -54,54 +55,73 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
     public override bool IsEmpty => (SourceFieldTransforms == null || !SourceFieldTransforms.Any()) && string.IsNullOrWhiteSpace(TransformationDetail);
 
     /// <inheritdoc />
-    public override async Task<AbstractionsModels.TransformationResult> ApplyTransformationAsync(AbstractionsModels.TransformationResult previousResult)
+    public override Task<AbstractionsModels.TransformationResult> ApplyTransformationAsync(AbstractionsModels.TransformationResult previousResult)
     {
-        await Task.CompletedTask; // Simulate async if no true async work needed before logic
-
         if (previousResult.WasFailure)
         {
-            return previousResult;
+            return Task.FromResult(previousResult);
         }
 
         string? pattern = this.TransformationDetail;
 
         if (string.IsNullOrWhiteSpace(pattern))
         {
-            return AbstractionsModels.TransformationResult.Success(
+            return Task.FromResult(AbstractionsModels.TransformationResult.Success(
                 originalValue: previousResult.OriginalValue,
                 originalValueType: previousResult.OriginalValueType,
                 currentValue: pattern, // pattern is null or whitespace
                 currentValueType: typeof(string),
                 appliedTransformations: previousResult.AppliedTransformations,
                 record: previousResult.Record,
-                tableDefinition: previousResult.TableDefinition);
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                targetFieldType: previousResult.TargetFieldType
+            ));
         }
 
         try
         {
-            // Corrected: Pass previousResult directly to the helper method.
-            object?[]? valuesAsObjects = TransformationResultHelpers.ResultValueAsArray(previousResult);
-            string?[] valuesToInterpolate = valuesAsObjects?.Select(v => v?.ToString()).ToArray() ?? [];
+            string?[] valuesToInterpolate;
+            if (previousResult.CurrentValue == null)
+            {
+                valuesToInterpolate = Array.Empty<string?>();
+            }
+            else if (previousResult.CurrentValue is IEnumerable<string> stringEnumerable)
+            {
+                valuesToInterpolate = stringEnumerable.ToArray();
+            }
+            else if (previousResult.CurrentValue is IEnumerable enumerableValue && !(previousResult.CurrentValue is string))
+            {
+                valuesToInterpolate = enumerableValue.Cast<object>().Select(o => o?.ToString() ?? string.Empty).ToArray();
+            }
+            else
+            {
+                valuesToInterpolate = new[] { previousResult.CurrentValue.ToString() ?? string.Empty };
+            }
 
-            string? finalCombinedValue = pattern;
+            // pattern is guaranteed not null here due to the IsNullOrWhiteSpace check above.
+            string finalCombinedValue = pattern!;
             for (var i = 0; i < valuesToInterpolate.Length; i++)
             {
-                if (finalCombinedValue == null) break; // Should not happen if pattern is not null
+                // finalCombinedValue is not null here as it's initialized from a non-null pattern
                 finalCombinedValue = finalCombinedValue.Replace($"${{{i}}}", valuesToInterpolate[i] ?? string.Empty);
             }
 
-            return AbstractionsModels.TransformationResult.Success(
+            return Task.FromResult(AbstractionsModels.TransformationResult.Success(
                 originalValue: previousResult.OriginalValue,
                 originalValueType: previousResult.OriginalValueType,
                 currentValue: finalCombinedValue,
                 currentValueType: typeof(string),
                 appliedTransformations: previousResult.AppliedTransformations,
                 record: previousResult.Record,
-                tableDefinition: previousResult.TableDefinition);
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                targetFieldType: previousResult.TargetFieldType
+            ));
         }
         catch (Exception ex)
         {
-            return AbstractionsModels.TransformationResult.Failure(
+            return Task.FromResult(AbstractionsModels.TransformationResult.Failure(
                 originalValue: previousResult.OriginalValue,
                 targetType: OutputType, // Target type for this transformation
                 errorMessage: $"Error in CombineFields transformation: {ex.Message}",
@@ -109,21 +129,29 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
                 currentValueType: null, // Value is null due to failure
                 appliedTransformations: previousResult.AppliedTransformations,
                 record: previousResult.Record,
-                tableDefinition: previousResult.TableDefinition);
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                explicitTargetFieldType: previousResult.TargetFieldType // Use TargetFieldType from context
+            ));
         }
     }
 
     /// <inheritdoc />
     public override async Task<AbstractionsModels.TransformationResult> Transform(object? value, Type targetType)
     {
+        // 'value' for CombineFields is expected to be an IEnumerable of the pre-transformed values to combine.
         var initialResult = AbstractionsModels.TransformationResult.Success(
-            originalValue: value,
+            originalValue: value, // This might be the collection itself, or null if not applicable directly
             originalValueType: value?.GetType() ?? typeof(object),
-            currentValue: value,
+            currentValue: value, // This is the collection of values to be combined
             currentValueType: value?.GetType() ?? typeof(object),
-            record: null, // No DataRow context in this direct Transform call
-            tableDefinition: null // No TableDefinition context here
+            appliedTransformations: new List<string>(),
+            record: null, 
+            tableDefinition: null,
+            sourceRecordContext: null,
+            targetFieldType: targetType 
         );
+        // ApplyTransformationAsync expects previousResult.CurrentValue to be the list/array of items.
         return await ApplyTransformationAsync(initialResult);
     }
 

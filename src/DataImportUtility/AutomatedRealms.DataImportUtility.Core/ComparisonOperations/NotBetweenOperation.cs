@@ -1,8 +1,10 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // For ITransformationContext
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System;
+using System.Globalization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -21,80 +23,143 @@ public class NotBetweenOperation : ComparisonOperationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override string Description { get; } = "Checks if a value is not between two other values.";
+    public override string Description { get; } = "Checks if a value is not between two other values (inclusive of limits).";
 
+    /// <summary>
+    /// Gets or sets the order of this operation if it's part of an enumerated list of operations.
+    /// </summary>
     public int EnumMemberOrder { get; set; }
 
     /// <summary>
-    /// The low limit (inclusive) for the comparison.
+    /// The rule providing the low limit (inclusive) for the comparison.
     /// </summary>
-    public MappingRuleBase? LowLimit { get; set; }
+    public new MappingRuleBase? LowLimit { get; set; }
 
     /// <summary>
-    /// The high limit (inclusive) for the comparison.
+    /// The rule providing the high limit (inclusive) for the comparison.
     /// </summary>
-    public MappingRuleBase? HighLimit { get; set; }
+    public new MappingRuleBase? HighLimit { get; set; }
 
     /// <inheritdoc />
-    public override async Task<TransformationResult<bool>> Evaluate(ITransformationContext context)
+    public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is an ITransformationContext
     {
         if (LeftOperand is null)
         {
-            return TransformationResult<bool>.CreateFailure($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
+            throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
         }
-
-        if (LowLimit is null || HighLimit is null)
+        if (this.LowLimit is null)
         {
-            return TransformationResult<bool>.CreateFailure($"{nameof(LowLimit)} and {nameof(HighLimit)} must be set for {DisplayName} operation.");
+            throw new InvalidOperationException($"{nameof(this.LowLimit)} must be set for {DisplayName} operation.");
         }
-
-        var leftResult = await (LeftOperand?.Apply(context) ?? Task.FromResult(TransformationResult.CreateSuccess<string?>(null, context)));
-        if (leftResult.WasFailure)
+        if (this.HighLimit is null)
         {
-            return TransformationResult<bool>.CreateFailure($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
+            throw new InvalidOperationException($"{nameof(this.HighLimit)} must be set for {DisplayName} operation.");
         }
 
-        var lowLimitResult = await (LowLimit?.Apply(context) ?? Task.FromResult(TransformationResult.CreateSuccess<string?>(null, context)));
-        if (lowLimitResult.WasFailure)
+        var leftResult = await LeftOperand.Apply(contextResult);
+        var lowLimitResult = await this.LowLimit.Apply(contextResult);
+        var highLimitResult = await this.HighLimit.Apply(contextResult);
+
+        if (leftResult == null || leftResult.WasFailure)
         {
-            return TransformationResult<bool>.CreateFailure($"Failed to evaluate {nameof(LowLimit)} for {DisplayName} operation: {lowLimitResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult?.ErrorMessage ?? "Result was null."}");
         }
-
-        var highLimitResult = await (HighLimit?.Apply(context) ?? Task.FromResult(TransformationResult.CreateSuccess<string?>(null, context)));
-        if (highLimitResult.WasFailure)
+        if (lowLimitResult == null || lowLimitResult.WasFailure)
         {
-            return TransformationResult<bool>.CreateFailure($"Failed to evaluate {nameof(HighLimit)} for {DisplayName} operation: {highLimitResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate {nameof(this.LowLimit)} for {DisplayName} operation: {lowLimitResult?.ErrorMessage ?? "Result was null."}");
+        }
+        if (highLimitResult == null || highLimitResult.WasFailure)
+        {
+            throw new InvalidOperationException($"Failed to evaluate {nameof(this.HighLimit)} for {DisplayName} operation: {highLimitResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        return TransformationResult<bool>.CreateSuccess(leftResult.NotBetween(lowLimitResult, highLimitResult), context);
+        return !IsBetweenInternal(leftResult.CurrentValue, lowLimitResult.CurrentValue, highLimitResult.CurrentValue, contextResult.TargetFieldType);
+    }
+
+    private static bool IsBetweenInternal(object? value, object? lowLimit, object? highLimit, Type? targetFieldType)
+    {
+        if (value == null || lowLimit == null || highLimit == null)
+        {
+            return false;
+        }
+
+        // Try DateTime
+        if (value is DateTime || lowLimit is DateTime || highLimit is DateTime || targetFieldType == typeof(DateTime))
+        {
+            if (TryParseDateTime(value, out var valDt) &&
+                TryParseDateTime(lowLimit, out var lowDt) &&
+                TryParseDateTime(highLimit, out var highDt))
+            {
+                return valDt >= lowDt && valDt <= highDt;
+            }
+            return false;
+        }
+
+        // Try Numeric (double for flexibility, could refine to long/decimal if needed)
+        if (value is IConvertible && lowLimit is IConvertible && highLimit is IConvertible)
+        {
+            if (TryParseDouble(value, out var valNum) &&
+                TryParseDouble(lowLimit, out var lowNum) &&
+                TryParseDouble(highLimit, out var highNum))
+            {
+                return valNum >= lowNum && valNum <= highNum;
+            }
+        }
+        
+        // Fallback to string comparison
+        var valStr = value.ToString();
+        var lowStr = lowLimit.ToString();
+        var highStr = highLimit.ToString();
+
+        if (valStr != null && lowStr != null && highStr != null)
+        {
+            if (string.Compare(lowStr, highStr, StringComparison.Ordinal) > 0)
+            {
+                return string.Compare(valStr, lowStr, StringComparison.Ordinal) >= 0 &&
+                       string.Compare(valStr, highStr, StringComparison.Ordinal) <= 0;
+            }
+            return string.Compare(valStr, lowStr, StringComparison.Ordinal) >= 0 &&
+                   string.Compare(valStr, highStr, StringComparison.Ordinal) <= 0;
+        }
+        
+        return false;
+    }
+
+    private static bool TryParseDateTime(object? obj, out DateTime result)
+    {
+        result = default;
+        if (obj == null) return false;
+        if (obj is DateTime dt)
+        {
+            result = dt;
+            return true;
+        }
+        return DateTime.TryParse(obj.ToString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowWhiteSpaces, out result);
+    }
+
+    private static bool TryParseDouble(object? obj, out double result)
+    {
+        result = default;
+        if (obj == null) return false;
+        if (obj is double d) { result = d; return true; }
+        if (obj is IConvertible convertible)
+        {
+            try { result = convertible.ToDouble(CultureInfo.InvariantCulture); return true; }
+            catch { }
+        }
+        return double.TryParse(obj.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out result);
     }
 
     /// <inheritdoc />
-    public override IComparisonOperation Clone()
+    public override ComparisonOperationBase Clone()
     {
         return new NotBetweenOperation
         {
             LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(), // Though NotBetweenOperation doesn't use RightOperand directly, clone for base class consistency
-            LowLimit = (MappingRuleBase?)LowLimit?.Clone(),
-            HighLimit = (MappingRuleBase?)HighLimit?.Clone(),
+            RightOperand = RightOperand?.Clone(), 
+            LowLimit = this.LowLimit?.Clone() as MappingRuleBase,
+            HighLimit = this.HighLimit?.Clone() as MappingRuleBase,
             EnumMemberOrder = EnumMemberOrder
         };
     }
-}
-
-/// <summary>
-/// Extension methods for the NotBetween operation.
-/// </summary>
-public static class NotBetweenOperationExtensions
-{
-    /// <summary>
-    /// Checks if the left result is not between the low and high limits (inclusive).
-    /// </summary>
-    /// <param name="leftResult">The result of the left operand.</param>
-    /// <param name="lowLimitInclusive">The low limit (inclusive).</param>
-    /// <param name="highLimitInclusive">The high limit (inclusive).</param>
-    /// <returns>True if the left result is not between the low and high limits (inclusive); otherwise, false.</returns>
-    public static bool NotBetween(this TransformationResult<string?> leftResult, TransformationResult<string?> lowLimitInclusive, TransformationResult<string?> highLimitInclusive)
-        => !leftResult.Between(lowLimitInclusive, highLimitInclusive); // Assumes Between() extension method is available for TransformationResult<string?>
 }

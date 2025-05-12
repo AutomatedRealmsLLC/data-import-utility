@@ -3,8 +3,9 @@ using System.Text.Json.Serialization;
 using System;
 using System.Threading.Tasks;
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // Correct TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Models; 
 using AutomatedRealms.DataImportUtility.Core.Helpers;
+using System.Collections.Generic; // Required for List<string> in TransformationResult
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -79,43 +80,108 @@ public class SubstringTransformation : ValueTransformationBase
     public override Type OutputType => typeof(string);
 
     /// <inheritdoc />
-    public override async Task<TransformationResult> ApplyTransformationAsync(TransformationResult previousResult)
+    public override Task<TransformationResult> ApplyTransformationAsync(TransformationResult previousResult)
     {
         try
         {
-            TransformationResult transformedResult = previousResult.Substring(StartIndex, MaxLength ?? int.MaxValue);
-            return await Task.FromResult(transformedResult);
+            if (previousResult.WasFailure)
+            {
+                return Task.FromResult(previousResult);
+            }
+
+            TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(previousResult, ValueTransformationBase.OperationInvalidForCollectionsMessage);
+            if (checkedResult.WasFailure)
+            {
+                return Task.FromResult(checkedResult);
+            }
+
+            var currentInputValue = checkedResult.CurrentValue?.ToString();
+
+            if (string.IsNullOrWhiteSpace(currentInputValue))
+            {
+                return Task.FromResult(TransformationResult.Success(
+                    originalValue: checkedResult.OriginalValue,
+                    originalValueType: checkedResult.OriginalValueType,
+                    currentValue: string.Empty, 
+                    currentValueType: typeof(string),
+                    appliedTransformations: checkedResult.AppliedTransformations,
+                    record: checkedResult.Record,
+                    tableDefinition: checkedResult.TableDefinition,
+                    sourceRecordContext: checkedResult.SourceRecordContext,
+                    targetFieldType: checkedResult.TargetFieldType
+                ));
+            }
+
+            // If IsNullOrWhiteSpace is false, currentInputValue is not null.
+            string originalValueString = currentInputValue!;
+            int localStartIndex = this.StartIndex;
+            int localMaxLength = this.MaxLength ?? int.MaxValue;
+
+            int actualStartIndex = localStartIndex;
+            if (actualStartIndex < 0)
+            {
+                actualStartIndex = originalValueString.Length + actualStartIndex;
+            }
+            actualStartIndex = Math.Max(0, Math.Min(actualStartIndex, originalValueString.Length));
+
+            int actualLength = localMaxLength;
+            if (localMaxLength == int.MaxValue)
+            {
+                actualLength = originalValueString.Length - actualStartIndex;
+            }
+            else if (localMaxLength < 0)
+            {
+                actualLength = (originalValueString.Length - actualStartIndex) + localMaxLength; 
+            }
+            actualLength = Math.Max(0, Math.Min(actualLength, originalValueString.Length - actualStartIndex));
+            
+            string resultValue = originalValueString.Substring(actualStartIndex, actualLength);
+
+            return Task.FromResult(TransformationResult.Success(
+                originalValue: checkedResult.OriginalValue,
+                originalValueType: checkedResult.OriginalValueType,
+                currentValue: resultValue, 
+                currentValueType: typeof(string),
+                appliedTransformations: checkedResult.AppliedTransformations,
+                record: checkedResult.Record,
+                tableDefinition: checkedResult.TableDefinition,
+                sourceRecordContext: checkedResult.SourceRecordContext,
+                targetFieldType: checkedResult.TargetFieldType
+            ));
         }
         catch (Exception ex)
         {
-            return previousResult with 
-            { 
-                ErrorMessage = ex.Message,
-                CurrentValue = previousResult.CurrentValue, 
-                CurrentValueType = previousResult.CurrentValueType
-            };
+            return Task.FromResult(TransformationResult.Failure(
+                originalValue: previousResult.OriginalValue,
+                targetType: OutputType,
+                errorMessage: ex.Message,
+                originalValueType: previousResult.OriginalValueType,
+                currentValueType: null,
+                appliedTransformations: previousResult.AppliedTransformations,
+                record: previousResult.Record,
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                explicitTargetFieldType: previousResult.TargetFieldType
+            ));
         }
     }
 
     /// <inheritdoc />
-    public override Task<TransformationResult> Transform(object? value, Type targetType)
+    public override async Task<TransformationResult> Transform(object? value, Type targetType)
     {
         var initialResult = TransformationResult.Success(
             originalValue: value,
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value, 
-            currentValueType: value?.GetType() ?? typeof(object)
+            currentValueType: value?.GetType() ?? typeof(object),
+            appliedTransformations: new List<string>(),
+            record: null,
+            tableDefinition: null,
+            sourceRecordContext: null,
+            targetFieldType: targetType
         );
-
-        try
-        {
-            TransformationResult calculatedResult = initialResult.Substring(this.StartIndex, this.MaxLength ?? int.MaxValue);
-            return Task.FromResult(calculatedResult);
-        }
-        catch (Exception ex)
-        {
-            return Task.FromResult(initialResult with { ErrorMessage = ex.Message });
-        }
+        
+        return await ApplyTransformationAsync(initialResult);
     }
     
     /// <summary>
@@ -133,64 +199,10 @@ public class SubstringTransformation : ValueTransformationBase
         var clone = (SubstringTransformation)MemberwiseClone();
         clone.StartIndex = this.StartIndex; 
         clone.MaxLength = this.MaxLength;
-        clone.TransformationDetail = this.TransformationDetail; // Ensure TransformationDetail is also explicitly cloned
+        // TransformationDetail is generated by StartIndex/MaxLength setters, 
+        // so cloning them and calling GenerateSyntax (which happens in setters) is sufficient.
+        // Explicitly setting it ensures it's correct if setters are bypassed or logic changes.
+        clone.TransformationDetail = this.TransformationDetail; 
         return clone;
-    }
-}
-
-/// <summary>
-/// The extension methods for the <see cref="SubstringTransformation" /> to be used with the scripting engine.
-/// </summary>
-public static class SubstringTransformationExtensions
-{
-    /// <summary>
-    /// Performs a Substring operation on the input value result.
-    /// </summary>
-    /// <param name="result">The result of the previous transformation.</param>
-    /// <param name="startIndex">The starting index of the substring operation. 
-    /// Use a negative start index to indicate an offset from the end of the string.</param>
-    /// <param name="maxLength">The maximum length of the substring. 
-    /// Use <see cref="int.MaxValue"/> to take characters to the end of the string. 
-    /// Use a negative value to specify a length relative to the end of the string after the start index.</param>
-    /// <returns>A <see cref="TransformationResult"/> containing the substring or an error message.</returns>
-    public static TransformationResult Substring(this TransformationResult result, int startIndex = 0, int maxLength = int.MaxValue)
-    {
-        TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(result, ValueTransformationBase.OperationInvalidForCollectionsMessage);
-        if (checkedResult.WasFailure)
-        {
-            return checkedResult;
-        }
-
-        var currentInputValue = checkedResult.CurrentValue?.ToString();
-
-        if (string.IsNullOrWhiteSpace(currentInputValue))
-        {
-            return checkedResult with { CurrentValue = string.Empty, CurrentValueType = typeof(string) };
-        }
-
-        // If IsNullOrWhiteSpace is false, currentInputValue is not null.
-        string originalValue = currentInputValue!; 
-        int actualStartIndex = startIndex;
-
-        if (actualStartIndex < 0)
-        {
-            actualStartIndex = originalValue.Length + actualStartIndex;
-        }
-        actualStartIndex = Math.Max(0, Math.Min(actualStartIndex, originalValue.Length));
-
-        int actualLength = maxLength;
-        if (maxLength == int.MaxValue)
-        {
-            actualLength = originalValue.Length - actualStartIndex;
-        }
-        else if (maxLength < 0)
-        {
-            actualLength = (originalValue.Length - actualStartIndex) + maxLength; 
-        }
-        actualLength = Math.Max(0, Math.Min(actualLength, originalValue.Length - actualStartIndex));
-        
-        string resultValue = originalValue.Substring(actualStartIndex, actualLength);
-
-        return checkedResult with { CurrentValue = resultValue, CurrentValueType = typeof(string) };
     }
 }

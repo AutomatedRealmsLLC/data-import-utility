@@ -199,9 +199,7 @@ public class FieldTransformation : AbstractionsModels.FieldTransformation // IDi
         };
         
         return await ApplyToSingleResultAsync(initialResult, cancellationToken);
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Applies the value transformations (if any) to a single provided transformation result.
     /// </summary>
     /// <param name="result">The result of the previous transformation.</param>
@@ -229,13 +227,23 @@ public class FieldTransformation : AbstractionsModels.FieldTransformation // IDi
         }
         catch (OperationCanceledException)
         {
-            // Use CurrentValue
-            return new AbstractionsModels.TransformationResult { ErrorMessage = "Operation cancelled.", OriginalValue = result.OriginalValue, OriginalValueType = result.OriginalValueType, CurrentValue = result.CurrentValue, CurrentValueType = result.CurrentValueType, WasFailure = true };
+            // Create a new result with an error message instead of directly setting WasFailure
+            return AbstractionsModels.TransformationResult.Failure(
+                originalValue: result.OriginalValue,
+                targetType: result.CurrentValueType ?? typeof(object),
+                errorMessage: "Operation cancelled.",
+                originalValueType: result.OriginalValueType,
+                currentValueType: result.CurrentValueType);
         }
         catch (Exception ex)
         {
-            // Use CurrentValue
-            return new AbstractionsModels.TransformationResult { ErrorMessage = $"An unexpected error occurred: {ex.Message}", OriginalValue = result.OriginalValue, OriginalValueType = result.OriginalValueType, CurrentValue = result.CurrentValue, CurrentValueType = result.CurrentValueType, WasFailure = true };
+            // Create a new result with an error message instead of directly setting WasFailure
+            return AbstractionsModels.TransformationResult.Failure(
+                originalValue: result.OriginalValue,
+                targetType: result.CurrentValueType ?? typeof(object),
+                errorMessage: $"An unexpected error occurred: {ex.Message}",
+                originalValueType: result.OriginalValueType,
+                currentValueType: result.CurrentValueType);
         }
     }
     #endregion Apply Methods

@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using System;
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models;
-using System.Data; // Required for DataRow
+using CoreRules = AutomatedRealms.DataImportUtility.Core.Rules;
+using System.Data;
+using System.Collections.Generic;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -50,94 +52,165 @@ public partial class ConditionalTransformation : ValueTransformationBase
     /// The mapping rule to apply when the condition is true
     /// </summary>
     [JsonInclude]
-    public MappingRuleBase? TrueMappingRule { get; set; }
+    public AbstractionsModels.MappingRuleBase? TrueMappingRule { get; set; }
 
     /// <summary>
     /// The mapping rule to apply when the condition is false
     /// </summary>
     [JsonInclude]
-    public MappingRuleBase? FalseMappingRule { get; set; }
+    public AbstractionsModels.MappingRuleBase? FalseMappingRule { get; set; }
 
     /// <inheritdoc />
     [JsonIgnore]
     public override bool IsEmpty => ComparisonOperation == null || TrueMappingRule == null || FalseMappingRule == null;
-    // Consider adding || ComparisonOperation.IsEmpty if ComparisonOperationBase gets an IsEmpty property.
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override Type OutputType => typeof(object); // Output type can vary based on the chosen rule.
+    public override Type OutputType => typeof(object);
 
     /// <inheritdoc />
     public override async Task<AbstractionsModels.TransformationResult> ApplyTransformationAsync(AbstractionsModels.TransformationResult previousResult)
     {
         if (previousResult.WasFailure)
         {
-            return previousResult; // Propagate earlier failures
+            return previousResult;
         }
 
         if (ComparisonOperation is null)
         {
-            return AbstractionsModels.TransformationResult.Failure(previousResult.OriginalValue, OutputType, $"{nameof(ComparisonOperation)} is null. {MissingComponentMessage}", previousResult.OriginalValueType, null, previousResult.AppliedTransformations, previousResult.Record, previousResult.TableDefinition);
+            return AbstractionsModels.TransformationResult.Failure(
+                originalValue: previousResult.OriginalValue,
+                targetType: OutputType,
+                errorMessage: $"{nameof(ComparisonOperation)} is null. {MissingComponentMessage}",
+                originalValueType: previousResult.OriginalValueType,
+                currentValueType: null,
+                appliedTransformations: previousResult.AppliedTransformations,
+                record: previousResult.Record,
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                explicitTargetFieldType: previousResult.TargetFieldType);
         }
 
         if (TrueMappingRule is null)
         {
-            return AbstractionsModels.TransformationResult.Failure(previousResult.OriginalValue, OutputType, $"{nameof(TrueMappingRule)} is null. {MissingComponentMessage}", previousResult.OriginalValueType, null, previousResult.AppliedTransformations, previousResult.Record, previousResult.TableDefinition);
+            return AbstractionsModels.TransformationResult.Failure(
+                originalValue: previousResult.OriginalValue,
+                targetType: OutputType,
+                errorMessage: $"{nameof(TrueMappingRule)} is null. {MissingComponentMessage}",
+                originalValueType: previousResult.OriginalValueType,
+                currentValueType: null,
+                appliedTransformations: previousResult.AppliedTransformations,
+                record: previousResult.Record,
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                explicitTargetFieldType: previousResult.TargetFieldType);
         }
 
         if (FalseMappingRule is null)
         {
-            return AbstractionsModels.TransformationResult.Failure(previousResult.OriginalValue, OutputType, $"{nameof(FalseMappingRule)} is null. {MissingComponentMessage}", previousResult.OriginalValueType, null, previousResult.AppliedTransformations, previousResult.Record, previousResult.TableDefinition);
+            return AbstractionsModels.TransformationResult.Failure(
+                originalValue: previousResult.OriginalValue,
+                targetType: OutputType,
+                errorMessage: $"{nameof(FalseMappingRule)} is null. {MissingComponentMessage}",
+                originalValueType: previousResult.OriginalValueType,
+                currentValueType: null,
+                appliedTransformations: previousResult.AppliedTransformations,
+                record: previousResult.Record,
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                explicitTargetFieldType: previousResult.TargetFieldType);
         }
 
-        // Sub-rules (TrueMappingRule, FalseMappingRule) require a DataRow to operate.
-        if (previousResult.Record is null)
+        // Evaluate condition once
+        bool conditionMet = await ComparisonOperation.Evaluate(previousResult);
+
+        // Check if the chosen rule needs a record and if the record is missing
+        bool ruleNeedsRecord = false;
+        if (conditionMet)
         {
-            return AbstractionsModels.TransformationResult.Failure(previousResult.OriginalValue, OutputType, MissingRecordMessage, previousResult.OriginalValueType, null, previousResult.AppliedTransformations, previousResult.Record, previousResult.TableDefinition);
+            ruleNeedsRecord = !(TrueMappingRule is CoreRules.StaticValueRule || TrueMappingRule is CoreRules.ConstantValueRule || TrueMappingRule is CoreRules.IgnoreRule);
+        }
+        else
+        {
+            ruleNeedsRecord = !(FalseMappingRule is CoreRules.StaticValueRule || FalseMappingRule is CoreRules.ConstantValueRule || FalseMappingRule is CoreRules.IgnoreRule);
+        }
+
+        if (ruleNeedsRecord && previousResult.Record is null)
+        {
+            return AbstractionsModels.TransformationResult.Failure(
+                originalValue: previousResult.OriginalValue,
+                targetType: OutputType,
+                errorMessage: MissingRecordMessage,
+                originalValueType: previousResult.OriginalValueType,
+                currentValueType: null,
+                appliedTransformations: previousResult.AppliedTransformations,
+                record: previousResult.Record,
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                explicitTargetFieldType: previousResult.TargetFieldType);
         }
 
         try
         {
-            // Evaluate the condition using the ComparisonOperation.
-            // This assumes ComparisonOperation.Evaluate can take previousResult and use its CurrentValue.
-            bool conditionMet = await ComparisonOperation.Evaluate(previousResult);
-
+            AbstractionsModels.TransformationResult? ruleResult;
             if (conditionMet)
             {
-                // If condition is true, apply the TrueMappingRule
-                // TrueMappingRule.GetValue requires a DataRow, which is obtained from previousResult.Record
-                return await TrueMappingRule.GetValue(previousResult.Record, this.OutputType);
+                // TrueMappingRule is guaranteed non-null by checks above
+                ruleResult = await TrueMappingRule!.Apply(previousResult);
             }
             else
             {
-                // If condition is false, apply the FalseMappingRule
-                return await FalseMappingRule.GetValue(previousResult.Record, this.OutputType);
+                // FalseMappingRule is guaranteed non-null by checks above
+                ruleResult = await FalseMappingRule!.Apply(previousResult);
             }
+
+            if (ruleResult == null)
+            {
+                return AbstractionsModels.TransformationResult.Failure(
+                    originalValue: previousResult.OriginalValue,
+                    targetType: OutputType,
+                    errorMessage: "The executed conditional rule returned a null result.",
+                    originalValueType: previousResult.OriginalValueType,
+                    currentValueType: null,
+                    appliedTransformations: previousResult.AppliedTransformations,
+                    record: previousResult.Record,
+                    tableDefinition: previousResult.TableDefinition,
+                    sourceRecordContext: previousResult.SourceRecordContext,
+                    explicitTargetFieldType: previousResult.TargetFieldType);
+            }
+            return ruleResult;
         }
         catch (Exception ex)
         {
-            return AbstractionsModels.TransformationResult.Failure(previousResult.OriginalValue, OutputType, $"Error in conditional transformation: {ex.Message}", previousResult.OriginalValueType, null, previousResult.AppliedTransformations, previousResult.Record, previousResult.TableDefinition);
+            return AbstractionsModels.TransformationResult.Failure(
+                originalValue: previousResult.OriginalValue,
+                targetType: OutputType,
+                errorMessage: $"Error in conditional transformation: {ex.Message}",
+                originalValueType: previousResult.OriginalValueType,
+                currentValueType: null,
+                appliedTransformations: previousResult.AppliedTransformations,
+                record: previousResult.Record,
+                tableDefinition: previousResult.TableDefinition,
+                sourceRecordContext: previousResult.SourceRecordContext,
+                explicitTargetFieldType: previousResult.TargetFieldType);
         }
     }
 
     /// <inheritdoc />
     public override async Task<AbstractionsModels.TransformationResult> Transform(object? value, Type targetType)
     {
-        // This transformation relies on MappingRuleBase instances which typically need a DataRow context.
-        // If called without a DataRow (e.g., record is null in initialResult),
-        // the underlying TrueMappingRule or FalseMappingRule might not function as expected
-        // unless they are types that don't depend on the DataRow (e.g., StaticValueRule).
-
         var initialResult = AbstractionsModels.TransformationResult.Success(
             originalValue: value,
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value,
             currentValueType: value?.GetType() ?? typeof(object),
-            record: null, // No DataRow context available here
-            tableDefinition: null // No TableDefinition context available here
+            appliedTransformations: new List<string>(),
+            record: null,
+            tableDefinition: null,
+            sourceRecordContext: null,
+            targetFieldType: targetType
         );
-        
-        // Directly call ApplyTransformationAsync, which includes null checks for rules/operation.
+
         return await ApplyTransformationAsync(initialResult);
     }
 
@@ -145,12 +218,11 @@ public partial class ConditionalTransformation : ValueTransformationBase
     public override ValueTransformationBase Clone()
     {
         var clone = (ConditionalTransformation)MemberwiseClone();
-        // TransformationDetail is a string (from base), memberwise clone is fine.
-        clone.TransformationDetail = TransformationDetail; 
+        clone.TransformationDetail = TransformationDetail;
 
         clone.ComparisonOperation = ComparisonOperation?.Clone() as ComparisonOperationBase;
-        clone.TrueMappingRule = TrueMappingRule?.Clone() as MappingRuleBase; // Assuming MappingRuleBase.Clone() returns MappingRuleBase or derived
-        clone.FalseMappingRule = FalseMappingRule?.Clone() as MappingRuleBase; // Assuming MappingRuleBase.Clone() returns MappingRuleBase or derived
+        clone.TrueMappingRule = TrueMappingRule?.Clone() as AbstractionsModels.MappingRuleBase;
+        clone.FalseMappingRule = FalseMappingRule?.Clone() as AbstractionsModels.MappingRuleBase;
         return clone;
     }
 }

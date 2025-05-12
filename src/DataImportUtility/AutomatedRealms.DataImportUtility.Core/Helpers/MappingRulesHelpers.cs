@@ -1,9 +1,7 @@
-using AutomatedRealms.DataImportUtility.Abstractions; // For MappingRuleType
+using AutomatedRealms.DataImportUtility.Abstractions.Enums; // For MappingRuleType
 using System;
 using System.Linq;
-// Assuming GetDescription() is an extension method for MappingRuleType,
-// possibly in AutomatedRealms.DataImportUtility.Core.Helpers.EnumExtensions
-// or AutomatedRealms.DataImportUtility.Abstractions if it's a general enum helper.
+// Using extension methods from the same namespace
 
 namespace AutomatedRealms.DataImportUtility.Core.Helpers;
 
@@ -19,6 +17,6 @@ public static class MappingRulesHelpers
         Environment.NewLine,
         Enum.GetValues(typeof(MappingRuleType))
             .Cast<MappingRuleType>()
-            .Select(ruleType => $"{ruleType}: {ruleType.GetDescription()}") // Assumes MappingRuleType has GetDescription() extension
+            .Select(ruleType => $"{ruleType}: {ruleType.GetDescription()}") // Uses MappingRuleTypeExtensions.GetDescription
     );
 }

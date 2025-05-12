@@ -1,17 +1,17 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Models; // For TransformationResult
-using System.Text.Json.Serialization; // For JsonIgnore
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
+using AutomatedRealms.DataImportUtility.Abstractions.Models; 
+using System.Text.Json.Serialization; 
+using System;
+using System.Threading.Tasks;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
 /// <summary>
-/// Checks if a value is between two other values.
+/// Checks if a value is between two other values (inclusive).
 /// </summary>
 public class BetweenOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    public override int EnumMemberOrder { get; } = 0;
-
     /// <inheritdoc />
     public override string EnumMemberName { get; } = nameof(BetweenOperation);
 
@@ -21,67 +21,56 @@ public class BetweenOperation : ComparisonOperationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override string Description { get; } = "Checks if a value is between two other values.";
+    public override string Description { get; } = "Checks if a value is between two other values (inclusive).";
 
     /// <summary>
-    /// The low limit (inclusive) for the comparison.
+    /// Initializes a new instance of the <see cref="BetweenOperation"/> class.
     /// </summary>
-    public MappingRuleBase? LowLimit { get; set; }
-
-    /// <summary>
-    /// The high limit (inclusive) for the comparison.
-    /// </summary>
-    public MappingRuleBase? HighLimit { get; set; }
+    public BetweenOperation() : base()
+    {
+    }
 
     /// <inheritdoc />
-    public override async Task<bool> Evaluate(TransformationResult result)
+    public override async Task<bool> Evaluate(TransformationResult contextResult) // Signature matches base class
     {
         if (LeftOperand is null)
         {
-            // Consider logging an error or returning a specific result instead of throwing.
-            // For now, keeping original behavior but this could be improved for robustness.
             throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {nameof(BetweenOperation)}.");
         }
 
-        if (LowLimit is null || HighLimit is null)
+        if (base.LowLimit is null || base.HighLimit is null)
         {
-            throw new InvalidOperationException($"{nameof(LowLimit)} and {nameof(HighLimit)} must be set for {nameof(BetweenOperation)}.");
+            throw new InvalidOperationException($"Base {nameof(LowLimit)} and base {nameof(HighLimit)} must be set for {nameof(BetweenOperation)}.");
         }
 
-        var leftResult = await LeftOperand.Apply(result);
-        if (leftResult.WasFailure)
+        // contextResult is a TransformationResult, which implements ITransformationContext.
+        // It can be passed to Apply methods expecting ITransformationContext.
+
+        var leftOperandActualResult = await LeftOperand.Apply(contextResult); // Pass contextResult (as ITransformationContext)
+        if (leftOperandActualResult == null || leftOperandActualResult.WasFailure)
         {
-            // Log error or handle: result.ErrorMessage = $"Failed to evaluate {nameof(LeftOperand)}..."
-            // For now, throw to maintain original behavior.
-            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOperandActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        var lowLimitResult = await LowLimit.Apply(result);
-        if (lowLimitResult.WasFailure)
+        var lowLimitActualResult = await base.LowLimit.Apply(contextResult); // Pass contextResult
+        if (lowLimitActualResult == null || lowLimitActualResult.WasFailure)
         {
-            throw new InvalidOperationException($"Failed to evaluate {nameof(LowLimit)} for {DisplayName} operation: {lowLimitResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LowLimit)} for {DisplayName} operation: {lowLimitActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        var highLimitResult = await HighLimit.Apply(result);
-        if (highLimitResult.WasFailure)
+        var highLimitActualResult = await base.HighLimit.Apply(contextResult); // Pass contextResult
+        if (highLimitActualResult == null || highLimitActualResult.WasFailure)
         {
-            throw new InvalidOperationException($"Failed to evaluate {nameof(HighLimit)} for {DisplayName} operation: {highLimitResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate {nameof(HighLimit)} for {DisplayName} operation: {highLimitActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        return leftResult.Between(lowLimitResult, highLimitResult);
+        return BetweenOperationExtensions.Between(leftOperandActualResult, lowLimitActualResult, highLimitActualResult);
     }
 
     /// <inheritdoc />
     public override ComparisonOperationBase Clone()
     {
-        var clone = (BetweenOperation)MemberwiseClone();
-        clone.LeftOperand = LeftOperand?.Clone();
-        // RightOperand is not used by BetweenOperation directly, but clone if present from base
-        clone.RightOperand = RightOperand?.Clone();
-        clone.LowLimit = LowLimit?.Clone();
-        clone.HighLimit = HighLimit?.Clone();
-        clone.ExpectedValue = ExpectedValue; // string, shallow copy is fine
-        return clone;
+        return (BetweenOperation)base.Clone();
     }
 }
 
@@ -90,6 +79,13 @@ public class BetweenOperation : ComparisonOperationBase
 /// </summary>
 public static class BetweenOperationExtensions
 {
+    private static bool IsNumericType(object? o)
+    {
+        if (o == null) return false;
+        return o is byte || o is sbyte || o is short || o is ushort || o is int || o is uint ||
+               o is long || o is ulong || o is float || o is double || o is decimal;
+    }
+
     /// <summary>
     /// Checks if the left result is between the low and high limits (inclusive).
     /// </summary>
@@ -99,31 +95,49 @@ public static class BetweenOperationExtensions
     /// <returns>True if the left result is between the low and high limits (inclusive); otherwise, false.</returns>
     public static bool Between(this TransformationResult leftResult, TransformationResult lowLimitInclusive, TransformationResult highLimitInclusive)
     {
-        // Handle null cases
-        if (leftResult.Value is null) { return false; }
+        object? leftCurrentValue = leftResult.CurrentValue;
+        object? lowCurrentValue = lowLimitInclusive.CurrentValue;
+        object? highCurrentValue = highLimitInclusive.CurrentValue;
 
-        // Try to parse as numbers for numeric comparison
-        if (double.TryParse(leftResult.Value, out var leftValue)
-            && double.TryParse(lowLimitInclusive.Value, out var lowValue)
-            && double.TryParse(highLimitInclusive.Value, out var highValue))
+        if (leftCurrentValue is null) { return false; } 
+
+        if (lowCurrentValue is null || highCurrentValue is null) { return false; }
+
+        // Attempt numeric comparison first
+        if (IsNumericType(leftCurrentValue) || IsNumericType(lowCurrentValue) || IsNumericType(highCurrentValue))
         {
-            return leftValue >= lowValue && leftValue <= highValue;
+            try
+            {
+                var val = Convert.ToDecimal(leftCurrentValue); 
+                var low = Convert.ToDecimal(lowCurrentValue);   
+                var high = Convert.ToDecimal(highCurrentValue); 
+                return val >= low && val <= high;
+            }
+            catch (Exception) { /* Fall through */ }
         }
 
-        // For dates
-        if (DateTime.TryParse(leftResult.Value, out var leftDate)
-            && DateTime.TryParse(lowLimitInclusive.Value, out var lowDate)
-            && DateTime.TryParse(highLimitInclusive.Value, out var highDate))
+        // Attempt DateTime comparison
+        if (leftCurrentValue is DateTime || lowCurrentValue is DateTime || highCurrentValue is DateTime)
         {
-            return leftDate >= lowDate && leftDate <= highDate;
+            try
+            {
+                var dateVal = Convert.ToDateTime(leftCurrentValue); 
+                var dateLow = Convert.ToDateTime(lowCurrentValue);   
+                var dateHigh = Convert.ToDateTime(highCurrentValue); 
+                // Corrected: dateVal <= dateHigh
+                return dateVal >= dateLow && dateVal <= dateHigh; 
+            }
+            catch (Exception) { /* Fall through */ }
         }
 
-        // Fall back to string comparison
-        var leftStr = leftResult.Value;
-        var lowStr = lowLimitInclusive.Value ?? string.Empty;
-        var highStr = highLimitInclusive.Value ?? string.Empty;
+        // Fallback to string comparison
+        string? leftStr = leftCurrentValue.ToString();
+        string? lowStr = lowCurrentValue.ToString(); 
+        string? highStr = highCurrentValue.ToString(); 
 
-        return string.Compare(leftStr, lowStr, StringComparison.Ordinal) >= 0
-            && string.Compare(leftStr, highStr, StringComparison.Ordinal) <= 0;
+        if (leftStr is null) return false;
+
+        return string.Compare(leftStr, lowStr, StringComparison.Ordinal) >= 0 &&
+               string.Compare(leftStr, highStr, StringComparison.Ordinal) <= 0;
     }
 }

@@ -1,26 +1,29 @@
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Models; // For FieldMapping
+using AutomatedRealms.DataImportUtility.Abstractions.Enums; // Added
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 using System;
-// Assuming MappingRuleTypeExtensions.CreateNewInstance() will be moved to Core.Helpers or Abstractions
 
 namespace AutomatedRealms.DataImportUtility.Core.Helpers;
 
 internal static class ReflectionHelpers
 {
     public static FieldMapping AsFieldMapping(this PropertyInfo prop, bool forceRequired = false)
-        => new()
+    {
+        var mappingRuleType = MappingRuleType.CopyRule; // Default to CopyRule
+        var classType = mappingRuleType.GetClassType(); // Use the new extension method
+        var mappingRule = classType != null ? Activator.CreateInstance(classType) as MappingRuleBase : null;
+
+        return new FieldMapping()
         {
             FieldName = prop.Name,
             FieldType = prop.PropertyType,
             Required = forceRequired || Attribute.IsDefined(prop, typeof(RequiredAttribute)),
-            // This assumes CreateNewInstance() is an extension method for MappingRuleType.
-            // It might need to be updated if its location or signature changes during refactoring.
-            MappingRule = MappingRuleType.CopyRule.CreateNewInstance(), 
+            MappingRule = mappingRule,
             ValidationAttributes = prop.GetValidationAttributes()
         };
+    }
 
     public static ImmutableArray<ValidationAttribute> GetValidationAttributes(this PropertyInfo prop)
         => prop.GetCustomAttributes<ValidationAttribute>().ToImmutableArray();

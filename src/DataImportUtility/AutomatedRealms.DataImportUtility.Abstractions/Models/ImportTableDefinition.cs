@@ -1,3 +1,5 @@
+using System.Collections.Generic; // Added for List<T>
+
 namespace AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 /// <summary>
@@ -12,11 +14,11 @@ public class ImportTableDefinition
     /// <summary>
     /// The fields in the table.
     /// </summary>
-    public List<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = [];
+    public List<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = new List<ImportedRecordFieldDescriptor>();
     /// <summary>
     /// The mappings to the target type.
     /// </summary>
-    public List<FieldMapping> FieldMappings { get; set; } = []; // FieldMapping will also need to be in Abstractions.Models
+    public List<FieldMapping> FieldMappings { get; set; } = new List<FieldMapping>(); // FieldMapping will also need to be in Abstractions.Models
 }
 
 // Note: The ImportTableDefinitionExtensions class was not moved as it might have dependencies

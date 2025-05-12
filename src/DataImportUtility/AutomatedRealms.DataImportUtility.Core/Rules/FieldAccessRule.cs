@@ -1,109 +1,308 @@
 // Filepath: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Core\Rules\FieldAccessRule.cs
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Abstractions.Enums; // Required for ConditionalRule if used in GetConfiguredOperationAsync
-using System.Collections.Immutable;
+using AutomatedRealms.DataImportUtility.Abstractions.Enums;
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules
 {
     /// <summary>
-    /// A rule that accesses a field's value from a DataRow within a TransformationResult context.
+    /// A rule that accesses a field's value from a DataRow or a list of field descriptors.
+    /// The primary purpose is to retrieve a value from a specified source field.
     /// </summary>
     public class FieldAccessRule : MappingRuleBase
-    {
-        private readonly string _fieldName;
-
-        /// <summary>
-        /// Gets or sets the name of the rule.
+    {        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldAccessRule"/> class.
         /// </summary>
-        public override string RuleName { get; set; }
-
-        /// <summary>
-        /// Gets the display name of the rule.
-        /// </summary>
-        public override string DisplayName => "Field Access Rule";
-
-        /// <summary>
-        /// Gets the description of the rule.
-        /// </summary>
-        public override string Description => "Accesses a specified field's value from the input DataRow via TransformationResult.Record.";
-
-        /// <summary>
-        /// Gets or sets the source field transformations. Not typically used by this rule.
-        /// </summary>
-        public override ImmutableList<FieldTransformation> SourceFieldTransformations { get; set; } = ImmutableList<FieldTransformation>.Empty;
-
-        /// <summary>
-        /// Gets or sets the target field. Not typically used by this rule.
-        /// </summary>
-        public override ImportedRecordFieldDescriptor? TargetField { get; set; }
+        /// <param name="sourceFieldName">The name of the field to access.</param>
+        public FieldAccessRule(string sourceFieldName)
+        {
+            this.SourceField = sourceFieldName;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldAccessRule"/> class.
         /// </summary>
-        /// <param name="fieldName">The name of the field to access.</param>
-        /// <param name="ruleName">The name of this rule instance.</param>
-        public FieldAccessRule(string fieldName, string ruleName = "FieldAccessRule")
+        /// <param name="sourceFieldName">The name of the field to access.</param>
+        /// <param name="ruleDetail">Additional information about the rule.</param>
+        public FieldAccessRule(string sourceFieldName, string ruleDetail)
         {
-            _fieldName = fieldName;
-            RuleName = ruleName;
+            this.SourceField = sourceFieldName;
+            this.RuleDetail = ruleDetail;
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldAccessRule"/> class.
+        /// Parameterless constructor for serialization.
+        /// </summary>
+        public FieldAccessRule() { }
+
+        /// <summary>
+        /// Gets the type of the mapping rule.
+        /// </summary>
+        public override MappingRuleType RuleType => MappingRuleType.FieldAccessRule;
+
+        /// <summary>
+        /// Gets the enum member name for the mapping rule type.
+        /// </summary>
+        public override string EnumMemberName => nameof(MappingRuleType.FieldAccessRule);
+
+        /// <summary>
+        /// Gets the display name of the mapping rule.
+        /// </summary>
+        public override string DisplayName => "Field Access";
+
+        /// <summary>
+        /// Gets the short name of the mapping rule.
+        /// </summary>
+        public override string ShortName => "Access";
+
+        /// <summary>
+        /// Gets the description of the mapping rule.
+        /// </summary>
+        [JsonIgnore]
+        public override string Description => "Accesses the value of a specified source field.";
+
+        /// <summary>
+        /// Indicates whether the mapping rule is empty or not configured.
+        /// For a FieldAccessRule, it's empty if the SourceField is not specified.
+        /// </summary>
+        [JsonIgnore]
+        public override bool IsEmpty => string.IsNullOrEmpty(this.SourceField);
+
+        /// <summary>
+        /// Gets the <see cref="MappingRuleType"/> enum value for this rule.
+        /// </summary>
+        /// <returns>The <see cref="MappingRuleType.FieldAccessRule"/> enum value.</returns>
+        public override MappingRuleType GetEnumValue() => this.RuleType;
+
+        /// <summary>
+        /// Gets the order value for the enum member.
+        /// </summary>
+        public override int EnumMemberOrder => 3;
 
         /// <summary>
         /// Applies the rule to a DataRow. This overload extracts the field value directly from the row.
         /// </summary>
-        /// <param name="row">The DataRow to apply the rule to.</param>
+        /// <param name="dataRow">The DataRow to apply the rule to.</param>
         /// <returns>A TransformationResult containing the field's value or a failure if the field is not found.</returns>
-        public override Task<TransformationResult?> Apply(DataRow row)
+        public override async Task<TransformationResult?> Apply(DataRow dataRow)
         {
-            if (row.Table.Columns.Contains(_fieldName))
+            var context = TransformationResult.Success(
+                originalValue: null, // Original value is what we are trying to fetch
+                originalValueType: null,
+                currentValue: null, // Current value will be the fetched value
+                currentValueType: null,
+                appliedTransformations: new List<string>(),
+                record: dataRow,
+                tableDefinition: null, // Potentially ParentTableDefinition if available and relevant
+                sourceRecordContext: null, // DataRow is the primary source here
+                targetFieldType: null // Target type will be inferred from the source field
+            );
+            return await Apply(context);
+        }
+
+        /// <summary>
+        /// Applies the field access rule using the provided transformation context.
+        /// </summary>
+        /// <param name="context">The transformation context.</param>
+        /// <returns>A transformation result containing the accessed value, or a failure result.</returns>
+        public override Task<TransformationResult?> Apply(ITransformationContext context)
+        {
+            if (string.IsNullOrEmpty(this.SourceField))
             {
-                var value = row[_fieldName];
-                return Task.FromResult<TransformationResult?>(
-                    TransformationResult.Success(value, value?.GetType(), value, value?.GetType(), RuleName, GetType().Name, row)
-                );
+                return Task.FromResult<TransformationResult?>(TransformationResult.Failure(
+                    originalValue: null,
+                    targetType: context.TargetFieldType ?? typeof(object),
+                    errorMessage: "FieldAccessRule is not configured: SourceField is missing.",
+                    record: context.Record,
+                    tableDefinition: context.TableDefinition,
+                    sourceRecordContext: context.SourceRecordContext,
+                    explicitTargetFieldType: context.TargetFieldType
+                ));
             }
-            return Task.FromResult<TransformationResult?>(
-                TransformationResult.Failure(null, typeof(object), $"Field '{_fieldName}' not found in DataRow.", null, RuleName, GetType().Name, row)
+
+            object? value = null;
+            Type? valueType = null;
+            bool found = false;
+
+            if (context.Record != null)
+            {
+                if (context.Record.Table.Columns.Contains(this.SourceField))
+                {
+                    value = context.Record[this.SourceField];
+                    valueType = value?.GetType();
+                    found = true;
+                }
+                else
+                {
+                    return Task.FromResult<TransformationResult?>(TransformationResult.Failure(
+                        originalValue: null,
+                        targetType: context.TargetFieldType ?? typeof(object),
+                        errorMessage: $"Field '{this.SourceField}' not found in DataRow.",
+                        record: context.Record,
+                        tableDefinition: context.TableDefinition,
+                        sourceRecordContext: context.SourceRecordContext,
+                        explicitTargetFieldType: context.TargetFieldType
+                    ));
+                }
+            }
+            else if (context.SourceRecordContext != null)
+            {
+                var fieldDesc = context.SourceRecordContext.FirstOrDefault(f => f.FieldName == this.SourceField);
+                if (fieldDesc != null)
+                {
+                    value = fieldDesc.ValueSet?.FirstOrDefault();
+                    valueType = fieldDesc.FieldType ?? value?.GetType();
+                    found = true;
+                }
+                else
+                {
+                    return Task.FromResult<TransformationResult?>(TransformationResult.Failure(
+                        originalValue: null,
+                        targetType: context.TargetFieldType ?? typeof(object),
+                        errorMessage: $"Field '{this.SourceField}' not found in SourceRecordContext.",
+                        record: context.Record,
+                        tableDefinition: context.TableDefinition,
+                        sourceRecordContext: context.SourceRecordContext,
+                        explicitTargetFieldType: context.TargetFieldType
+                    ));
+                }
+            }
+
+            if (found)
+            {
+                return Task.FromResult<TransformationResult?>(TransformationResult.Success(
+                    originalValue: value, // The accessed value is the original in this context
+                    originalValueType: valueType,
+                    currentValue: value,
+                    currentValueType: valueType,
+                    appliedTransformations: new List<string> { $"Accessed field '{this.SourceField}'." },
+                    record: context.Record,
+                    tableDefinition: context.TableDefinition,
+                    sourceRecordContext: context.SourceRecordContext,
+                    targetFieldType: context.TargetFieldType ?? valueType // Use actual value type if target not specified
+                ));
+            }
+            
+            // If neither DataRow nor SourceRecordContext is available, or field not found in available context
+            return Task.FromResult<TransformationResult?>(TransformationResult.Failure(
+                originalValue: null,
+                targetType: context.TargetFieldType ?? typeof(object),
+                errorMessage: "FieldAccessRule requires a DataRow or SourceRecordContext containing the SourceField.",
+                record: context.Record,
+                tableDefinition: context.TableDefinition,
+                sourceRecordContext: context.SourceRecordContext,
+                explicitTargetFieldType: context.TargetFieldType
+            ));
+        }
+
+        /// <summary>
+        /// Applies the field access rule to all rows in the provided data table.
+        /// </summary>
+        /// <param name="data">The data table to apply the rule to.</param>
+        /// <returns>An enumerable collection of transformation results for each row.</returns>
+        public override async Task<IEnumerable<TransformationResult?>> Apply(DataTable data)
+        {
+            if (data == null) return new List<TransformationResult?>();
+
+            if (string.IsNullOrEmpty(this.SourceField))
+            {
+                var failureTemplate = TransformationResult.Failure(
+                    originalValue: null, 
+                    targetType: typeof(object), 
+                    errorMessage: "FieldAccessRule is not configured: SourceField is missing.",
+                    explicitTargetFieldType: typeof(object)
+                    );
+                return Enumerable.Repeat(failureTemplate, data.Rows.Count).Cast<TransformationResult?>();
+            }
+
+            var results = new List<TransformationResult?>();
+            foreach (DataRow row in data.Rows)
+            {
+                // Create context for each row
+                var rowContext = TransformationResult.Success(
+                    originalValue: null, originalValueType: null,
+                    currentValue: null, currentValueType: null,
+                    appliedTransformations: new List<string>(),
+                    record: row,
+                    tableDefinition: null, // Or resolve from ParentTableDefinition or data.ExtendedProperties
+                    sourceRecordContext: null,
+                    targetFieldType: null // Will be inferred by Apply(ITransformationContext)
+                );
+                results.Add(await Apply(rowContext).ConfigureAwait(false));
+            }
+            return results;
+        }
+
+        /// <summary>
+        /// Applies the field access rule in a context where no specific data table or row is provided initially.
+        /// </summary>
+        /// <returns>A collection containing a failure result, as context is required.</returns>
+        public override async Task<IEnumerable<TransformationResult?>> Apply()
+        {
+            var emptyContext = TransformationResult.Success(
+                originalValue: null, originalValueType: null,
+                currentValue: null, currentValueType: null,
+                appliedTransformations: new List<string>(),
+                record: null,
+                tableDefinition: null,
+                sourceRecordContext: null,
+                targetFieldType: null
+            );
+            var result = await Apply(emptyContext);
+            return new List<TransformationResult?> { result };
+        }
+
+        /// <summary>
+        /// Gets the value from a source record represented by a list of field descriptors.
+        /// </summary>
+        /// <param name="sourceRecordContextList">The source record, as a list of <see cref="ImportedRecordFieldDescriptor"/>.</param>
+        /// <param name="targetField">The descriptor of the target field (used to determine target type if needed).</param>
+        /// <returns>A <see cref="TransformationResult"/> containing the accessed value.</returns>
+        public override TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecordContextList, ImportedRecordFieldDescriptor targetField)
+        {
+            Type effectiveTargetType = targetField?.FieldType ?? typeof(object);
+
+            var context = TransformationResult.Success(
+                originalValue: null, 
+                originalValueType: null,
+                currentValue: null, 
+                currentValueType: null, 
+                appliedTransformations: new List<string>(),
+                record: null, // No DataRow in this specific GetValue signature.
+                tableDefinition: null, 
+                sourceRecordContext: sourceRecordContextList,
+                targetFieldType: effectiveTargetType
+            );
+
+            var task = Apply(context); 
+            TransformationResult? result = task.ConfigureAwait(false).GetAwaiter().GetResult();
+
+            return result ?? TransformationResult.Failure(
+                originalValue: null,
+                targetType: effectiveTargetType,
+                errorMessage: "Failed to get value using FieldAccessRule, Apply returned null.",
+                sourceRecordContext: sourceRecordContextList,
+                explicitTargetFieldType: effectiveTargetType
             );
         }
 
         /// <summary>
-        /// Applies the rule using a TransformationResult as context. This overload extracts the field value from sourceResult.Record.
+        /// Creates a clone of this <see cref="FieldAccessRule"/> instance.
         /// </summary>
-        /// <param name="sourceResult">The source TransformationResult containing the DataRow in its Record property.</param>
-        /// <returns>A TransformationResult containing the field's value or a failure.</returns>
-        public override Task<TransformationResult> Apply(TransformationResult sourceResult)
+        /// <returns>A new <see cref="FieldAccessRule"/> instance with the same configuration.</returns>
+        public override MappingRuleBase Clone()
         {
-            if (sourceResult.Record == null)
-            {
-                return Task.FromResult(
-                    TransformationResult.Failure(sourceResult.CurrentValue, sourceResult.CurrentValueType, "DataRow (Record) is null in sourceResult for FieldAccessRule.", sourceResult.OriginalValueType, RuleName, GetType().Name, sourceResult.Record, sourceResult.TableDefinition)
-                );
-            }
-            if (sourceResult.Record.Table.Columns.Contains(_fieldName))
-            {
-                var value = sourceResult.Record[_fieldName];
-                return Task.FromResult(
-                    TransformationResult.Success(value, value?.GetType(), value, value?.GetType(), RuleName, GetType().Name, sourceResult.Record, sourceResult.TableDefinition)
-                );
-            }
-            return Task.FromResult(
-                TransformationResult.Failure(sourceResult.CurrentValue, sourceResult.CurrentValueType, $"Field '{_fieldName}' not found in DataRow from sourceResult.Record for FieldAccessRule.", sourceResult.OriginalValueType, RuleName, GetType().Name, sourceResult.Record, sourceResult.TableDefinition)
-            );
-        }
-
-        /// <summary>
-        /// Gets the configured comparison operation. FieldAccessRule does not use conditional rules itself.
-        /// </summary>
-        /// <param name="conditionalRule">The conditional rule.</param>
-        /// <param name="row">The DataRow.</param>
-        /// <returns>Null, as this rule does not process conditional rules.</returns>
-        protected override Task<ComparisonOperationBase?> GetConfiguredOperationAsync(ConditionalRule conditionalRule, DataRow row)
-        {
-            return Task.FromResult<ComparisonOperationBase?>(null);
+            var clone = new FieldAccessRule();
+            base.CloneBaseProperties(clone);
+            return clone;
         }
     }
 }

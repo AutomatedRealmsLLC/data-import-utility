@@ -1,5 +1,6 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System;
@@ -23,47 +24,47 @@ public class IsNullOperation : ComparisonOperationBase
     [JsonIgnore]
     public override string Description { get; } = "Checks if a value is null.";
 
+    /// <summary>
+    /// Gets or sets the order of this operation if it's part of an enumerated list of operations.
+    /// This property might be used for sorting or specific ordering logic if applicable.
+    /// </summary>
     public int EnumMemberOrder { get; set; }
 
-    /// <inheritdoc />
-    public override async Task<TransformationResult<bool>> Evaluate(ITransformationContext context)
+    /// <summary>
+    /// Evaluates whether the left operand's value is null.
+    /// </summary>
+    /// <param name="contextResult">The transformation context.</param>
+    /// <returns>True if the value is null, otherwise false.</returns>
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
         if (LeftOperand is null)
         {
-            return TransformationResult<bool>.CreateFailure($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
+            throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
         }
 
-        var leftResult = await LeftOperand.Apply(context);
+        var leftResult = await LeftOperand.Apply(contextResult);
+
+        if (leftResult == null)
+        {
+            throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
+        }
+        
         if (leftResult.WasFailure)
         {
-            return TransformationResult<bool>.CreateFailure($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
         }
 
-        return TransformationResult<bool>.CreateSuccess(leftResult.IsNull(), context);
+        return leftResult.CurrentValue is null;
     }
 
     /// <inheritdoc />
-    public override IComparisonOperation Clone()
+    public override ComparisonOperationBase Clone()
     {
         return new IsNullOperation
         {
             LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(), // Cloning RightOperand for consistency with base class
+            RightOperand = RightOperand?.Clone(),
             EnumMemberOrder = EnumMemberOrder
         };
     }
-}
-
-/// <summary>
-/// Extension method for the IsNull operation.
-/// </summary>
-public static class IsNullOperationExtensions
-{
-    /// <summary>
-    /// Checks if the result is null.
-    /// </summary>
-    /// <param name="result">The result to check.</param>
-    /// <returns>True if the result is null; otherwise, false.</returns>
-    public static bool IsNull(this TransformationResult<string?> result)
-        => result.Value is null;
 }

@@ -1,9 +1,13 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
-using System.Reflection;
+using System.Linq;
+using System.Text.Json.Serialization;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 using AutomatedRealms.DataImportUtility.Core.Helpers;
 
-namespace AutomatedRealms.DataImportUtility.Core.Models; // Updated
+namespace AutomatedRealms.DataImportUtility.Core.Models;
 
 /// <summary>
 /// The definition of a table to import, including its fields and mappings to a target type.
@@ -17,11 +21,11 @@ public class ImportTableDefinition
     /// <summary>
     /// The fields in the table.
     /// </summary>
-    public List<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = new List<ImportedRecordFieldDescriptor>(); // ImportedRecordFieldDescriptor is in Core.Models
+    public List<AutomatedRealms.DataImportUtility.Abstractions.Models.ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = new List<AutomatedRealms.DataImportUtility.Abstractions.Models.ImportedRecordFieldDescriptor>();
     /// <summary>
     /// The mappings to the target type.
     /// </summary>
-    public List<FieldMapping> FieldMappings { get; set; } = new List<FieldMapping>(); // FieldMapping is in Core.Models
+    public List<AutomatedRealms.DataImportUtility.Abstractions.Models.FieldMapping> FieldMappings { get; set; } = new List<AutomatedRealms.DataImportUtility.Abstractions.Models.FieldMapping>();
 
     /// <summary>
     /// Clones the <see cref="ImportTableDefinition" />.
@@ -39,7 +43,7 @@ public class ImportTableDefinition
     /// Replaces the field mappings with the provided ones.
     /// </summary>
     /// <param name="incomingFieldMappings">The field mappings to replace with.</param>
-    public void ReplaceFieldMappings(IEnumerable<FieldMapping> incomingFieldMappings)
+    public void ReplaceFieldMappings(IEnumerable<AutomatedRealms.DataImportUtility.Abstractions.Models.FieldMapping> incomingFieldMappings)
     {
         FieldMappings = incomingFieldMappings.Select(x => x.Clone()).ToList();
     }
@@ -70,7 +74,7 @@ public static class ImportTableDefinitionExtensions
     /// <param name="tableName">The name of the table to search for.</param>
     /// <param name="fieldDescriptors">The field descriptors found, if any, for the table.</param>
     /// <returns>True if the collection had an element with the specified <paramref name="tableName"/>, otherwise false.</returns>
-    public static bool TryGetFieldDescriptors(this List<ImportTableDefinition> tableDefinitions, string tableName, out List<ImportedRecordFieldDescriptor>? fieldDescriptors)
+    public static bool TryGetFieldDescriptors(this List<ImportTableDefinition> tableDefinitions, string tableName, out List<AutomatedRealms.DataImportUtility.Abstractions.Models.ImportedRecordFieldDescriptor>? fieldDescriptors)
     {
         fieldDescriptors = tableDefinitions.FirstOrDefault(x => x.TableName == tableName)?.FieldDescriptors;
         return fieldDescriptors is not null;
@@ -83,7 +87,7 @@ public static class ImportTableDefinitionExtensions
     /// <param name="tableName">The name of the table to search for.</param>
     /// <param name="fieldMappings">The field mappings found, if any, for the table.</param>
     /// <returns>True if the collection had an element with the specified <paramref name="tableName"/>, otherwise false.</returns>
-    public static bool TryGetFieldMappings(this List<ImportTableDefinition> tableDefinitions, string tableName, out List<FieldMapping>? fieldMappings)
+    public static bool TryGetFieldMappings(this List<ImportTableDefinition> tableDefinitions, string tableName, out List<AutomatedRealms.DataImportUtility.Abstractions.Models.FieldMapping>? fieldMappings)
     {
         fieldMappings = tableDefinitions.FirstOrDefault(x => x.TableName == tableName)?.FieldMappings;
         return fieldMappings is not null;
@@ -107,7 +111,7 @@ public static class ImportTableDefinitionExtensions
     /// <param name="fieldDescriptors">The field descriptors for the table.</param>
     /// <param name="fieldMappings">The field mappings for the table.</param>
     /// <returns>True if the table was added, otherwise false.</returns>
-    public static bool TryAdd(this List<ImportTableDefinition> tableDefinitions, string tableName, List<ImportedRecordFieldDescriptor>? fieldDescriptors = null, List<FieldMapping>? fieldMappings = null)
+    public static bool TryAdd(this List<ImportTableDefinition> tableDefinitions, string tableName, List<AutomatedRealms.DataImportUtility.Abstractions.Models.ImportedRecordFieldDescriptor>? fieldDescriptors = null, List<AutomatedRealms.DataImportUtility.Abstractions.Models.FieldMapping>? fieldMappings = null)
     {
         if (tableDefinitions.Any(table => table.TableName == tableName))
         {
@@ -117,8 +121,8 @@ public static class ImportTableDefinitionExtensions
         tableDefinitions.Add(new ImportTableDefinition
         {
             TableName = tableName,
-            FieldDescriptors = fieldDescriptors ?? new List<ImportedRecordFieldDescriptor>(),
-            FieldMappings = fieldMappings ?? new List<FieldMapping>()
+            FieldDescriptors = fieldDescriptors ?? new List<AutomatedRealms.DataImportUtility.Abstractions.Models.ImportedRecordFieldDescriptor>(),
+            FieldMappings = fieldMappings ?? new List<AutomatedRealms.DataImportUtility.Abstractions.Models.FieldMapping>()
         });
 
         return true;
@@ -142,7 +146,7 @@ public static class ImportTableDefinitionExtensions
     /// <param name="targetTypeFieldMappings">The field mappings to copy from for the target type.</param>
     /// <param name="overwriteExisting">Whether or not to overwrite existing field mappings.</param>
     /// <param name="autoMatch">Whether or not to automatically match fields.</param>
-    public static void RefreshFieldDescriptors(this ImportTableDefinition tableDefinition, DataTable dataTable, bool hasHeader, ImmutableList<FieldMapping>? targetTypeFieldMappings, bool overwriteExisting = false, bool autoMatch = false)
+    public static void RefreshFieldDescriptors(this ImportTableDefinition tableDefinition, DataTable dataTable, bool hasHeader, ImmutableList<AutomatedRealms.DataImportUtility.Abstractions.Models.FieldMapping>? targetTypeFieldMappings, bool overwriteExisting = false, bool autoMatch = false)
     {
         // Clear the field descriptors if requested
         if (overwriteExisting)
@@ -159,11 +163,10 @@ public static class ImportTableDefinitionExtensions
             if (existingDescriptor is null)
             {
                 // Create a new field descriptor
-                var descriptor = new ImportedRecordFieldDescriptor
+                var descriptor = new AutomatedRealms.DataImportUtility.Abstractions.Models.ImportedRecordFieldDescriptor
                 {
                     FieldName = fieldName,
-                    FieldType = column.DataType,
-                    HasHeader = hasHeader
+                    FieldType = column.DataType
                 };
                 
                 tableDefinition.FieldDescriptors.Add(descriptor);

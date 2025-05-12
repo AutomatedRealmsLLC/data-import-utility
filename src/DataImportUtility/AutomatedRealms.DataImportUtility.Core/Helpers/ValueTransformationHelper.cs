@@ -1,12 +1,14 @@
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Models;
 using System;
-using System.Collections.Generic; // Required for List<T>
-// Assuming FieldMappingExtensions.Validate, FieldMappingExtensions.Apply, MissingMemberException are available
-// either in Abstractions or Core.Models or other Core.Helpers
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations; // Added for ValidationResult and Validator
+using System.Data;
+using System.Globalization;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using AutomatedRealms.DataImportUtility.Abstractions.Enums;
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // Using Abstractions models
+using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
 namespace AutomatedRealms.DataImportUtility.Core.Helpers;
 
@@ -103,31 +105,54 @@ public static partial class ValueTransformationHelper
         var mappedFieldRules = fieldMappings.MappedFieldsOnly();
 
         // Check for missing fields in the destination table
-        // Assuming CheckForMissingFields is an extension method or a static method in this class or another helper.
         mappedFieldRules.CheckForMissingFields(sourceRow.Table, destRow.Table);
 
         foreach (var fieldMap in mappedFieldRules)
         {
-            // Assuming fieldMap.Apply returns Task<TransformationResult>
             var transformedResult = await fieldMap.Apply(sourceRow);
 
             // Validate the current transformed result
-            // Assuming fieldMap.Validate is an extension method or part of FieldMapping
-            if (!fieldMap.Validate(transformedResult, out var validationResults))
+            if (!ValidateFieldValue(fieldMap, transformedResult?.CurrentValue, out var validationResults))
             {
                 destRow.SetColumnError(destRow.Table.Columns[fieldMap.FieldName]!, $"{string.Join($". {Environment.NewLine}", validationResults!.Select(x => x.ErrorMessage))}.".Replace("..", "."));
             }
 
-            // This needs to be split up like this since null propagation doesn't work with DBNull.Value and string?.
-            if (transformedResult?.Value is null || (string.IsNullOrWhiteSpace(transformedResult.Value.ToString()) && destRow.Table.Columns[fieldMap.FieldName]!.DataType != typeof(string)))
+            if (transformedResult?.CurrentValue is null || (string.IsNullOrWhiteSpace(transformedResult.CurrentValue.ToString()) && destRow.Table.Columns[fieldMap.FieldName]!.DataType != typeof(string)))
             {
                 destRow[fieldMap.FieldName] = DBNull.Value;
             }
             else
             {
-                destRow[fieldMap.FieldName] = transformedResult.Value;
+                destRow[fieldMap.FieldName] = transformedResult.CurrentValue;
             }
         }
+    }
+
+    private static bool ValidateFieldValue(FieldMapping fieldMap, object? valueToValidate, out List<ValidationResult> validationResults)
+    {
+        validationResults = new List<ValidationResult>();
+        if (fieldMap.ValidationAttributes.IsEmpty)
+        {
+            return true;
+        }
+
+        var validationContext = new ValidationContext(valueToValidate ?? new object(), serviceProvider: null, items: null)
+        {
+            DisplayName = fieldMap.FieldName,
+            MemberName = fieldMap.FieldName // Setting MemberName for context
+        };
+
+        bool isValid = true;
+        foreach (var attribute in fieldMap.ValidationAttributes)
+        {
+            var result = attribute.GetValidationResult(valueToValidate, validationContext);
+            if (result != ValidationResult.Success && result != null)
+            {
+                isValid = false;
+                validationResults.Add(result);
+            }
+        }
+        return isValid;
     }
 
     // Adapted from https://stackoverflow.com/questions/19673502/how-to-convert-datarow-to-an-object/47141701#47141701
@@ -204,9 +229,8 @@ public static partial class ValueTransformationHelper
     /// Thrown when there are missing fields used in the Field Mappings that don't exist for the given data tables.
     /// </exception>
     /// <remarks>
-    /// This method checks the source data table for any source fields that are not present used in each of the 
-    /// <see cref="MappingRuleBase.SourceFieldTransformations" />'s <see cref="FieldTransformation.Field"/>, as well
-    /// as target fields that are not present in the destination data table using the <see cref="FieldMapping.FieldName"/>.
+    /// This method checks the source data table for <see cref="MappingRuleBase.SourceField"/> and the destination data table for <see cref="FieldMapping.FieldName"/>.
+    /// It currently does not deeply inspect individual transformations in <see cref="MappingRuleBase.SourceFieldTransformations"/> for other field dependencies.
     /// </remarks>
     /// <exception cref="AutomatedRealms.DataImportUtility.Core.CustomExceptions.MissingFieldMappingException">
     /// Thrown when there are missing fields in only one of the two provided tables.
@@ -217,10 +241,11 @@ public static partial class ValueTransformationHelper
     private static void CheckForMissingFields(this List<FieldMapping> fieldMappings, DataTable sourceDataTable, DataTable destDataTable)
     {
         var missingSourceFields = fieldMappings
-            .Where(x => x.MappingRule is not null && !x.IgnoreMapping)
-            .SelectMany(x => x.MappingRule!.SourceFieldTransformations.Select(y => y.Field))
-            .Where(x => x is not null && !string.IsNullOrEmpty(x.FieldName) && !sourceDataTable.Columns.Contains(x.FieldName))
-            .Select(x => x!.FieldName!)
+            .Where(fm => fm.MappingRule != null &&
+                         !fm.IgnoreMapping &&
+                         !string.IsNullOrEmpty(fm.MappingRule.SourceField) && 
+                         !sourceDataTable.Columns.Contains(fm.MappingRule.SourceField!)) 
+            .Select(fm => fm.MappingRule!.SourceField!) 
             .Distinct()
             .ToList();
 
@@ -230,18 +255,24 @@ public static partial class ValueTransformationHelper
             .Distinct()
             .ToList();
 
-        var missingFieldExceptions = new List<System.Exception>(); // Changed from MissingMemberException to System.Exception for AggregateException
-
-        if (missingSourceFields.Any())
+        var missingFieldExceptions = new List<System.Exception>();        if (missingSourceFields.Any())
         {
-            // Using MissingFieldMappingException from Core.CustomExceptions
-            missingFieldExceptions.Add(new AutomatedRealms.DataImportUtility.Core.CustomExceptions.MissingFieldMappingException($"The source table does not contain the following mapped source fields: {string.Join(", ", missingSourceFields)}"));
+            var missingFields = fieldMappings
+                .Where(fm => fm.MappingRule != null &&
+                            !fm.IgnoreMapping &&
+                            !string.IsNullOrEmpty(fm.MappingRule.SourceField) &&
+                            !sourceDataTable.Columns.Contains(fm.MappingRule.SourceField!))
+                .ToList();
+                
+            missingFieldExceptions.Add(new AutomatedRealms.DataImportUtility.Core.CustomExceptions.MissingFieldMappingException(
+                missingFields, 
+                $"The source table does not contain the following mapped source fields: {string.Join(", ", missingSourceFields)}")
+            );
         }
 
         if (missingTargetFields.Any())
         {
-            // Using MissingFieldMappingException from Core.CustomExceptions
-            missingFieldExceptions.Add(new AutomatedRealms.DataImportUtility.Core.CustomExceptions.MissingFieldMappingException($"The destination table does not contain the following mapped target fields: {string.Join(", ", missingTargetFields)}"));
+            missingFieldExceptions.Add(new AutomatedRealms.DataImportUtility.Core.CustomExceptions.MissingFieldMappingException(System.Array.Empty<AutomatedRealms.DataImportUtility.Abstractions.Models.FieldMapping>(), $"The destination table does not contain the following mapped target fields: {string.Join(", ", missingTargetFields)}"));
         }
 
         if (missingFieldExceptions.Count == 1)

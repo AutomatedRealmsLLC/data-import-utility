@@ -1,5 +1,6 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Enums;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System;
@@ -13,7 +14,7 @@ public class StartsWithOperation : ComparisonOperationBase
 {
     /// <inheritdoc />
     [JsonIgnore]
-    public override string EnumMemberName { get; } = nameof(StartsWithOperation);
+    public override string EnumMemberName => ComparisonOperationType.StartsWith.ToString();
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -23,59 +24,57 @@ public class StartsWithOperation : ComparisonOperationBase
     [JsonIgnore]
     public override string Description { get; } = "Checks if a value starts with another value.";
 
-    public int EnumMemberOrder { get; set; }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StartsWithOperation"/> class.
+    /// </summary>
+    public StartsWithOperation() : base()
+    {
+    }
 
     /// <inheritdoc />
-    public override async Task<TransformationResult<bool>> Evaluate(ITransformationContext context)
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
         if (LeftOperand is null || RightOperand is null)
         {
-            return TransformationResult<bool>.CreateFailure($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set for {DisplayName} operation.");
+            return false; // Misconfigured
         }
 
-        var leftResult = await (LeftOperand?.Apply(context) ?? Task.FromResult(TransformationResult.CreateSuccess<string?>(null, context)));
-        if (leftResult.WasFailure)
+        var leftResult = await LeftOperand.Apply(contextResult);
+        if (leftResult == null || leftResult.WasFailure || leftResult.CurrentValue == null)
         {
-            return TransformationResult<bool>.CreateFailure($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
+            return false; // Failed to get left value or it's null
         }
 
-        var rightResult = await (RightOperand?.Apply(context) ?? Task.FromResult(TransformationResult.CreateSuccess<string?>(null, context)));
-        if (rightResult.WasFailure)
+        var rightResult = await RightOperand.Apply(contextResult);
+        if (rightResult == null || rightResult.WasFailure || rightResult.CurrentValue == null)
         {
-            return TransformationResult<bool>.CreateFailure($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightResult.ErrorMessage}");
+            return false; // Failed to get right value or it's null
         }
 
-        return TransformationResult<bool>.CreateSuccess(leftResult.StartsWith(rightResult), context);
+        if (leftResult.CurrentValue is string leftString && rightResult.CurrentValue is string rightString)
+        {
+            // Handle null cases for strings explicitly, though Apply should ensure non-null if not WasFailure
+            if (leftString == null || rightString == null) { return false; }
+            return leftString.StartsWith(rightString, StringComparison.Ordinal);
+        }
+        
+        return false; // Operands are not strings
     }
 
     /// <inheritdoc />
-    public override IComparisonOperation Clone()
+    public override ComparisonOperationBase Clone()
     {
-        return new StartsWithOperation
+        var clone = new StartsWithOperation
         {
-            LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(),
-            EnumMemberOrder = EnumMemberOrder
         };
-    }
-}
-
-/// <summary>
-/// Extension methods for the StartsWith operation.
-/// </summary>
-public static class StartsWithOperationExtensions
-{
-    /// <summary>
-    /// Checks if the left result starts with the value.
-    /// </summary>
-    /// <param name="leftResult">The result of the left operand.</param>
-    /// <param name="value">The value to check for.</param>
-    /// <returns>True if the left result starts with the value; otherwise, false.</returns>
-    public static bool StartsWith(this TransformationResult<string?> leftResult, TransformationResult<string?> value)
-    {
-        // Handle null cases
-        if (leftResult.Value is null || value.Value is null) { return false; }
-
-        return leftResult.Value.StartsWith(value.Value, StringComparison.Ordinal);
+        if (LeftOperand != null)
+        {
+            clone.LeftOperand = LeftOperand.Clone();
+        }
+        if (RightOperand != null)
+        {
+            clone.RightOperand = RightOperand.Clone();
+        }
+        return clone;
     }
 }

@@ -1,5 +1,6 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Core.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System;
@@ -25,56 +26,54 @@ public class InOperation : ComparisonOperationBase
     [JsonIgnore]
     public override string Description { get; } = "Checks if a value is in a set of values.";
 
-    public int EnumMemberOrder { get; set; }
-
     /// <summary>
     /// The set of values to check against.
     /// </summary>
     public IEnumerable<MappingRuleBase>? Values { get; set; }
 
     /// <inheritdoc />
-    public override async Task<TransformationResult<bool>> Evaluate(ITransformationContext context)
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
         if (LeftOperand is null)
         {
-            return TransformationResult<bool>.CreateFailure($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
+            throw new InvalidOperationException($"Both {nameof(LeftOperand)} must be set for {DisplayName} operation.");
         }
 
         if (Values is null || !Values.Any())
         {
-            return TransformationResult<bool>.CreateFailure($"{nameof(Values)} must be set and contain at least one value for {DisplayName} operation.");
+            throw new InvalidOperationException($"{nameof(Values)} must be set and contain at least one value for {DisplayName} operation.");
         }
 
-        var leftResult = await LeftOperand.Apply(context);
+        var leftResult = await LeftOperand.Apply(contextResult);
 
-        if (leftResult.WasFailure)
+        if (leftResult == null || leftResult.WasFailure)
         {
-            return TransformationResult<bool>.CreateFailure($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        var valueResults = new List<TransformationResult<string?>>();
-        foreach (var value in Values)
+        var valueResults = new List<TransformationResult>();
+        foreach (var valueRule in Values)
         {
-            var valueResult = await value.Apply(context);
-            if (valueResult.WasFailure)
+            if (valueRule == null) continue;
+            var valueEvaluationResult = await valueRule.Apply(contextResult);
+            if (valueEvaluationResult == null || valueEvaluationResult.WasFailure)
             {
-                return TransformationResult<bool>.CreateFailure($"Failed to evaluate a value in {nameof(Values)} for {DisplayName} operation: {valueResult.ErrorMessage}");
+                throw new InvalidOperationException($"Failed to evaluate a value in {nameof(Values)} for {DisplayName} operation: {valueEvaluationResult?.ErrorMessage ?? "Result was null."}");
             }
-            valueResults.Add(valueResult);
+            valueResults.Add(valueEvaluationResult);
         }
 
-        return TransformationResult<bool>.CreateSuccess(leftResult.In(valueResults.ToArray()), context);
+        return leftResult.In(valueResults.ToArray());
     }
 
     /// <inheritdoc />
-    public override IComparisonOperation Clone()
+    public override ComparisonOperationBase Clone()
     {
         return new InOperation
         {
             LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(), // Though InOperation doesn't typically use RightOperand, clone it for consistency if base class has it.
+            RightOperand = RightOperand?.Clone(),
             Values = Values?.Select(v => (MappingRuleBase)v.Clone()).ToList(),
-            EnumMemberOrder = EnumMemberOrder
         };
     }
 }
@@ -90,12 +89,13 @@ public static class InOperationExtensions
     /// <param name="leftResult">The result of the left operand.</param>
     /// <param name="values">The set of values to check for.</param>
     /// <returns>True if the left result is in the set of values; otherwise, false.</returns>
-    public static bool In(this TransformationResult<string?> leftResult, params TransformationResult<string?>[] values)
+    public static bool In(this TransformationResult leftResult, params TransformationResult[] values)
     {
-        // Handle null case
-        if (leftResult.Value is null) { return false; }
+        if (leftResult.CurrentValue is null) 
+        { 
+            return values.Any(val => val.CurrentValue is null);
+        }
 
-        // Check if any value matches
-        return values.Any(val => string.Equals(leftResult.Value, val.Value, StringComparison.Ordinal));
+        return values.Any(val => object.Equals(leftResult.CurrentValue, val.CurrentValue));
     }
 }

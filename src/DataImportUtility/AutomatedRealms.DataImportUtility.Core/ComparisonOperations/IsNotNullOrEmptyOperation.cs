@@ -1,7 +1,9 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
 using System.Threading.Tasks;
+using System;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
 {
@@ -35,38 +37,30 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
         /// <summary>
         /// Evaluates whether the left operand's value is not null or empty.
         /// </summary>
-        /// <param name="transformationResult">The transformation result context, which includes the DataRow for operand resolution.</param>
+        /// <param name="contextResult">The transformation context.</param>
         /// <returns>True if the value is not null or empty, otherwise false.</returns>
-        public override async Task<bool> Evaluate(TransformationResult transformationResult)
+        public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is an ITransformationContext
         {
             if (LeftOperand == null)
             {
-                // Consider logging an error or specific handling for misconfiguration
-                return false; 
+                throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
             }
 
-            if (transformationResult.Record == null)
+            var leftValueResult = await LeftOperand.Apply(contextResult);
+
+            if (leftValueResult == null || leftValueResult.WasFailure)
             {
-                // Cannot evaluate if Record is null, as FieldAccessRule would need it.
-                // This might depend on whether LeftOperand can ever be a StaticValueRule here.
-                // For now, assume if Record is null, we can't proceed if LeftOperand needs it.
-                // If LeftOperand is a StaticValueRule, it wouldn't use Record, but GetValue still takes it.
-                // A more robust solution might involve checking the type of LeftOperand or if it requires Record.
-                return false; // Or throw new InvalidOperationException("DataRow (Record) is null in TransformationResult for conditional evaluation.");
+                // Handle failure to get value, e.g., log or throw based on how critical this is.
+                // For a conditional check, returning false or throwing might be appropriate.
+                // Throwing an exception provides more details on the failure.
+                throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftValueResult?.ErrorMessage ?? "Result was null."}");
             }
 
-            var leftValueResult = await LeftOperand.GetValue(transformationResult.Record, typeof(string));
-            if (leftValueResult.WasFailure)
-            {
-                // Handle failure to get value, e.g., log or return false based on requirements
-                return false;
-            }
-
-            object? leftValue = leftValueResult.CurrentValue; // Corrected: Use CurrentValue
+            object? leftValue = leftValueResult.CurrentValue;
 
             if (leftValue == null)
             {
-                return false; // Null is considered empty
+                return false; // Null is considered null or empty
             }
 
             if (leftValue is string stringValue)
@@ -75,7 +69,7 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
             }
 
             // If it's not a string and not null, it is considered not null or empty.
-            // This matches the previous logic.
+            // This behavior matches common interpretations where any non-null, non-string object is not "empty" in the string sense.
             return true;
         }
     }

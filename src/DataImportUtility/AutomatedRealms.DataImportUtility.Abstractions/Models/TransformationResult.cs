@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Data; // Added for DataRow
 using System.Text.Json.Serialization;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // Should now correctly find ImportTableDefinition
+using AutomatedRealms.DataImportUtility.Abstractions.Interfaces; // Added for ITransformationContext
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 /// <summary>
 /// The result of a transformation operation.
 /// </summary>
-public partial record TransformationResult
+public partial record TransformationResult : ITransformationContext // Implements ITransformationContext
 {
     /// <summary>
     /// The type of the original value.
@@ -64,9 +66,30 @@ public partial record TransformationResult
     public ImportTableDefinition? TableDefinition { get; set; }
 
     /// <summary>
+    /// Gets or sets the context of the source record, typically a list of field descriptors.
+    /// </summary>
+    [JsonIgnore]
+    public List<ImportedRecordFieldDescriptor>? SourceRecordContext { get; set; }
+
+    /// <summary>
+    /// Gets or sets the expected target type of the field being transformed.
+    /// </summary>
+    [JsonIgnore]
+    public Type? TargetFieldType { get; set; }
+
+    /// <summary>
     /// Creates a new successful TransformationResult.
     /// </summary>
-    public static TransformationResult Success(object? originalValue, Type? originalValueType, object? currentValue, Type? currentValueType, IEnumerable<string>? appliedTransformations = null, System.Data.DataRow? record = null, ImportTableDefinition? tableDefinition = null)
+    public static TransformationResult Success(
+        object? originalValue, 
+        Type? originalValueType, 
+        object? currentValue, 
+        Type? currentValueType, 
+        IEnumerable<string>? appliedTransformations = null, 
+        System.Data.DataRow? record = null, 
+        ImportTableDefinition? tableDefinition = null,
+        List<ImportedRecordFieldDescriptor>? sourceRecordContext = null, // Added
+        Type? targetFieldType = null) // Added
     {
         return new TransformationResult
         {
@@ -76,25 +99,39 @@ public partial record TransformationResult
             CurrentValueType = currentValueType,
             AppliedTransformations = appliedTransformations ?? new List<string>(),
             Record = record,
-            TableDefinition = tableDefinition
+            TableDefinition = tableDefinition,
+            SourceRecordContext = sourceRecordContext, // Added
+            TargetFieldType = targetFieldType // Added
         };
     }
 
     /// <summary>
     /// Creates a new failed TransformationResult.
     /// </summary>
-    public static TransformationResult Failure(object? originalValue, Type? targetType, string errorMessage, Type? originalValueType = null, Type? currentValueType = null, IEnumerable<string>? appliedTransformations = null, System.Data.DataRow? record = null, ImportTableDefinition? tableDefinition = null)
+    public static TransformationResult Failure(
+        object? originalValue, 
+        Type? targetType, // This is likely the TargetFieldType for context of failure
+        string errorMessage, 
+        Type? originalValueType = null, 
+        Type? currentValueType = null, // Usually null on failure
+        IEnumerable<string>? appliedTransformations = null, 
+        System.Data.DataRow? record = null, 
+        ImportTableDefinition? tableDefinition = null,
+        List<ImportedRecordFieldDescriptor>? sourceRecordContext = null, // Added
+        Type? explicitTargetFieldType = null) // Added, renamed from targetType to avoid conflict if targetType param is used for something else
     {
         return new TransformationResult
         {
             OriginalValue = originalValue,
             OriginalValueType = originalValueType ?? (originalValue?.GetType()),
             CurrentValue = null,
-            CurrentValueType = currentValueType,
+            CurrentValueType = currentValueType, // Or perhaps targetType if it represents the intended conversion type
             ErrorMessage = errorMessage,
             AppliedTransformations = appliedTransformations ?? new List<string>(),
             Record = record,
-            TableDefinition = tableDefinition
+            TableDefinition = tableDefinition,
+            SourceRecordContext = sourceRecordContext, // Added
+            TargetFieldType = explicitTargetFieldType ?? targetType // Added, use explicit if provided, else the existing targetType param
         };
     }
 }
