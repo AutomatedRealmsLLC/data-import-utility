@@ -1,0 +1,60 @@
+@inherits FileImportUtilityComponentBase
+
+@if (MyDataSet is not null)
+{
+    if (MyDataSet.Tables.Count != 1)
+    {
+        var selectedTableIndex = _selectedDataTable is null ? -1 : MyDataSet.Tables.IndexOf(_selectedDataTable);
+        <div class="data-set-options@(DefaultCssClass)"
+             data-from-component="@nameof(DataSetDisplay)"
+             data-component-instance="@InstanceId"
+             data-mapper-state="@MapperStateId">
+            <select class="@DefaultCssClass" @onchange=HandleSelectedDataTableChanged>
+                <option value="" selected="@(selectedTableIndex == -1)">Select a data set</option>
+                @foreach (var curTable in MyDataSet.Tables.OfType<DataTable>())
+                {
+                    var thisTableIndex = MyDataSet.Tables.IndexOf(curTable);
+                    <option value="@thisTableIndex" selected="@(selectedTableIndex == thisTableIndex)">@curTable.TableName</option>
+                }
+            </select>
+        </div>
+    }
+
+    <div class="data-table-display-wrapper@(DefaultCssClass)"
+         data-from-component="@nameof(DataSetDisplay)"
+         data-component-instance="@InstanceId"
+         data-mapper-state="@MapperStateId">
+        @if (MyDataSet.Tables.Count == 0)
+        {
+            <div class="no-records-message o1l-error-display@(DefaultCssClass)">
+                No data set to display
+            </div>
+        }
+        else if (_selectedDataTable is null)
+        {
+            <div class="no-records-message o1l-error-display@(DefaultCssClass)">
+                To view the data, select a table from the list
+            </div>
+        }
+        else
+        {
+            {
+#pragma warning disable CS8601 // Possible null reference assignment.
+            }
+            <DataTableDisplay DataTable=_selectedDataTable
+                              OverrideHeaderRow=OverrideHeaderRow
+                              OverrideDataRow=OverrideDataRow
+                              ApplyDefaultCss=ApplyDefaultCss
+                              AdditionalCssClasses=@AdditionalTableCssClasses
+                              HoveredRow=HoveredRow
+                              OnHoveredRowChanged=HoveredRowChanged
+                              ShowRowSelect=ShowRowSelect
+                              SelectedRows=SelectedRows
+                              SelectedRowsChanged=SelectedRowsChanged
+                              @ref=_dataTableRef />
+            {
+#pragma warning restore CS8601
+            }
+        }
+    </div>
+}

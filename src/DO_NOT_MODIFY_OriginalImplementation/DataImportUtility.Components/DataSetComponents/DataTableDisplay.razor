@@ -1,0 +1,118 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+@using DataImportUtility.Components.ButtonComponents
+
+@inherits FileImportUtilityComponentBase
+
+@if (MyDataTable is not null)
+{
+    var curRowIndex = 0;
+    <table class="@UseTableCssClasses"
+           id="@Id"
+           data-from-component="@nameof(DataTableDisplay)"
+           data-component-instance="@InstanceId"
+           data-mapper-state="@MapperStateId">
+        <thead>
+            @if (OverrideHeaderRow is not null)
+            {
+                @OverrideHeaderRow(MyDataTable)
+            }
+            else
+            {
+                <tr>
+                    <td colspan="@(MyDataTable.Columns.Count + 1 + (ShowRowSelect ? 1 : 0))">
+                        <div class="table-title-wrapper">
+                            <span class="table-title">Data Table: @MyDataTable.TableName</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    @if (ShowRowSelect)
+                    {
+                        var allSelected = SelectedRows.Count == MyDataTable.Rows.Count;
+                        <th>
+                            <CheckButton Checked=allSelected OnClick="_ => HandleToggleRowSelected()" />
+                        </th>
+                    }
+
+                    <th>
+                        Row #
+                    </th>
+
+                    @foreach (DataColumn curCol in MyDataTable.Columns)
+                    {
+                        var hasError = MyDataTable.Rows.OfType<DataRow>().Any(row => !string.IsNullOrWhiteSpace(row.GetColumnError(curCol)));
+                        var errorMessage = hasError ? "One or more rows contain an invalid value for this field." : null;
+
+                        <th>
+                            <div class="col-header-wrapper" title="@errorMessage">
+                                <span class="header-text">
+                                    @curCol.ColumnName
+                                </span>
+                                @if (hasError)
+                                {
+                                    <i class="error-indicator">
+                                        <span class="o1l-sr-only">@errorMessage</span>
+                                        @Icons.Caution(new() { { "fill", "red" } })
+                                    </i>
+                                }
+                            </div>
+                        </th>
+                    }
+                </tr>
+            }
+        </thead>
+        <tbody>
+            @foreach (DataRow curRow in MyDataTable.Rows)
+            {
+                var myRowIndex = curRowIndex++;
+                var isSelected = SelectedRows.Contains(myRowIndex);
+                var isHovered = HoveredRow == myRowIndex;
+
+                <tr class="@($"{(isHovered ? "force-hover-style" : null)}{(isSelected ? " selected" : null)}".Trim())">
+                    @*  @onmouseenter="_ => HandleMouseHover(myRowIndex)" *@
+                    @if (OverrideDataRow is not null)
+                    {
+                        @OverrideDataRow(curRow)
+                    }
+                    else
+                    {
+                        if (ShowRowSelect)
+                        {
+                            <td>
+                                <CheckButton Checked=isSelected OnClick="_ => HandleToggleRowSelected(myRowIndex)" />
+                            </td>
+                        }
+
+                        <td>
+                            @(myRowIndex + 1)
+                        </td>
+
+                        for (var i = 0; i < curRow.ItemArray.Length; i++)
+                        {
+                            var colNum = i;
+                            var curCell = curRow[colNum];
+                            var colError = curRow.GetColumnError(colNum);
+                            var hasError = !string.IsNullOrWhiteSpace(colError);
+
+                            <td class="@(hasError)">
+                                <div class="cell-value-wrapper">
+                                    <span class="cell-value">
+                                        @curCell
+                                    </span>
+                                    @if (hasError)
+                                    {
+                                        <i class="error-indicator" title="@((MarkupString)colError.Replace(Environment.NewLine, "<br />"))">
+                                            <span class="o1l-sr-only">Error@(colError.Contains(Environment.NewLine) ? "s" : null):<br />@colError</span>
+                                            @Icons.Caution(new() { { "fill", "red" } })
+                                        </i>
+                                    }
+                                </div>
+                            </td>
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}

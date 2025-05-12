@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>13.0</LangVersion>
+		<IsRoslynComponent>true</IsRoslynComponent>
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Product>AutomatedRealms.DataImportUtility.SourceGenerator</Product>
+		<PackageId>AutomatedRealms.DataImportUtility.SourceGenerator</PackageId>
+		<AssemblyName>DataImportUtility.SourceGenerator</AssemblyName>
+		<RootNamespace>DataImportUtility</RootNamespace>
+		<Description>The source generator project for the Data File Import Utility used for applying mapping rules. This could allow extending the rules for performing transformation and mapping functions without needing to update the File Import Utility.</Description>
+		<PackageTags>Data Import, File Import, Utility, Excel, CSV</PackageTags>
+		<PackageReleaseNotes>Initial Source Gen for the File Import Rule Engine Project Setup</PackageReleaseNotes>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
+		<PackageReference Include="Nullable" Version="1.3.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="System.CodeDom" Version="7.0.0" />
+	</ItemGroup>
+
+	<!-- This allows us to use the Source Gen as a NuGet package if we choose to in the future -->
+	<ItemGroup>
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
+
+</Project>

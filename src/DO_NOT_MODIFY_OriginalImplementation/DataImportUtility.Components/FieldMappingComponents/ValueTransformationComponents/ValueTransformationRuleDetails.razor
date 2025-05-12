@@ -1,0 +1,91 @@
+@using DataImportUtility.Components.FieldMappingComponents.FieldTransformationComponents
+@using DataImportUtility.ValueTransformations
+
+@inherits FileImportUtilityComponentBase
+
+<div class="value-transform-details@(DefaultCssClass)"
+     data-from-component="@nameof(FieldTransformationConfiguration)"
+     data-component-instance="@InstanceId"
+     data-mapper-state="@MapperStateId">
+    @switch (ValueTransformation)
+    {
+        case CombineFieldsTransformation combineFieldsOperation:
+            <CombineFieldsTransformationInput ValueTransformation=combineFieldsOperation
+                                              Id=_id
+                                              ApplyDefaultCss=ApplyDefaultCss
+                                              PreviewRowIndex=PreviewRowIndex
+                                              OnAfterInput=HandleOperationDetailChanged />
+            break;
+        case ConditionalTransformation conditionalOperation:
+            <ConditionalValueTransformationInput ValueTransformation=conditionalOperation
+                                                 CurrentTransformationResult=CurrentTransformationResult
+                                                 Id=_id
+                                                 ApplyDefaultCss=ApplyDefaultCss
+                                                 FieldDescriptors=FieldDescriptors
+                                                 PreviewRowIndex=PreviewRowIndex
+                                                 OnAfterInput=HandleOperationDetailChanged />
+            break;
+        case SubstringTransformation substringOperation:
+            <SubstringValueTransformationInput ValueTransformation=substringOperation
+                                               Id=_id
+                                               ApplyDefaultCss=ApplyDefaultCss
+                                               PreviewRowIndex=PreviewRowIndex
+                                               OnAfterInput=HandleOperationDetailChanged />
+            break;
+
+        case MapTransformation mapOperation:
+            <MapTransformationInput ValueTransformation=mapOperation
+                                    Id=_id
+                                    ApplyDefaultCss=ApplyDefaultCss
+                                    PreviewRowIndex=PreviewRowIndex
+                                    OnAfterInput=HandleOperationDetailChanged />
+
+            break;
+
+        case CalculateTransformation calculateOperation:
+            <CalculateValueTransformationInput ValueTransformation=calculateOperation
+                                               Id=_id
+                                               ApplyDefaultCss=ApplyDefaultCss
+                                               PreviewRowIndex=PreviewRowIndex
+                                               OnAfterInput=HandleOperationDetailChanged />
+            break;
+        case RegexMatchTransformation regexMatchOperation:
+        case InterpolateTransformation InterpolateTransformation:
+        default:
+            <BasicValueTransformationInput ValueTransformation=ValueTransformation
+                                           Id=_id
+                                           ApplyDefaultCss=ApplyDefaultCss
+                                           PreviewRowIndex=PreviewRowIndex
+                                           OnAfterInput=HandleOperationDetailChanged />
+            break;
+    }
+
+    <table class="@(DefaultCssClass)">
+        <thead>
+            <tr>
+                <th>Row #</th>
+                <th>In Value</th>
+                <th>Out Value</th>
+                <th>&nbsp;</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@(PreviewRowIndex + 1)</td>
+                <td>@(_myTransformationResult.OriginalValue is null ? "<null>" : string.IsNullOrWhiteSpace(_myTransformationResult.OriginalValue) ? "<blank>" : _myTransformationResult.OriginalValue)</td>
+                <td>@(_myTransformationResult.Value is null ? "<null>" : string.IsNullOrWhiteSpace(_myTransformationResult.Value) ? "<blank>" : _myTransformationResult.Value)</td>
+                <td>
+                    @if (_myTransformationResult.WasFailure)
+                    {
+                        <span title="@_myTransformationResult.ErrorMessage">@Icons.Caution()</span>
+                    }
+                    else
+                    {
+                        <span>&nbsp;</span>
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+

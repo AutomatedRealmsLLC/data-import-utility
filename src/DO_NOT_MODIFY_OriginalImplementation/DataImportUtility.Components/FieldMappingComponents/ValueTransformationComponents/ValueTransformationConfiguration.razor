@@ -1,0 +1,32 @@
+@using DataImportUtility.Components.FieldMappingComponents.FieldTransformationComponents
+
+@inherits FileImportUtilityComponentBase
+
+<div class="value-transform-rule@(DefaultCssClass)"
+     data-from-component="@nameof(FieldTransformationConfiguration)"
+     data-component-instance="@InstanceId"
+     data-mapper-state="@MapperStateId">
+
+    <div class="transform-type-selector">
+        <label class="section-title">
+            Transformation Type:
+        </label>
+
+        <select class="@DefaultCssClass"
+                @bind=_selectedTransformationType
+                @bind:after=HandleTransformationChanged>
+            @foreach (var transformType in ApplicationConstants.ValueTransformationTypes)
+            {
+                <option value="@transformType">@transformType.GetDisplayText()</option>
+            }
+        </select>
+    </div>
+
+    <ValueTransformationRuleDetails @bind-ValueTransformation=_selectedTransformation
+                                    CurrentTransformationResult=CurrentTransformationResult
+                                    NewTransformationResultAvailable=NewTransformationResultAvailable
+                                    PreviewRowIndex=PreviewRowIndex
+                                    @bind-ValueTransformation:after=NotifyTransformationChanged
+                                    FieldDescriptors=FieldDescriptors
+                                    ApplyDefaultCss=ApplyDefaultCss />
+</div>

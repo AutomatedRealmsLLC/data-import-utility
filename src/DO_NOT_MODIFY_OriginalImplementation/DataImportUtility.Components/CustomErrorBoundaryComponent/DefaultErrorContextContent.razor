@@ -1,0 +1,11 @@
+@inherits FileImportUtilityComponentBase
+
+<div class="blazor-error-boundary@(DefaultCssClass)"
+     role="alert"
+     data-from-component="@nameof(DefaultErrorContextContent)"
+     data-component-instance="@InstanceId"
+     data-mapper-state="@MapperStateId">
+    <h4 class="@DefaultCssClass">An error occurred</h4>
+    <p>@ErrorContext.Message</p>
+    <p>Please try again or contact support if the problem persists.</p>
+</div>

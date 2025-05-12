@@ -1,0 +1,49 @@
+@import '../../Sass/ModalMixins';
+@import '../../Sass/TableMixins';
+
+.field-transform-config-modal {
+    &.o1l-modal.o1l-library-style {
+        @include modal-defaults;
+        z-index: 4;
+
+        .o1l-modal-dialog {
+            inset: 0;
+            transform: unset;
+            border: none;
+            border-radius: 0;
+
+            .o1l-modal-content {
+                max-height: unset;
+                height: 100vh;
+
+                .o1l-modal-body {
+                    margin: 1em 0;
+                    overflow: auto;
+                    padding: 0 1em;
+                }
+
+                .o1l-modal-footer {
+                    border-top: var(--o1l-use-primary-modal-header-border);
+                    padding: calc(1em + 1px) 1em;
+                }
+            }
+        }
+
+        table, ::deep table {
+            @include table-defaults;
+            width: 100%;
+
+            tbody {
+                tr {
+                    cursor: pointer;
+
+                    &:not(.active) {
+                        &:hover, &:focus-within {
+                            filter: brightness(90%);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

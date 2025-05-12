@@ -1,0 +1,58 @@
+@code {
+    public static RenderFragment Caution(Dictionary<string, object?>? additionalAttributes = null) =>
+        @<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="o1l-icon caution-icon" style="color: red; width: 1em;" @attributes=additionalAttributes>
+            <path fill="currentColor" d="M1 21h22L12 2zm12-3h-2v-2h2zm0-4h-2v-4h2z" />
+        </svg>;
+
+    public static RenderFragment PreLoader(Dictionary<string, object?>? additionalAttributes = null) =>
+        @<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" class="o1l-icon pre-loader" style="width: 1em;" @attributes=additionalAttributes>
+            <radialGradient id="a12" cx=".66" fx=".66" cy=".3125" fy=".3125" gradientTransform="scale(1.5)">
+                <stop offset="0" stop-color="currentColor"></stop>
+                <stop offset=".3" stop-color="currentColor" stop-opacity=".9"></stop>
+                <stop offset=".6" stop-color="currentColor" stop-opacity=".6"></stop>
+                <stop offset=".8" stop-color="currentColor" stop-opacity=".3"></stop>
+                <stop offset="1" stop-color="currentColor" stop-opacity="0"></stop>
+            </radialGradient>
+            <circle transform-origin="center" fill="none" stroke="url(#a12)" stroke-width="15" stroke-linecap="round" stroke-dasharray="200 1000" stroke-dashoffset="0" cx="100" cy="100" r="70">
+                <animateTransform type="rotate" attributeName="transform" calcMode="spline" dur="2" values="360;0" keyTimes="0;1" keySplines="0 0 1 1" repeatCount="indefinite"></animateTransform>
+            </circle>
+            <circle transform-origin="center" fill="none" opacity=".2" stroke="currentColor" stroke-width="15" stroke-linecap="round" cx="100" cy="100" r="70"></circle>
+        </svg>;
+
+    public static RenderFragment List(Dictionary<string, object?>? additionalAttributes = null) =>
+        @<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" class="o1l-icon list-icon" style="width: 1em;height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" @attributes=additionalAttributes>
+            <path fill="currentColor" d="M63.993385 161.535674c0-22.85982 18.62652-41.521618 41.451063-41.521618h303.104282c22.824543 0 41.451063 18.661798 41.451063 41.521618V182.737451h124.035691v-21.201777c0-22.85982 18.62652-41.521618 41.451063-41.521618h303.104282c22.789265 0 41.451063 18.661798 41.451063 41.521618v105.97361c0 22.85982-18.62652 41.521618-41.451063 41.521618h-303.174837c-22.789265 0-41.451063-18.661798-41.451063-41.521618v-21.201777h-123.965136v21.201777c0 22.85982-18.62652 41.521618-41.451063 41.521618H105.444448c-22.789265 0-41.451063-18.661798-41.451063-41.521618V161.535674z m0 297.530437c0-22.85982 18.62652-41.521618 41.451063-41.521618h303.104282c22.824543 0 41.451063 18.661798 41.451063 41.521618v21.201778h124.035691v-21.201778c0-22.85982 18.62652-41.521618 41.451063-41.521618h303.104282c22.789265 0 41.451063 18.661798 41.451063 41.521618v105.903056c0 22.85982-18.62652 41.521618-41.451063 41.521617h-303.174837c-22.789265 0-41.451063-18.661798-41.451063-41.521617v-21.201778h-123.965136v21.201778c0 22.85982-18.62652 41.521618-41.451063 41.521617H105.444448c-22.789265 0-41.451063-18.661798-41.451063-41.521617v-105.903056zM959.900782 862.464326c0 22.85982-18.62652 41.521618-41.451063 41.521618h-303.104282c-22.789265 0-41.451063-18.661798-41.451063-41.521618v-21.201777h-123.965136v21.201777c0 22.85982-18.62652 41.521618-41.451063 41.521618h-303.033727c-22.789265 0-41.451063-18.661798-41.451063-41.521618v-105.97361c0-22.85982 18.62652-41.521618 41.451063-41.521618h303.104282c22.824543 0 41.451063 18.661798 41.451063 41.521618v21.201777h124.035691v-21.201777c0-22.85982 18.62652-41.521618 41.451063-41.521618h303.104282c22.789265 0 41.451063 18.661798 41.451063 41.521618v105.97361h-0.14111z m0 0" />
+        </svg>;
+
+    public static RenderFragment Preview(Dictionary<string, object?>? additionalAttributes = null) =>
+        @<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="o1l-icon preview-icon" style="width: 1em;" @attributes=additionalAttributes>
+            <path fill="currentColor" d="M9 13a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3a3 3 0 0 0-3 3m11 6.59V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12c.45 0 .85-.15 1.19-.4l-4.43-4.43c-.8.52-1.76.83-2.76.83a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5c0 1-.31 1.96-.83 2.75z" />
+        </svg>;
+
+    public static RenderFragment Edit(Dictionary<string, object?>? additionalAttributes = null) =>
+        @<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="o1l-icon edit-icon" style="width: 1em;" @attributes=additionalAttributes>
+            <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+        </svg>;
+
+    public static RenderFragment InfoIcon(Dictionary<string, object?>? additionalAttributes = null) =>
+        @<svg xmlns="http://www.w3.org/2000/svg" class="o1l-icon info-icon" viewBox="0 0 24 24" style="width: 1em;" @attributes=additionalAttributes>
+            <path fill="currentColor" d="M11 17h2v-6h-2zm1-8q.425 0 .713-.288T13 8t-.288-.712T12 7t-.712.288T11 8t.288.713T12 9m0 13q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22" />
+        </svg>
+    ;
+    /*
+     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+    </svg>
+     */
+    public static RenderFragment CheckboxIcon(bool isChecked = false, Dictionary<string, object?>? additionalAttributes = null) =>
+        @<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 1em;" @attributes=additionalAttributes>
+            @if(isChecked)
+            {
+                <path fill="currentColor" d="m10.6 16.2l7.05-7.05l-1.4-1.4l-5.65 5.65l-2.85-2.85l-1.4 1.4zM5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21z" />
+            }
+            else
+            {
+                <path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21zm0-2h14V5H5z" />
+            }
+        </svg>;
+
+}

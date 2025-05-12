@@ -1,0 +1,17 @@
+@import '../../Sass/ButtonMixins';
+@import '../../Sass/FlyoutMixins';
+
+@import "FieldMapperEditorMixins";
+
+
+.o1l-flyout-wrapper.o1l-library-style {
+    @include flyout-defaults;
+
+    button {
+        @include button-base-style;
+    }
+
+    ::deep .field-mapper-editor-wrapper {
+        @include field-mapper-editor-wrapper-styles-nested-component;
+    }
+}

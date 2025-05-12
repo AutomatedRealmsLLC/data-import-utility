@@ -1,0 +1,49 @@
+﻿<!-- This only affects the class library projects and does not affect the Sample App project -->
+
+<Project>
+
+	<PropertyGroup Label="Globals">
+		<SccProjectName>SAK</SccProjectName>
+		<SccProvider>SAK</SccProvider>
+		<SccAuxPath>SAK</SccAuxPath>
+		<SccLocalPath>SAK</SccLocalPath>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<Company>Automated Realms, LLC</Company>
+		<Authors>Humberto Cruz-Oyola Jr.</Authors>
+		<Copyright>$([System.DateTime]::Now.Year.ToString())</Copyright>
+		<PackageReleaseNotes>Initial Project Setup</PackageReleaseNotes>
+		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Version)' == ''">
+		<VersionMajorNumber Condition="'$(VersionMajorNumber)' != ''">$(VersionMajorNumber)</VersionMajorNumber>
+		<VersionMajorNumber Condition="'$(VersionMajorNumber)' == ''">1</VersionMajorNumber>
+		<VersionMinorNumber Condition="'$(VersionMinorNumber)' != ''">$(VersionMinorNumber)</VersionMinorNumber>
+		<VersionMinorNumber Condition="'$(VersionMinorNumber)' == ''">0</VersionMinorNumber>
+		<VersionBuildNumber Condition="'$(VersionBuildNumber)' != ''">$(VersionBuildNumber)</VersionBuildNumber>
+		<VersionBuildNumber Condition="'$(VersionBuildNumber)' == ''">0.0</VersionBuildNumber>
+		<VersionPrefix Condition="'$(VersionPrefix)' == ''">$(VersionMajorNumber).$(VersionMinorNumber).$(VersionBuildNumber)</VersionPrefix>
+		<VersionSuffix>$(VersionSuffix)</VersionSuffix>
+		<Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
+		<Version Condition="'$(Version)' == ''">$(VersionPrefix)</Version>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageOutputPath>../../../nupkg</PackageOutputPath>
+		<Authors>Humberto Cruz-Oyola Jr.</Authors>
+		<Copyright>$([System.DateTime]::Now.Year.ToString())</Copyright>
+		<PackageReleaseNotes>Initial File Import Rule Engine Project Setup</PackageReleaseNotes>
+		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+	</PropertyGroup>
+
+</Project>

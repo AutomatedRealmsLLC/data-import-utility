@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35312.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataImportUtility", "DataImportUtility\DataImportUtility.csproj", "{B5424547-4E0A-4D67-89B5-FA3D1DA80782}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataImportUtility.SourceGenerator", "DataImportUtility.SourceGenerator\DataImportUtility.SourceGenerator.csproj", "{A391B49E-B5B3-4361-838F-525DCF3B6E06}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{25F29BAB-ABFB-4CD6-ABB3-221358EB403B}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\.github\workflows\build-test-publish.yml = ..\..\.github\workflows\build-test-publish.yml
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core Library", "Core Library", "{1C9936ED-5DEB-4D0B-BF9C-FEE5F389E30B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor Component Library", "Blazor Component Library", "{4BF3AA74-4E96-4242-B71A-B64B6D12C483}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataImportUtility.Components", "DataImportUtility.Components\DataImportUtility.Components.csproj", "{19EFC1D5-0369-40FD-86ED-257BCEE018F3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2C5F6B56-0871-488A-8878-5399EB453995}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataImportUtility.Tests", "DataImportUtility.Tests\DataImportUtility.Tests.csproj", "{9A7BE597-786A-420D-A8E2-97C760B80365}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B5424547-4E0A-4D67-89B5-FA3D1DA80782}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5424547-4E0A-4D67-89B5-FA3D1DA80782}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5424547-4E0A-4D67-89B5-FA3D1DA80782}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5424547-4E0A-4D67-89B5-FA3D1DA80782}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A391B49E-B5B3-4361-838F-525DCF3B6E06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A391B49E-B5B3-4361-838F-525DCF3B6E06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A391B49E-B5B3-4361-838F-525DCF3B6E06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A391B49E-B5B3-4361-838F-525DCF3B6E06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19EFC1D5-0369-40FD-86ED-257BCEE018F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19EFC1D5-0369-40FD-86ED-257BCEE018F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19EFC1D5-0369-40FD-86ED-257BCEE018F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19EFC1D5-0369-40FD-86ED-257BCEE018F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A7BE597-786A-420D-A8E2-97C760B80365}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A7BE597-786A-420D-A8E2-97C760B80365}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A7BE597-786A-420D-A8E2-97C760B80365}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A7BE597-786A-420D-A8E2-97C760B80365}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B5424547-4E0A-4D67-89B5-FA3D1DA80782} = {1C9936ED-5DEB-4D0B-BF9C-FEE5F389E30B}
+		{A391B49E-B5B3-4361-838F-525DCF3B6E06} = {1C9936ED-5DEB-4D0B-BF9C-FEE5F389E30B}
+		{19EFC1D5-0369-40FD-86ED-257BCEE018F3} = {4BF3AA74-4E96-4242-B71A-B64B6D12C483}
+		{9A7BE597-786A-420D-A8E2-97C760B80365} = {2C5F6B56-0871-488A-8878-5399EB453995}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9CE3595B-7FDB-43D8-87CA-F9283C01C2E0}
+	EndGlobalSection
+EndGlobal

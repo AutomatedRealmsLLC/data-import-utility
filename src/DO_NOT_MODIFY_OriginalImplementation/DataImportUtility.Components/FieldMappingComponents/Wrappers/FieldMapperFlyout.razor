@@ -1,0 +1,36 @@
+@inherits FieldMapperWrapperBase
+
+<div class="field-mapper-wrapper o1l-flyout-wrapper@($"{(Show ? " show" : null)}{DefaultCssClass}")"
+     tabindex="-1"
+     role="dialog"
+     data-from-component="@nameof(FieldMapperFlyout)"
+     data-component-instance="@InstanceId"
+     data-mapper-state="@MapperStateId">
+    <div class="o1l-flyout-panel" role="document">
+        <div class="o1l-flyout-content">
+            <header class="o1l-flyout-header">
+                <span class="o1l-flyout-title">
+                    Field Mapper
+                </span>
+            </header>
+            <section class="o1l-flyout-body">
+                @if (Show)
+                {
+                    @RenderFieldMapperEditor
+                }
+            </section>
+            <footer class="o1l-flyout-footer">
+                <button type="button"
+                        class="o1l-btn-cancel@(DefaultCssClass)"
+                        @onclick=Close>
+                    <text>Cancel</text>
+                </button>
+                <button type="button"
+                        class="o1l-btn-confirm@(DefaultCssClass)"
+                        @onclick=HandleCommitClicked>
+                    <text>Map Fields</text>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>

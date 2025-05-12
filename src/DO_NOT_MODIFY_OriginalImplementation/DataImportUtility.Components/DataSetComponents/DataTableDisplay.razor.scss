@@ -1,0 +1,55 @@
+@import "../Sass/AccessibilityStyles";
+@import "../Sass/TableMixins";
+@include ScreenReaderOnly;
+
+table.o1l-library-style {
+    @include table-defaults;
+    transition: opacity .2s ease-in-out, filter .2s ease-in-out;
+
+    * {
+        white-space: nowrap;
+    }
+
+    &.busy {
+        cursor: wait;
+        opacity: .5;
+        filter: brightness(30%);
+        transition: opacity .2s ease-in-out, filter .2s ease-in-out;
+    }
+    /*
+    tbody {
+        tr {
+            &:not(.force-hover-style) {
+                &:hover, &:hover td {
+                    background: var(--o1l-use-table-body-background);
+                }
+            }
+        }
+    }
+*/
+
+    thead, ::deep thead {
+        --o1l-table-thead-tr-height: 8ch;
+
+        tr {
+            &.header-controls {
+            }
+        }
+    }
+
+    .col-header-wrapper, .cell-value-wrapper, ::deep .col-header-wrapper, ::deep .cell-value-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    i, ::deep i {
+        &.error-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+    }
+}
