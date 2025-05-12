@@ -1,66 +1,76 @@
-## Data Import Utility Refactoring Plan
+# Data Import Utility Refactoring: Extensibility Implementation Plan
 
-**Goal:** Improve extensibility and modularity by separating abstractions, implementations, and UI components into different libraries.
+**Overarching Goal:** Refactor the data import utility to allow consumers to easily define and use their own custom implementations of core extensible types (e.g., `MappingRuleBase`, `ValueTransformationBase`, `ComparisonOperationBase`) without relying on enums, ensuring good performance and a clean developer experience.
 
-**Phase 1: Project Structure and Core Abstractions**
+## Phase 1: Core Abstraction Changes & Registration Foundation
 
-*   [Completed] **Create `AutomatedRealms.DataImportUtility.Abstractions` project:**
-    *   [X] Move all interfaces (e.g., `IDataReaderService`, `IImportDataFileRequest`) to this project.
-    *   [X] Move base classes (e.g., `MappingRuleBase`, `ValueTransformationBase`, `ComparisonOperationBase`) to this project.
-    *   [X] Move core models/DTOs used by abstractions (e.g., `FieldMapping`, `FieldTransformation`, `TransformationResult`, `ImportedRecordFieldDescriptor`, `ImportTableDefinition`, `ValueMap`) to this project.
-    *   [X] Move relevant enums (e.g., `MappingRuleType`, `ValueTransformationType`, `ComparisonOperationType`) to this project. (Assuming these are now in `AutomatedRealms.DataImportUtility.Abstractions`)
-    *   [X] Ensure this project has minimal dependencies, ideally none outside of standard .NET libraries.
-*   [In Progress] **Create `AutomatedRealms.DataImportUtility.Core` project:**
-    *   [X] This project will contain the implementations of the abstractions.
-    *   [Partially Addressed] Move current rule implementations (from `DataImportUtility/Rules/`) here.
-    *   [Partially Addressed] Move value transformation implementations (from `DataImportUtility/ValueTransformations/`) here. (`CalculateTransformation.cs`, `SubstringTransformation.cs`, `RegexMatchTransformation.cs`, `MapTransformation.cs`, `InterpolateTransformation.cs`, `ConditionalTransformation.cs`, `CombineFieldsTransformation.cs` moved and refactored, `ValueTransformationBase.ApplyTransformationAsync` added, all currently known concrete implementations updated)
-    *   [X] Move comparison operation implementations (from `DataImportUtility/ComparisonOperations/`) here. (All core operations created and refactored)
-    *   [ ] Move custom converters (from `DataImportUtility/CustomConverters/`) here.
-    *   [X] Move custom exceptions (from `DataImportUtility/CustomExceptions/`) here.
-    *   [X] Move helper classes (from `DataImportUtility/Helpers/`, including `ModelValidation`) here.
-    *   [X] Move `ApplicationConstants.cs` (from `DataImportUtility/`) here.
-    *   [X] Move compatibility classes (e.g., `MathCompatibility.cs`) here.
-    *   [X] This project will reference `AutomatedRealms.DataImportUtility.Abstractions`.
-    *   [In Progress] The `Jace` dependency will likely reside here if `CalculateTransformation.cs` is moved here. (Moved `CalculateTransformation.cs`, Jace package to be verified/added to Core project)
-*   [ ] **Create `AutomatedRealms.DataImportUtility.DataReader` project:**
-    *   Move `IDataReaderService.cs` from `AutomatedRealms.DataImportUtility.Abstractions` to this new project's `Abstractions` folder (or directly if it's the only abstraction).
-    *   Move the `DataReaderService.cs` (currently in `DataImportUtility.Components/Services/`) to this project.
-    *   This project will handle all file reading logic (CSV, Excel, etc.).
-    *   This project will reference `AutomatedRealms.DataImportUtility.Abstractions` (for `ImportedDataFile`, `IImportDataFileRequest` etc.).
-    *   Any specific dependencies for file reading (e.g., Excel libraries) will be contained within this project.
-*   [In Progress] **Update `DataImportUtility` (original core project `AutomatedRealms.DataImportUtility`):**
-    *   This project might become a thin wrapper or be merged into `AutomatedRealms.DataImportUtility.Core`. For now, let's assume it will be significantly slimmed down. It will reference `AutomatedRealms.DataImportUtility.Abstractions`, `AutomatedRealms.DataImportUtility.Core`, and `AutomatedRealms.DataImportUtility.DataReader`.
-    *   [Partially Addressed] `ApplicationConstants.cs` - Moved to `AutomatedRealms.DataImportUtility.Core`.
-    *   [Partially Addressed] `Helpers` - Relevant parts moved to `AutomatedRealms.DataImportUtility.Core`.
-*   [ ] **Update `AutomatedRealms.DataImportUtility.Components` project:**
-    *   This project will now reference `AutomatedRealms.DataImportUtility.Abstractions`, `AutomatedRealms.DataImportUtility.Core`, and `AutomatedRealms.DataImportUtility.DataReader`.
-    *   Update service registrations and usages to reflect the new project structure.
-    *   `DataFileMapper.razor.cs` and other components will need to be updated to use the new service locations and potentially adjusted namespaces.
-*   [ ] **Update `AutomatedRealms.DataImportUtility.SourceGenerator` project:**
-    *   This project will likely need significant changes or might be deprecated if we move away from enum-based discovery for rules and transformations.
-    *   If kept, it will need to reference `AutomatedRealms.DataImportUtility.Abstractions` to understand the base types.
-*   [ ] **Update `AutomatedRealms.DataImportUtility.Tests` project:**
-    *   Update references to reflect the new project structure.
-    *   Adjust namespaces and test setups.
-*   [ ] **Update `SampleApp` project:**
-    *   Update references.
-    *   Update `Program.cs` for service registration.
-    *   Adjust namespaces.
-*   [ ] **Update Solution Files (`.sln`):**
-    *   Add new projects to the main solution (`DataImportUtility.sln`).
-    *   Ensure project dependencies are correctly configured in the solution.
-*   [ ] **Address Namespace Changes:**
-    *   Systematically update namespaces across all moved files and their usages.
-*   [ ] **Refactor Enum-based extensibility (Post Phase 1):**
-    *   Investigate replacing enum-driven discovery (e.g., in `ApplicationConstants.cs` for `MappingRuleType`, `ValueTransformationType`) with a registration-based mechanism (e.g., using dependency injection and service collection scanning for types implementing `MappingRuleBase`, `ValueTransformationBase`). This will truly enhance extensibility.
+This phase focuses on modifying the base abstractions and setting up the core infrastructure for the new `TypeId`-driven registration and serialization model.
 
-**Phase 2: Implementation Details & Refinements**
+1.  **Modify Base Abstraction Classes (`MappingRuleBase`, `ValueTransformationBase`, etc.):**
+    *   **Task:** Add `TypeId` Property.
+        *   **Details:** Add a `public string TypeId { get; protected set; }` (or `init;`) property to each base class.
+        *   The `TypeId` should be a unique string identifier (e.g., "Core.CopyRule", "MyCompany.CustomRule").
+        *   Concrete implementations will be responsible for setting this `TypeId` in their constructors (e.g., `public CopyRule() : base("Core.CopyRule") { ... }`) or by overriding an abstract property.
+    *   **Task:** Remove Obsolete Enum Properties.
+        *   **Details:** Remove properties like `public MappingRuleType RuleType { get; }` if their sole purpose was for the old enum-based discrimination.
 
-*   [ ] **Service Registration:**
-    *   Implement a robust service registration mechanism. For example, `AutomatedRealms.DataImportUtility.Core` could have an extension method like `services.AddDataImportCoreImplementations()` which registers all its rules and transformations.
-    *   `AutomatedRealms.DataImportUtility.DataReader` would have `services.AddDataReaderServices()`.
-*   [ ] **Dependency Management:**
-    *   Carefully review and manage NuGet package dependencies for each new project to ensure they are minimal and appropriate.
-*   [ ] **Testing:**
-    *   Ensure all existing tests pass after refactoring.
-    *   Add new tests for the new service registration and extensibility points.
+2.  **Develop Central Type Registry & DI Integration:**
+    *   **Task:** Create `TypeRegistryService` (or similar).
+        *   **Details:** This service will internally hold a mapping (e.g., `Dictionary<string, Type>`) from `TypeId` strings to `System.Type`.
+        *   It will expose methods like `RegisterType(string typeId, Type type)` and `ResolveType(string typeId)`. It should also provide a way to get all registered types (or their `TypeId`s and display names) for UI population. Make thread-safe if necessary.
+    *   **Task:** Implement DI Extension for Core Types.
+        *   **Details:** In `AutomatedRealms.DataImportUtility.Core`, create a public static class (e.g., `DataImportCoreServiceCollectionExtensions`) with an extension method like `public static IServiceCollection AddDataImportUtilityCore(this IServiceCollection services)`.
+        *   This method will explicitly register all default implementations from the `.Core` project with the `TypeRegistryService` (e.g., `typeRegistry.RegisterType("Core.CopyRule", typeof(CopyRule));`).
+        *   It will also register the `TypeRegistryService` itself as a singleton.
+    *   **Task:** Implement DI Extensions for Consumer Registration (Explicit Method).
+        *   **Details:** In `AutomatedRealms.DataImportUtility.Abstractions` or a new dedicated DI helper library, provide generic extension methods for consumers, e.g., `services.AddMappingRule<TImplementation>(string typeId)` where `TImplementation : MappingRuleBase`.
+        *   This allows consumers to explicitly register their types: `services.AddMappingRule<MyCustomRule>("MyCompany.MyRule");`.
+
+3.  **Update Custom JSON Converters (`MappingRuleBaseConverter`, etc.):**
+    *   **Task:** Modify Converters to Use `TypeId` and `TypeRegistryService`.
+        *   **Details (Serialization):**
+            *   Ensure the `TypeId` property of the object being serialized is written to the JSON (e.g., as a `"$typeId"` property, or a clearly named one like `"RuleTypeId"`).
+        *   **Details (Deserialization):**
+            *   Read the `TypeId` property from the JSON.
+            *   Use the injected `TypeRegistryService` to resolve this `typeId` to a `System.Type`.
+            *   If resolved, deserialize the JSON object into an instance of this specific `System.Type`.
+            *   Handle cases where `typeId` is missing or cannot be resolved (throw informative exception).
+
+## Phase 2: Removing Old Enum-Based System & UI Updates
+
+4.  **Decouple and Remove Obsolete Enum-Based Logic:**
+    *   **Task:** Remove Enum Definitions.
+        *   **Details:** Delete enum files like `MappingRuleType.cs`, `ValueTransformationType.cs` from `Abstractions/Enums/`.
+    *   **Task:** Remove Enum-Based Helper Extensions.
+        *   **Details:** Delete files like `MappingRuleTypeExtensions.cs` from `Abstractions/Helpers/` that contained the old `CreateNewInstance` logic.
+    *   **Task:** Clean up any remaining direct usages of these enums for type discrimination logic if not already covered.
+
+5.  **Update UI Components (e.g., Blazor Components):**
+    *   **Task:** Modify UI for Dynamic Type Selection.
+        *   **Details:** Components that allowed users to select a rule/transformation type via an enum-populated dropdown will need to be changed.
+        *   They should now fetch the list of available types from the `TypeRegistryService` (e.g., get all registered `TypeId`s, potentially with associated display names if we add that feature - perhaps a `DisplayName` property on the base class or an attribute).
+        *   The UI will then bind to the `TypeId` string.
+
+## Phase 3: Consumer Experience & Advanced Features (Future Considerations)
+
+6.  **Develop Source Generator for Consumer Type Registration (Performance & DX Enhancement):**
+    *   **Task:** Design and Implement Source Generator.
+        *   **Details:** Create/Update the `AutomatedRealms.DataImportUtility.SourceGenerator` project.
+        *   This generator would scan the consumer's project for classes inheriting `MappingRuleBase`, etc. (potentially marked with a specific attribute if needed to narrow scope or provide metadata like a display name).
+        *   It would then auto-generate a partial class with an extension method (e.g., `services.AddMyProjectDataImportExtensions()`) that contains explicit registration calls for all discovered custom types, using their self-defined `TypeId`.
+        *   This combines ease of use (developer just creates the class) with the performance of explicit registration.
+    *   **Task:** Provide clear documentation on how to use the source generator.
+
+7.  **Documentation & Examples:**
+    *   **Task:** Update all relevant documentation.
+        *   **Details:** Explain the new extensibility model, how to create custom types (including setting their `TypeId`), how to register them (explicitly and via source generator if implemented), and how `TypeId`s work in serialization.
+    *   **Task:** Create comprehensive examples in `SampleApp` demonstrating custom type creation and registration.
+
+## Ongoing Tasks (Throughout all Phases):
+
+*   **Testing:** Write unit and integration tests for the new registration system, JSON converters, and any modified components.
+*   **Error Handling:** Ensure robust error handling (e.g., for missing `TypeId`s during deserialization, registration conflicts, `TypeId` uniqueness if not enforced by convention).
+*   **Project References:** Adjust project references as needed (e.g., `Core` will reference `Abstractions`, `Components` will reference `Abstractions` and potentially `Core` for DI setup).
+*   **Address Build Errors:** Systematically resolve any build errors that arise from these changes.
+
+This plan provides a structured approach. We will iterate on these tasks and add more detail as we progress.
