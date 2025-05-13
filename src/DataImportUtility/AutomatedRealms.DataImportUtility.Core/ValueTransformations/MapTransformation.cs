@@ -4,8 +4,6 @@ using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Helpers;   // For ValueMap
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
-using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models; // Alias for Abstractions.Models
-
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
 /// <summary>
@@ -13,11 +11,27 @@ namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 /// </summary>
 public class MapTransformation : ValueTransformationBase
 {
-    /// <inheritdoc />
-    public override int EnumMemberOrder { get; } = 5;
+    /// <summary>
+    /// Static TypeId for this transformation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.MapTransformation";
 
-    /// <inheritdoc />
-    public override string EnumMemberName { get; } = nameof(MapTransformation);
+    /// <summary>
+    /// Gets or sets the dictionary of value mappings.
+    /// </summary>
+    public Dictionary<string, string> Mappings { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the default value to use if no mapping is found.
+    /// </summary>
+    public string? DefaultValue { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MapTransformation"/> class.
+    /// </summary>
+    public MapTransformation() : base(TypeIdString)
+    {
+    }
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -33,29 +47,14 @@ public class MapTransformation : ValueTransformationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override bool IsEmpty => ValueMappings == null || !ValueMappings.Any();
+    public override bool IsEmpty => Mappings == null || !Mappings.Any();
 
     /// <inheritdoc />
     [JsonIgnore]
     public override Type OutputType => typeof(string); // Assuming mapped values are generally strings or converted to strings.
 
-    /// <summary>
-    /// The list of value mappings to use.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public List<ValueMap> ValueMappings { get; set; } = [];
-
-    /// <summary>
-    /// The field name to map the value to. (Currently not used by the Map extension logic, but kept for potential future use or if logic changes)
-    /// </summary>
-    /// <remarks>
-    /// If the field name is null or empty, the mapping will return the first match, if any.
-    /// </remarks>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public string? FieldName { get; set; }
-
     /// <inheritdoc />
-    public override Task<TransformationResult> ApplyTransformationAsync(TransformationResult previousResult) // Removed async
+    public override Task<TransformationResult> ApplyTransformationAsync(TransformationResult previousResult)
     {
         try
         {
@@ -70,22 +69,20 @@ public class MapTransformation : ValueTransformationBase
                 return Task.FromResult(checkedResult);
             }
 
-            if (ValueMappings == null || !ValueMappings.Any())
+            if (Mappings == null || !Mappings.Any())
             {
                 return Task.FromResult(checkedResult); // No mappings provided, return original (potentially error-checked) result
             }
 
             var currentInputValueString = checkedResult.CurrentValue?.ToString();
 
-            var mappedEntry = ValueMappings.FirstOrDefault(x => string.Equals(x.FromValue, currentInputValueString, StringComparison.Ordinal)); // Consider StringComparison option
-
-            if (mappedEntry != null)
+            if (currentInputValueString != null && Mappings.TryGetValue(currentInputValueString, out var mappedValue))
             {
-                return Task.FromResult(AbstractionsModels.TransformationResult.Success(
+                return Task.FromResult(TransformationResult.Success(
                     originalValue: checkedResult.OriginalValue,
                     originalValueType: checkedResult.OriginalValueType,
-                    currentValue: mappedEntry.ToValue,
-                    currentValueType: mappedEntry.ToValue?.GetType() ?? typeof(string),
+                    currentValue: mappedValue,
+                    currentValueType: mappedValue?.GetType() ?? typeof(string),
                     appliedTransformations: checkedResult.AppliedTransformations,
                     record: checkedResult.Record,
                     tableDefinition: checkedResult.TableDefinition,
@@ -98,7 +95,7 @@ public class MapTransformation : ValueTransformationBase
         }
         catch (Exception ex)
         {
-            return Task.FromResult(AbstractionsModels.TransformationResult.Failure(
+            return Task.FromResult(TransformationResult.Failure(
                 originalValue: previousResult.OriginalValue,
                 targetType: OutputType,
                 errorMessage: ex.Message,
@@ -116,7 +113,7 @@ public class MapTransformation : ValueTransformationBase
     /// <inheritdoc />
     public override async Task<TransformationResult> Transform(object? value, Type targetType)
     {
-        var initialResult = AbstractionsModels.TransformationResult.Success(
+        var initialResult = TransformationResult.Success(
             originalValue: value,
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value,
@@ -127,20 +124,16 @@ public class MapTransformation : ValueTransformationBase
             sourceRecordContext: null,
             targetFieldType: targetType
         );
-        // ApplyTransformationAsync now returns Task<TransformationResult>, so it can be awaited or returned directly if the signature matches.
-        // Since Transform is async, we await it.
         return await ApplyTransformationAsync(initialResult);
     }
 
     /// <inheritdoc />
     public override ValueTransformationBase Clone()
     {
-        var clone = (MapTransformation)MemberwiseClone();
-        clone.FieldName = this.FieldName;
-        // ValueMappings is a list of complex objects (ValueMap), requires deep cloning.
-        clone.ValueMappings = [.. this.ValueMappings.Select(x => x.Clone())]; // Assumes ValueMap has a Clone method
-        // TransformationDetail is not directly used by MapTransformation properties but is part of base, clone if necessary.
-        clone.TransformationDetail = this.TransformationDetail;
+        var clone = new MapTransformation();
+        CloneBaseProperties(clone);
+        clone.Mappings = new Dictionary<string, string>(Mappings);
+        clone.DefaultValue = DefaultValue;
         return clone;
     }
 }

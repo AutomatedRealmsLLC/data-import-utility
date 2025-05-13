@@ -1,7 +1,6 @@
 // Original file path: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Abstractions\ValueTransformationBase.cs
 using System.Text.Json.Serialization; // For JsonIgnoreAttribute
 
-using AutomatedRealms.DataImportUtility.Abstractions.Enums; // For ValueTransformationType
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
 
 namespace AutomatedRealms.DataImportUtility.Abstractions;
@@ -15,6 +14,12 @@ namespace AutomatedRealms.DataImportUtility.Abstractions;
 /// </remarks>
 public abstract partial class ValueTransformationBase : IDisposable
 {
+    /// <summary>
+    /// Gets the unique identifier for this type of value transformation.
+    /// This is used for serialization and deserialization.
+    /// </summary>
+    public string TypeId { get; protected set; }
+
     /// <summary>
     /// The error message when the operation failed.
     /// </summary>
@@ -32,25 +37,6 @@ public abstract partial class ValueTransformationBase : IDisposable
     /// The event that is raised when the definition of the operation changes.
     /// </summary>
     public event Func<Task>? OnDefinitionChanged;
-
-    /// <summary>
-    /// The value the generated enum member display in the <see cref="ValueTransformationType" />. 
-    /// </summary>
-    /// <remarks>
-    /// The values for the enum members will be determined by sorting first by the 
-    /// <see cref="EnumMemberOrder" />, then by the <see cref="EnumMemberName" />. This means that 
-    /// any resulting duplicate orders will result in values that do not match the order value.
-    /// </remarks>
-    [JsonIgnore]
-    public virtual int EnumMemberOrder { get; } = 0;
-
-    /// <summary>
-    /// The member name to use for the <see cref="ValueTransformationType"/>.
-    /// </summary>
-    /// <remarks>
-    /// This should follow the rules used for Enum Member Names.
-    /// </remarks>
-    public abstract string EnumMemberName { get; }
 
     /// <summary>
     /// The name of the operation.
@@ -98,6 +84,19 @@ public abstract partial class ValueTransformationBase : IDisposable
     /// overriding the TransformationDetail property.
     /// </summary>
     protected string? _operationDetail;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ValueTransformationBase"/> class.
+    /// </summary>
+    /// <param name="typeId">The unique identifier for this transformation type.</param>
+    protected ValueTransformationBase(string typeId)
+    {
+        if (string.IsNullOrWhiteSpace(typeId))
+        {
+            throw new ArgumentException("TypeId cannot be null or whitespace.", nameof(typeId));
+        }
+        TypeId = typeId;
+    }
 
     /// <summary>
     /// Validates the transformation detail.
@@ -151,7 +150,8 @@ public abstract partial class ValueTransformationBase : IDisposable
     protected virtual void CloneBaseProperties(ValueTransformationBase target)
     {
         target.TransformationDetail = this.TransformationDetail; // This will also trigger ValidateDetail
-        // EnumMemberOrder, EnumMemberName, DisplayName, ShortName, Description are abstract or get-only, defined by concrete types.
+        // TypeId is set in constructor.
+        // DisplayName, ShortName, Description are abstract or get-only, defined by concrete types.
         // ErrorMessage is protected set, typically not cloned directly unless state is part of the clone.
     }
 

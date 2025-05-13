@@ -1,6 +1,5 @@
 using System.Data;
 
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions;
@@ -8,22 +7,12 @@ namespace AutomatedRealms.DataImportUtility.Abstractions;
 /// <summary>
 /// Defines the contract for a mapping rule.
 /// </summary>
-public interface IMappingRule : IDisposable
+public interface IMappingRule : ICloneable, IDisposable
 {
     /// <summary>
     /// The event that is raised when the definition of the rule changes.
     /// </summary>
     event Func<Task>? OnDefinitionChanged;
-
-    /// <summary>
-    /// The value the generated enum member display in the MappingRuleType.
-    /// </summary>
-    int EnumMemberOrder { get; }
-
-    /// <summary>
-    /// The member name to use for the MappingRuleType.
-    /// </summary>
-    string EnumMemberName { get; }
 
     /// <summary>
     /// The name of the rule.
@@ -54,11 +43,6 @@ public interface IMappingRule : IDisposable
     /// The unique identifier for the rule.
     /// </summary>
     Guid Id { get; }
-
-    /// <summary>
-    /// The type of the rule.
-    /// </summary>
-    RuleType RuleType { get; }
 
     /// <summary>
     /// Gets the value of the rule.

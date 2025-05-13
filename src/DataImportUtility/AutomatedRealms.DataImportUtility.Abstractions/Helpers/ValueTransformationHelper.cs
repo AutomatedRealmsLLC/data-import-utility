@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations; // Added for ValidationResult and Validator
 using System.Data;
 
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // Using Abstractions models
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Helpers;
@@ -197,7 +196,7 @@ public static partial class ValueTransformationHelper
     }
 
     /// <summary>
-    /// Filters a list of field mappings to get only those have output targets.
+    /// Filters a list of field mappings to get only those that have output targets.
     /// </summary>
     /// <param name="fieldMapping">The field mapping to filter.</param>
     /// <returns>A list of field mappings that have output targets.</returns>
@@ -207,7 +206,7 @@ public static partial class ValueTransformationHelper
     /// filtered to remove any that do not have a matching field name.
     /// </remarks>
     private static List<FieldMapping> MappedFieldsOnly(this List<FieldMapping> fieldMapping)
-        => [.. fieldMapping.Where(x => x.MappingRuleType != MappingRuleType.IgnoreRule)];
+        => [.. fieldMapping.Where(x => x.MappingRule is not null && !x.IgnoreMapping)];
 
     /// <summary>
     /// Checks for missing fields in the data tables used in field mappings.
@@ -219,8 +218,10 @@ public static partial class ValueTransformationHelper
     /// Thrown when there are missing fields used in the Field Mappings that don't exist for the given data tables.
     /// </exception>
     /// <remarks>
-    /// This method checks the source data table for <see cref="MappingRuleBase.SourceField"/> and the destination data table for <see cref="FieldMapping.FieldName"/>.
-    /// It currently does not deeply inspect individual transformations in <see cref="MappingRuleBase.SourceFieldTransformations"/> for other field dependencies.
+    /// This method checks the source data table for the <see cref="Models.MappingRuleBase.SourceField"/> 
+    /// (when <see cref="Models.MappingRuleBase.SourceField"/> is not null or empty on the <see cref="Models.FieldMapping.MappingRule"/>)
+    /// and the destination data table for <see cref="Models.FieldMapping.FieldName"/>.
+    /// It currently does not deeply inspect individual transformations in <see cref="Models.MappingRuleBase.SourceFieldTransformations"/> for other field dependencies.
     /// </remarks>
     /// <exception cref="CustomExceptions.MissingFieldMappingException">
     /// Thrown when there are missing fields in only one of the two provided tables.

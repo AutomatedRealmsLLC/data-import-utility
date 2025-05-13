@@ -1,8 +1,9 @@
-using System.Globalization; // For CultureInfo
+using System;
+using System.Globalization;
 using System.Text.Json.Serialization;
-
+using System.Threading.Tasks;
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For non-generic TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -11,9 +12,12 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 /// </summary>
 public class LessThanOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    [JsonIgnore]
-    public override string EnumMemberName { get; } = nameof(LessThanOperation);
+    /// <summary>
+    /// The unique type identifier for this comparison operation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.LessThan";
+
+    // EnumMemberName removed
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -23,47 +27,106 @@ public class LessThanOperation : ComparisonOperationBase
     [JsonIgnore]
     public override string Description { get; } = "Checks if a value is less than another value.";
 
-    // Removed EnumMemberOrder property as it's not in ComparisonOperationBase
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LessThanOperation"/> class.
+    /// </summary>
+    public LessThanOperation() : base(TypeIdString)
+    {
+    }
 
     /// <inheritdoc />
-    public override async Task<bool> Evaluate(TransformationResult contextResult) // Changed to non-generic TransformationResult
+    public override void ConfigureOperands(
+        MappingRuleBase leftOperand,
+        MappingRuleBase? rightOperand,
+        MappingRuleBase? secondaryRightOperand) // Not used by LessThanOperation
     {
-        if (LeftOperand is null || RightOperand is null)
+        base.ConfigureOperands(leftOperand, rightOperand, null); // secondaryRightOperand is not used
+
+        if (this.LeftOperand is null)
         {
-            // TODO: Log this failure
-            return false;
+            throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
+        }
+        if (this.RightOperand is null)
+        {
+            throw new ArgumentNullException(nameof(rightOperand), $"Right operand must be provided for {TypeIdString}.");
+        }
+    }
+
+    /// <inheritdoc />
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
+    {
+        if (LeftOperand is null || RightOperand is null) // Should be caught by ConfigureOperands
+        {
+            throw new InvalidOperationException($"Both LeftOperand and RightOperand must be set for {DisplayName} operation. Ensure ConfigureOperands was called.");
         }
 
-        // Apply should now resolve to MappingRuleBase.Apply(ITransformationContext context)
         var leftOpResult = await LeftOperand.Apply(contextResult);
-        if (leftOpResult is null || leftOpResult.WasFailure)
+        if (leftOpResult == null)
         {
-            // TODO: Log leftOpResult?.ErrorMessage or null operand
-            return false;
+            throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned a null TransformationResult.");
+        }
+        if (leftOpResult.WasFailure)
+        {
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOpResult.ErrorMessage}");
         }
 
         var rightOpResult = await RightOperand.Apply(contextResult);
-        if (rightOpResult is null || rightOpResult.WasFailure)
+        if (rightOpResult == null)
         {
-            // TODO: Log rightOpResult?.ErrorMessage or null operand
+            throw new InvalidOperationException($"Applying {nameof(RightOperand)} for {DisplayName} operation returned a null TransformationResult.");
+        }
+        if (rightOpResult.WasFailure)
+        {
+            throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOpResult.ErrorMessage}");
+        }
+
+        object? leftVal = leftOpResult.CurrentValue;
+        object? rightVal = rightOpResult.CurrentValue;
+
+        if (leftVal == null || rightVal == null)
+        {
+            // Consistent with how other operations handle nulls when comparison isn't meaningful.
+            // For 'less than', if either is null, the comparison is generally false unless specific null semantics are defined.
             return false;
         }
 
-        return leftOpResult.LessThan(rightOpResult); // Extension method on non-generic TransformationResult
+        // Try numeric comparison first
+        if (IsNumeric(leftVal) && IsNumeric(rightVal))
+        {
+            try
+            {
+                // Convert to decimal for comparison to handle various numeric types consistently.
+                decimal leftDecimal = Convert.ToDecimal(leftVal, CultureInfo.InvariantCulture);
+                decimal rightDecimal = Convert.ToDecimal(rightVal, CultureInfo.InvariantCulture);
+                return leftDecimal < rightDecimal;
+            }
+            catch (OverflowException ex)
+            {
+                throw new InvalidOperationException($"Numeric comparison in {DisplayName} failed due to an overflow. Left: '{leftVal}', Right: '{rightVal}'.", ex);
+            }
+            catch (FormatException ex)
+            {
+                 throw new InvalidOperationException($"Numeric comparison in {DisplayName} failed due to a format error. Left: '{leftVal}', Right: '{rightVal}'.", ex);
+            }
+        }
+
+        // Try DateTime comparison
+        if (CanConvertToDateTime(leftVal, out DateTime leftDate) && CanConvertToDateTime(rightVal, out DateTime rightDate))
+        {
+            return leftDate < rightDate;
+        }
+
+        // Fallback to string comparison if types are not directly comparable as numbers or dates
+        // This is a common fallback but might not always be the desired behavior for all mixed types.
+        // Consider if specific type mismatch errors should be thrown instead for certain scenarios.
+        var leftString = Convert.ToString(leftVal, CultureInfo.InvariantCulture);
+        var rightString = Convert.ToString(rightVal, CultureInfo.InvariantCulture);
+
+        // Note: String comparison is culture-sensitive. Using Ordinal for a consistent, byte-by-byte comparison.
+        // If culture-specific linguistic comparison is needed, CultureInfo.CurrentCulture or a specific culture should be used.
+        return string.Compare(leftString, rightString, StringComparison.Ordinal) < 0;
     }
 
-    /// <inheritdoc />
-    public override ComparisonOperationBase Clone() // Changed return type to ComparisonOperationBase
-    {
-        return base.Clone(); // Utilize base class cloning
-    }
-}
-
-/// <summary>
-/// Extension methods for the LessThan operation.
-/// </summary>
-public static class LessThanOperationExtensions
-{
     private static bool IsNumeric(object? value)
     {
         if (value == null) return false;
@@ -82,56 +145,19 @@ public static class LessThanOperationExtensions
         }
         if (value is DateTimeOffset dto)
         {
-            result = dto.UtcDateTime;
+            result = dto.UtcDateTime; // Ensure comparison in UTC
             return true;
         }
         var stringValue = value.ToString();
         if (string.IsNullOrEmpty(stringValue)) return false;
+        // Attempt to parse with InvariantCulture and assume UTC if no offset is present.
         return DateTime.TryParse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out result);
     }
 
-    /// <summary>
-    /// Checks if the left result is less than the right result.
-    /// </summary>
-    /// <param name="leftResult">The result of the left operand (non-generic TransformationResult).</param>
-    /// <param name="rightResult">The result of the right operand (non-generic TransformationResult).</param>
-    /// <returns>True if the left result is less than the right result; otherwise, false.</returns>
-    public static bool LessThan(this TransformationResult leftResult, TransformationResult rightResult)
+
+    /// <inheritdoc />
+    public override ComparisonOperationBase Clone()
     {
-        object? leftVal = leftResult.CurrentValue;
-        object? rightVal = rightResult.CurrentValue;
-
-        if (leftVal == null || rightVal == null) { return false; }
-
-        if (IsNumeric(leftVal) && IsNumeric(rightVal))
-        {
-            try
-            {
-                decimal dLeft = Convert.ToDecimal(leftVal, CultureInfo.InvariantCulture);
-                decimal dRight = Convert.ToDecimal(rightVal, CultureInfo.InvariantCulture);
-                return dLeft < dRight;
-            }
-            catch (OverflowException)
-            {
-                try
-                {
-                    double dblLeft = Convert.ToDouble(leftVal, CultureInfo.InvariantCulture);
-                    double dblRight = Convert.ToDouble(rightVal, CultureInfo.InvariantCulture);
-                    return dblLeft < dblRight;
-                }
-                catch { /* Fall through */ }
-            }
-            catch (FormatException) { /* Fall through */ }
-        }
-
-        if (CanConvertToDateTime(leftVal, out var leftDate) && CanConvertToDateTime(rightVal, out var rightDate))
-        {
-            return leftDate < rightDate;
-        }
-
-        var sLeft = leftVal.ToString();
-        var sRight = rightVal.ToString();
-        if (sLeft == null || sRight == null) return false;
-        return string.Compare(sLeft, sRight, StringComparison.OrdinalIgnoreCase) < 0;
+        return (LessThanOperation)base.Clone();
     }
 }

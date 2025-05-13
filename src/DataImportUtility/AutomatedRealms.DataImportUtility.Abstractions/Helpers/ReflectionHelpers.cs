@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-using AutomatedRealms.DataImportUtility.Abstractions.Enums; // Added
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Helpers;
@@ -11,16 +10,12 @@ internal static class ReflectionHelpers
 {
     public static FieldMapping AsFieldMapping(this PropertyInfo prop, bool forceRequired = false)
     {
-        var mappingRuleType = MappingRuleType.CopyRule; // Default to CopyRule
-        var classType = mappingRuleType.GetClassType(); // Use the new extension method
-        var mappingRule = classType != null ? Activator.CreateInstance(classType) as MappingRuleBase : null;
-
         return new FieldMapping()
         {
             FieldName = prop.Name,
             FieldType = prop.PropertyType,
             Required = forceRequired || Attribute.IsDefined(prop, typeof(RequiredAttribute)),
-            MappingRule = mappingRule,
+            MappingRule = null, // Set to null by default, to be configured later
             ValidationAttributes = prop.GetValidationAttributes()
         };
     }

@@ -2,7 +2,7 @@ using System.Collections; // For IEnumerable
 using System.Text.Json.Serialization;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // Updated for TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // Updated for TransformationResult and MappingRuleBase
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -13,10 +13,12 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 /// </summary>
 public class ContainsOperation : ComparisonOperationBase
 {
-    // EnumMemberOrder removed
+    /// <summary>
+    /// The unique type identifier for this comparison operation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.Contains";
 
-    /// <inheritdoc />
-    public override string EnumMemberName { get; } = nameof(ContainsOperation); // Or a more specific enum if ComparisonOperatorType is introduced
+    // EnumMemberName and EnumMemberOrder removed
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -29,34 +31,47 @@ public class ContainsOperation : ComparisonOperationBase
     /// <summary>
     /// Initializes a new instance of the <see cref="ContainsOperation"/> class.
     /// </summary>
-    public ContainsOperation() : base()
+    public ContainsOperation() : base(TypeIdString) // Pass TypeIdString to base constructor
     {
-        // Operands (LeftOperand, RightOperand) are set via properties.
+        // Operands (LeftOperand, RightOperand) are set via properties after ConfigureOperands is called.
+    }
+
+    /// <inheritdoc />
+    public override void ConfigureOperands(
+        MappingRuleBase leftOperand,
+        MappingRuleBase? rightOperand,
+        MappingRuleBase? secondaryRightOperand)
+    {
+        base.ConfigureOperands(leftOperand, rightOperand, secondaryRightOperand); // Calls base to set LeftOperand and RightOperand
+
+        if (this.LeftOperand is null) // Validation after base call
+        {
+            throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
+        }
+        if (this.RightOperand is null) // Validation after base call
+        {
+            throw new ArgumentNullException(nameof(rightOperand), $"Right operand must be provided for {TypeIdString}.");
+        }
+        // secondaryRightOperand is not used by ContainsOperation, base class handles it (sets HighLimit which is fine)
     }
 
     /// <inheritdoc />
     public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
-        if (LeftOperand is null || RightOperand is null)
+        if (LeftOperand is null || RightOperand is null) // Should be caught by ConfigureOperands
         {
-            // Consider logging contextResult.AddLogMessage("Error: Operands not set for ContainsOperation.");
-            throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set for {nameof(ContainsOperation)}.");
+            throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set for {nameof(ContainsOperation)}. Ensure ConfigureOperands was called.");
         }
-
-        // contextResult is already an ITransformationContext
-        // No need to check contextResult.Record == null specifically here, as Apply methods should handle context appropriately.
 
         var leftOperandActualResult = await LeftOperand.Apply(contextResult);
         if (leftOperandActualResult == null || leftOperandActualResult.WasFailure)
         {
-            // Consider logging
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOperandActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
         var rightOperandActualResult = await RightOperand.Apply(contextResult);
         if (rightOperandActualResult == null || rightOperandActualResult.WasFailure)
         {
-            // Consider logging
             throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOperandActualResult?.ErrorMessage ?? "Result was null."}");
         }
 

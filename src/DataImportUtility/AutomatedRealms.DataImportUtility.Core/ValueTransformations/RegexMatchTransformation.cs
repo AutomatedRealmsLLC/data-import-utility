@@ -13,11 +13,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 /// </summary>
 public class RegexMatchTransformation : ValueTransformationBase
 {
-    /// <inheritdoc />
-    public override int EnumMemberOrder { get; } = 6;
-
-    /// <inheritdoc />
-    public override string EnumMemberName { get; } = nameof(RegexMatchTransformation);
+    /// <summary>
+    /// Static TypeId for this transformation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.RegexMatchTransformation";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -30,6 +29,11 @@ public class RegexMatchTransformation : ValueTransformationBase
     /// <inheritdoc />
     [JsonIgnore]
     public override string Description { get; } = "Matches a value against a regular expression and returns the set of matches.";
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RegexMatchTransformation"/> class.
+    /// </summary>
+    public RegexMatchTransformation() : base(TypeIdString) { }
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -192,8 +196,11 @@ public class RegexMatchTransformation : ValueTransformationBase
     /// <inheritdoc />
     public override ValueTransformationBase Clone()
     {
-        var clone = (RegexMatchTransformation)MemberwiseClone();
-        clone.TransformationDetail = this.TransformationDetail;
+        var clone = new RegexMatchTransformation()
+        {
+            TransformationDetail = this.TransformationDetail
+        };
+        // TypeId is set by the constructor
         return clone;
     }
 }

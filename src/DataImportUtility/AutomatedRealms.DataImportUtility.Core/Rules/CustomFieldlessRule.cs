@@ -1,7 +1,9 @@
 using System.Data;
+using System.Text.Json.Serialization;
+using System.Linq;
+using System.Collections.Generic;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules;
@@ -12,27 +14,23 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules;
 /// driven by its configured transformations.
 /// </summary>
 public class CustomFieldlessRule : MappingRuleBase
-{    /// <summary>
-     /// Gets or sets an optional detail or initial value for the rule, which might be used by transformations.
-     /// </summary>
+{
+    /// <summary>
+    /// Gets the unique identifier for this type of mapping rule.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.CustomFieldlessRule";
+
+    /// <summary>
+    /// Gets or sets an optional detail or initial value for the rule, which might be used by transformations.
+    /// This shadows the base RuleDetail to allow setting it directly on this type if needed,
+    /// though typically transformations would operate on context or pre-defined values.
+    /// </summary>
     public new string? RuleDetail { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CustomFieldlessRule"/> class.
     /// </summary>
-    public CustomFieldlessRule()
-    {
-    }
-
-    /// <summary>
-    /// Gets the type of the mapping rule.
-    /// </summary>
-    public override MappingRuleType RuleType => MappingRuleType.CustomFieldlessRule;
-
-    /// <summary>
-    /// Gets the enum member name for the mapping rule type.
-    /// </summary>
-    public override string EnumMemberName => nameof(CustomFieldlessRule);
+    public CustomFieldlessRule() : base(TypeIdString) { }
 
     /// <summary>
     /// Gets the display name of the mapping rule.
@@ -56,39 +54,6 @@ public class CustomFieldlessRule : MappingRuleBase
     public override bool IsEmpty => !SourceFieldTransformations.Any();
 
     /// <summary>
-    /// Gets the <see cref="MappingRuleType"/> enum value for this rule.
-    /// </summary>
-    /// <returns>The <see cref="MappingRuleType.CustomFieldlessRule"/> enum value.</returns>
-    public override MappingRuleType GetEnumValue() => this.RuleType;
-
-    /// <summary>
-    /// Gets the order value for the enum member.
-    /// </summary>
-    public override int EnumMemberOrder => 6;
-
-    /// <summary>
-    /// Applies the custom fieldless rule to the provided data row.
-    /// The rule's behavior is primarily driven by its configured <see cref="MappingRuleBase.SourceFieldTransformations"/>.
-    /// </summary>
-    /// <param name="dataRow">The data row to apply the rule to.</param>
-    /// <returns>A transformation result, or null if the rule could not be applied.</returns>
-    public override async Task<TransformationResult?> Apply(DataRow dataRow)
-    {
-        var context = TransformationResult.Success(
-            originalValue: this.RuleDetail,
-            originalValueType: this.RuleDetail?.GetType(),
-            currentValue: this.RuleDetail,
-            currentValueType: this.RuleDetail?.GetType(),
-            appliedTransformations: new List<string>(),
-            record: dataRow,
-            tableDefinition: null,
-            sourceRecordContext: null,
-            targetFieldType: null
-        );
-        return await Apply(context);
-    }
-
-    /// <summary>
     /// Applies the custom fieldless rule using the provided transformation context.
     /// Its behavior is primarily driven by its configured <see cref="MappingRuleBase.SourceFieldTransformations"/>.
     /// </summary>
@@ -96,151 +61,90 @@ public class CustomFieldlessRule : MappingRuleBase
     /// <returns>A transformation result, or null if the rule could not be applied or if transformations fail.</returns>
     public override async Task<TransformationResult?> Apply(ITransformationContext context)
     {
+        // Use RuleDetail from this class, or from base if this one is null.
+        object? initialValue = this.RuleDetail ?? base.RuleDetail;
+        Type? initialValueType = initialValue?.GetType();
+        Type targetType = context.TargetFieldType ?? typeof(object);
+
+        var log = new List<string> { $"CustomFieldlessRule: Starting with initial value: '{initialValue ?? "null"}'." }; 
+
         TransformationResult currentProcessingResult = TransformationResult.Success(
-            originalValue: this.RuleDetail,
-            originalValueType: this.RuleDetail?.GetType(),
-            currentValue: this.RuleDetail,
-            currentValueType: context.TargetFieldType ?? this.RuleDetail?.GetType() ?? typeof(object),
-            appliedTransformations: new List<string>(),
-            record: context.Record,
-            tableDefinition: context.TableDefinition,
+            originalValue: initialValue, 
+            originalValueType: initialValueType,
+            currentValue: initialValue, 
+            currentValueType: initialValueType,
+            appliedTransformations: log,
+            record: context.Record, 
             sourceRecordContext: context.SourceRecordContext,
-            targetFieldType: context.TargetFieldType
+            targetFieldType: targetType
         );
 
-        foreach (var transformation in this.SourceFieldTransformations)
+        if (!SourceFieldTransformations.Any())
         {
-            if (transformation == null) continue;
+            var updatedLog = new List<string>(currentProcessingResult.AppliedTransformations ?? Enumerable.Empty<string>());
+            updatedLog.Add("CustomFieldlessRule: No transformations configured. Returning initial value.");
+            return currentProcessingResult with { AppliedTransformations = updatedLog };
+        }
 
+        foreach (var transformation in SourceFieldTransformations)
+        {
             currentProcessingResult = await transformation.ApplyTransformationAsync(currentProcessingResult);
-
             if (currentProcessingResult.WasFailure)
             {
-                return currentProcessingResult;
+                return currentProcessingResult; // Propagate failure
             }
         }
-
-        return currentProcessingResult;
+        
+        var finalLog = new List<string>(currentProcessingResult.AppliedTransformations ?? Enumerable.Empty<string>());
+        finalLog.Add("CustomFieldlessRule: Finished applying all transformations.");
+        return currentProcessingResult with { AppliedTransformations = finalLog };
     }
 
     /// <summary>
-    /// Applies the custom fieldless rule to all rows in the provided data table.
+    /// Clones this mapping rule.
     /// </summary>
-    /// <param name="data">The data table to apply the rule to.</param>
-    /// <returns>An enumerable collection of transformation results for each row.</returns>
-    public override async Task<IEnumerable<TransformationResult?>> Apply(DataTable data)
-    {
-        if (data == null) return new List<TransformationResult?>();
-        var results = new List<TransformationResult?>();
-        foreach (DataRow row in data.Rows)
-        {
-            var rowContext = TransformationResult.Success(
-                originalValue: this.RuleDetail,
-                originalValueType: this.RuleDetail?.GetType(),
-                currentValue: this.RuleDetail,
-                currentValueType: this.RuleDetail?.GetType(),
-                appliedTransformations: new List<string>(),
-                record: row,
-                tableDefinition: null,
-                sourceRecordContext: null,
-                targetFieldType: null
-            );
-            results.Add(await Apply(rowContext).ConfigureAwait(false));
-        }
-        return results;
-    }
-
-    /// <summary>
-    /// Applies the custom fieldless rule in a context where no specific data table or row is provided.
-    /// This implies operating on an initial value (e.g., <see cref="RuleDetail"/>) and transformations.
-    /// </summary>
-    /// <returns>An enumerable collection of transformation results.</returns>
-    public override async Task<IEnumerable<TransformationResult?>> Apply()
-    {
-        var emptyContext = TransformationResult.Success(
-            originalValue: this.RuleDetail,
-            originalValueType: this.RuleDetail?.GetType(),
-            currentValue: this.RuleDetail,
-            currentValueType: this.RuleDetail?.GetType(),
-            appliedTransformations: new List<string>(),
-            record: null,
-            tableDefinition: null,
-            sourceRecordContext: null,
-            targetFieldType: null
-        );
-        var result = await Apply(emptyContext);
-        return new List<TransformationResult?> { result };
-    }
-
-    /// <summary>
-    /// Gets the value for the custom fieldless rule based on transformations, potentially using an initial value from <see cref="RuleDetail"/>.
-    /// The sourceRecord is not directly used to fetch a field value but might provide context for transformations if they are designed to use it.
-    /// </summary>
-    /// <param name="sourceRecordContextList">The source record context (largely ignored for direct field access but available for complex transformations).</param>
-    /// <param name="targetField">The descriptor of the target field (used to determine target type if needed).</param>
-    /// <returns>A <see cref="TransformationResult"/> containing the processed value.</returns>
-    public override TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecordContextList, ImportedRecordFieldDescriptor targetField)
-    {
-        Type effectiveTargetType = targetField?.FieldType ?? this.RuleDetail?.GetType() ?? typeof(object);
-
-        var contextForApply = TransformationResult.Success(
-            originalValue: this.RuleDetail,
-            originalValueType: this.RuleDetail?.GetType(),
-            currentValue: this.RuleDetail,
-            currentValueType: this.RuleDetail?.GetType(),
-            appliedTransformations: new List<string>(),
-            record: null,
-            tableDefinition: null,
-            sourceRecordContext: sourceRecordContextList,
-            targetFieldType: effectiveTargetType
-        );
-
-        TransformationResult? resultFromApply = Apply(contextForApply).ConfigureAwait(false).GetAwaiter().GetResult();
-
-        if (resultFromApply == null || resultFromApply.WasFailure)
-        {
-            return resultFromApply ?? TransformationResult.Failure(
-                originalValue: this.RuleDetail,
-                targetType: effectiveTargetType,
-                errorMessage: $"Failed to apply CustomFieldlessRule in GetValue. {(resultFromApply?.ErrorMessage ?? "Result was null.")}",
-                originalValueType: this.RuleDetail?.GetType(),
-                sourceRecordContext: sourceRecordContextList,
-                explicitTargetFieldType: effectiveTargetType
-            );
-        }
-
-        if (targetField?.FieldType != null &&
-            resultFromApply.CurrentValue != null &&
-            resultFromApply.CurrentValueType != targetField.FieldType)
-        {
-            try
-            {
-                var convertedValue = Convert.ChangeType(resultFromApply.CurrentValue, targetField.FieldType);
-                return resultFromApply with { CurrentValue = convertedValue, CurrentValueType = targetField.FieldType };
-            }
-            catch (Exception ex)
-            {
-                return resultFromApply with
-                {
-                    ErrorMessage = (!string.IsNullOrEmpty(resultFromApply.ErrorMessage) ? resultFromApply.ErrorMessage + " " : "") + $"Failed to convert final value to target type '{targetField.FieldType.Name}': {ex.Message}"
-                };
-            }
-        }
-
-        return resultFromApply;
-    }
-
-    /// <summary>
-    /// Creates a clone of this <see cref="CustomFieldlessRule"/> instance.
-    /// </summary>
-    /// <returns>A new <see cref="CustomFieldlessRule"/> instance with the same configuration.</returns>
+    /// <returns>A new instance of <see cref="CustomFieldlessRule"/> with copied values.</returns>
     public override MappingRuleBase Clone()
     {
-        var clone = new CustomFieldlessRule
-        {
-            RuleDetail = this.RuleDetail
-        };
-        base.CloneBaseProperties(clone);
+        var clone = new CustomFieldlessRule(); // Calls base(TypeIdString) constructor
+        // Clone base properties first. This will clone base.RuleDetail to clone.RuleDetail (the base property).
+        this.CloneBaseProperties(clone);
+        // Now, specifically set the RuleDetail for the CustomFieldlessRule instance.
+        clone.RuleDetail = this.RuleDetail; 
         return clone;
     }
+
+    #region Obsolete Abstract Implementations
+    // These methods are now obsolete due to refactoring in MappingRuleBase.
+    // They are implemented here to satisfy the abstract class requirements but should not be used directly.
+    // Prefer using Apply(ITransformationContext context) for applying rules.
+
+    /// <inheritdoc/>
+    /// <remarks>This method is obsolete. Use <see cref="Apply(ITransformationContext)"/> instead.</remarks>
+    public override Task<TransformationResult?> Apply(DataRow dataRow)
+    {
+        throw new System.NotImplementedException("This method is obsolete. Use Apply(ITransformationContext) instead. A TransformationContext can be created manually if needed, but this method should not be called directly.");
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>This method is obsolete. Use <see cref="Apply(ITransformationContext)"/> instead.</remarks>
+    public override Task<IEnumerable<TransformationResult?>> Apply(DataTable dataTable)
+    {
+        throw new System.NotImplementedException("This method is obsolete. Iterate through rows and use Apply(ITransformationContext) for each DataRow instead.");
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>This method is obsolete. Use <see cref="Apply(ITransformationContext)"/> instead.</remarks>
+    public override Task<IEnumerable<TransformationResult?>> Apply()
+    {
+        throw new System.NotImplementedException("This method is obsolete. Use Apply(ITransformationContext) instead, providing a context.");
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>This method is obsolete or its usage is unclear in this context. The primary rule application logic is in <see cref="Apply(ITransformationContext)"/>.</remarks>
+    public override TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecord, ImportedRecordFieldDescriptor targetField)
+    {
+        throw new System.NotImplementedException("This method is obsolete or its usage is unclear in this context. Consider using Apply(ITransformationContext) and accessing TransformationResult.CurrentValue.");
+    }
+    #endregion
 }

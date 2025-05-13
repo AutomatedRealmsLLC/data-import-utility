@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text.Json.Serialization;
 
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
-
 namespace AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 /// <summary>
@@ -80,11 +78,6 @@ public class FieldMapping
     public MappingRuleBase? MappingRule { get; set; }
 
     /// <summary>
-    /// The type of the mapping rule.
-    /// </summary>
-    public MappingRuleType MappingRuleType => MappingRule?.GetEnumValue() ?? MappingRuleType.IgnoreRule;
-
-    /// <summary>
     /// Whether the field is required to be mapped.
     /// </summary>
     public bool Required { get; set; }
@@ -92,8 +85,7 @@ public class FieldMapping
     /// <summary>
     /// Whether to ignore the mapping.
     /// </summary>
-    public bool IgnoreMapping => MappingRuleType == MappingRuleType.IgnoreRule
-        || (MappingRule?.IsEmpty ?? true);
+    public bool IgnoreMapping => MappingRule is null || MappingRule.IsEmpty;
 
     /// <summary>
     /// Applies the mapping rule to any available data in the child <see cref="MappingRule" />.
@@ -137,7 +129,7 @@ public class FieldMapping
     {
         if (transformedResult?.CurrentValue is null)
         {
-            validationResults = Required ? [new ValidationResult("The field is required.", new List<string> { FieldName })] : null;
+            validationResults = this.Required ? [new ValidationResult("The field is required.", new List<string> { FieldName })] : null;
             if (validationResults != null && validationResults.Count > 0)
             {
                 if (!_valueValidationResults.ContainsKey("<null>"))
@@ -191,7 +183,7 @@ public class FieldMapping
         _valueValidationResults.Clear();
         if (IgnoreMapping || MappingRule is null)
         {
-            if (Required)
+            if (this.Required)
             {
                 if (!_valueValidationResults.ContainsKey("<null>"))
                 {

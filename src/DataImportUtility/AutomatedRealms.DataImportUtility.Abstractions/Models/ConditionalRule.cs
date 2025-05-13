@@ -1,4 +1,4 @@
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Models;
 
@@ -13,12 +13,20 @@ public class ConditionalRule : IDisposable, IEquatable<ConditionalRule>
     public ImportedRecordFieldDescriptor? SourceField { get; set; }
 
     /// <summary>
-    /// The type of comparison to perform.
+    /// Gets or sets the TypeId of the comparison operation to perform.
+    /// Used for serialization.
     /// </summary>
-    public ComparisonOperationType OperationType { get; set; } = ComparisonOperationType.None;
+    public string? OperationTypeId { get; set; }
 
     /// <summary>
-    /// The value to compare against. The interpretation of this value depends on the <see cref="OperationType"/>.
+    /// Gets or sets the actual comparison operation instance.
+    /// This is resolved from OperationTypeId by the TypeRegistryService and is ignored during serialization.
+    /// </summary>
+    [JsonIgnore]
+    public ComparisonOperationBase? Operation { get; set; }
+
+    /// <summary>
+    /// The value to compare against. The interpretation of this value depends on the <see cref="Operation"/>.
     /// For operations like IsNullOrEmpty, this might not be used.
     /// For 'IsBetween', this could be the lower bound, and <see cref="SecondaryComparisonValue"/> the upper bound.
     /// </summary>
@@ -29,14 +37,9 @@ public class ConditionalRule : IDisposable, IEquatable<ConditionalRule>
     /// </summary>
     public string? SecondaryComparisonValue { get; set; }
 
-    // In the Abstractions layer, ComparisonOperation is not directly held to avoid a direct dependency
-    // on its concrete implementations from the Core layer. The OperationType enum is used instead.
-    // The actual ComparisonOperationBase instance will be resolved and used in the Core layer during evaluation.
-
     /// <summary>
     /// Event that is raised when the definition of this conditional rule changes.
     /// </summary>
-    // Typically, events are not serialized. System.Text.Json usually ignores them by default.
     public event Action? OnDefinitionChanged;
 
     /// <summary>
@@ -52,10 +55,6 @@ public class ConditionalRule : IDisposable, IEquatable<ConditionalRule>
         OnDefinitionChanged?.Invoke();
     }
 
-    // It's important that properties that affect the rule's definition call InvokeDefinitionChanged.
-    // For simplicity in this auto-generated example, setters are kept simple.
-    // In a manual implementation, you might add: `set { _field = value; InvokeDefinitionChanged(); }`
-
     /// <summary>
     /// Creates a new object that is a copy of the current instance.
     /// </summary>
@@ -65,7 +64,8 @@ public class ConditionalRule : IDisposable, IEquatable<ConditionalRule>
         return new ConditionalRule
         {
             SourceField = this.SourceField?.Clone(),
-            OperationType = this.OperationType,
+            OperationTypeId = this.OperationTypeId,
+            Operation = this.Operation?.Clone(),
             ComparisonValue = this.ComparisonValue,
             SecondaryComparisonValue = this.SecondaryComparisonValue
         };
@@ -110,7 +110,7 @@ public class ConditionalRule : IDisposable, IEquatable<ConditionalRule>
         if (ReferenceEquals(this, other)) return true;
 
         return EqualityComparer<ImportedRecordFieldDescriptor?>.Default.Equals(SourceField, other.SourceField) &&
-               OperationType == other.OperationType &&
+               OperationTypeId == other.OperationTypeId &&
                ComparisonValue == other.ComparisonValue &&
                SecondaryComparisonValue == other.SecondaryComparisonValue;
     }
@@ -123,7 +123,7 @@ public class ConditionalRule : IDisposable, IEquatable<ConditionalRule>
 
         // Suitable nullity checks
         hashCode = hashCode * 23 + (SourceField?.GetHashCode() ?? 0);
-        hashCode = hashCode * 23 + OperationType.GetHashCode();
+        hashCode = hashCode * 23 + (OperationTypeId?.GetHashCode() ?? 0);
         hashCode = hashCode * 23 + (ComparisonValue?.GetHashCode() ?? 0);
         hashCode = hashCode * 23 + (SecondaryComparisonValue?.GetHashCode() ?? 0);
 

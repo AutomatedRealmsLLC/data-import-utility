@@ -17,10 +17,12 @@ namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 /// </summary>
 public class CalculateTransformation : ValueTransformationBase
 {
-    private static readonly CalculationEngine _calculationEngine = new(CultureInfo.InvariantCulture);
+    /// <summary>
+    /// Static TypeId for this transformation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.CalculateTransformation";
 
-    /// <inheritdoc />
-    public override string EnumMemberName { get; } = nameof(CalculateTransformation);
+    private static readonly CalculationEngine _calculationEngine = new(CultureInfo.InvariantCulture);
 
     /// <summary>
     /// The error message when the calculation syntax provided could not be parsed.
@@ -51,6 +53,11 @@ public class CalculateTransformation : ValueTransformationBase
     /// <inheritdoc />
     [JsonIgnore]
     public override Type OutputType => typeof(decimal);
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CalculateTransformation"/> class.
+    /// </summary>
+    public CalculateTransformation() : base(TypeIdString) { }
 
     /// <inheritdoc />
     public override Task<TransformationResult> ApplyTransformationAsync(TransformationResult previousResult)
@@ -185,7 +192,8 @@ public class CalculateTransformation : ValueTransformationBase
         {
             DecimalPlaces = this.DecimalPlaces
         };
-        base.CloneBaseProperties(clone);
+        // Clones TransformationDetail, TypeId
+        this.CloneBaseProperties(clone);
         return clone;
     }
 }

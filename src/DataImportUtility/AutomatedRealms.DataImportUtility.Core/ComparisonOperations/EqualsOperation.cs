@@ -11,10 +11,13 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 /// </summary>
 public class EqualsOperation : ComparisonOperationBase
 {
-    // EnumMemberOrder removed
+    /// <summary>
+    /// The unique type identifier for this comparison operation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.Equals";
 
-    /// <inheritdoc />
-    public override string EnumMemberName { get; } = nameof(EqualsOperation); // Or a more specific enum if ComparisonOperatorType is introduced
+    // EnumMemberOrder removed
+    // EnumMemberName removed
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -27,7 +30,7 @@ public class EqualsOperation : ComparisonOperationBase
     /// <summary>
     /// Initializes a new instance of the <see cref="EqualsOperation"/> class.
     /// </summary>
-    public EqualsOperation() : base()
+    public EqualsOperation() : base(TypeIdString) // Pass TypeIdString to base constructor
     {
         // Operands (LeftOperand, RightOperand) are set via properties.
     }

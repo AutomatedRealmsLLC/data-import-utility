@@ -2,7 +2,6 @@ using System.Data;
 using System.Text.Json.Serialization;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -44,6 +43,11 @@ public class ConfiguredInputField
 public class CombineFieldsRule : MappingRuleBase
 {
     /// <summary>
+    /// Gets the unique identifier for this type of mapping rule.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.CombineFieldsRule";
+
+    /// <summary>
     /// Gets or sets the list of input fields to be combined. Each field can have its own transformations.
     /// </summary>
     public List<ConfiguredInputField> InputFields { get; set; } = [];
@@ -57,17 +61,7 @@ public class CombineFieldsRule : MappingRuleBase
     /// <summary>
     /// Initializes a new instance of the <see cref="CombineFieldsRule"/> class.
     /// </summary>
-    public CombineFieldsRule() { }
-
-    /// <summary>
-    /// Gets the type of the mapping rule.
-    /// </summary>
-    public override MappingRuleType RuleType => MappingRuleType.CombineFieldsRule;
-
-    /// <summary>
-    /// Gets the enum member name for the mapping rule type.
-    /// </summary>
-    public override string EnumMemberName => nameof(CombineFieldsRule);
+    public CombineFieldsRule() : base(TypeIdString) { }
 
     /// <summary>
     /// Gets the display name of the mapping rule.
@@ -92,29 +86,30 @@ public class CombineFieldsRule : MappingRuleBase
     [JsonIgnore]
     public override bool IsEmpty => !InputFields.Any() || string.IsNullOrWhiteSpace(CombinationFormat);
 
-    /// <summary>
-    /// Gets the <see cref="MappingRuleType"/> enum value for this rule.
-    /// </summary>
-    /// <returns>The <see cref="MappingRuleType.CombineFieldsRule"/> enum value.</returns>
-    public override MappingRuleType GetEnumValue() => this.RuleType;
-
-    /// <summary>
-    /// Gets the order value for the enum member.
-    /// </summary>
-    public override int EnumMemberOrder => 4;
-
     /// <inheritdoc />
     public override async Task<TransformationResult?> Apply(ITransformationContext context)
     {
         if (IsEmpty)
         {
-            return TransformationResult.Failure(null, context.TargetFieldType ?? typeof(string), "CombineFieldsRule is not configured: InputFields or CombinationFormat is missing.", record: context.Record, sourceRecordContext: context.SourceRecordContext, explicitTargetFieldType: context.TargetFieldType ?? typeof(string));
+            return TransformationResult.Failure(
+                originalValue: null, 
+                targetType: context.TargetFieldType ?? typeof(string), 
+                errorMessage: "CombineFieldsRule is not configured: InputFields or CombinationFormat is missing.", 
+                record: context.Record, 
+                sourceRecordContext: context.SourceRecordContext, 
+                explicitTargetFieldType: context.TargetFieldType ?? typeof(string));
         }
 
         DataRow? dataRow = context.Record;
         if (dataRow == null && InputFields.Any(cf => !string.IsNullOrEmpty(cf.FieldName)))
         {
-            return TransformationResult.Failure(null, context.TargetFieldType ?? typeof(string), "CombineFieldsRule requires a DataRow in the context when FieldNames are specified.", record: null, sourceRecordContext: context.SourceRecordContext, explicitTargetFieldType: context.TargetFieldType ?? typeof(string));
+            return TransformationResult.Failure(
+                originalValue: null, 
+                targetType: context.TargetFieldType ?? typeof(string), 
+                errorMessage: "CombineFieldsRule requires a DataRow in the context when FieldNames are specified.", 
+                record: null, 
+                sourceRecordContext: context.SourceRecordContext, 
+                explicitTargetFieldType: context.TargetFieldType ?? typeof(string));
         }
 
         var collectedValuesForCombination = new List<object?>();
@@ -379,10 +374,10 @@ nextField:;
     {
         var clone = new CombineFieldsRule
         {
-            CombinationFormat = this.CombinationFormat,
-            InputFields = [.. this.InputFields.Select(f => f.Clone())]
+            InputFields = [.. this.InputFields.Select(f => f.Clone())],
+            CombinationFormat = this.CombinationFormat
         };
-        base.CloneBaseProperties(clone);
+        this.CloneBaseProperties(clone);
         return clone;
     }
 }

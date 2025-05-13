@@ -1,4 +1,5 @@
 // Original file path: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Abstractions\MappingRuleBase.cs
+using System.Data;
 using System.Text.Json.Serialization;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
@@ -7,8 +8,18 @@ namespace AutomatedRealms.DataImportUtility.Abstractions;
 /// <summary>
 /// Base class for all mapping rules.
 /// </summary>
-public abstract class MappingRuleBase : ICloneable
+public abstract class MappingRuleBase : IMappingRule
 {
+    /// <summary>
+    /// The event that is raised when the definition of the rule changes.
+    /// </summary>
+    public event Func<Task>? OnDefinitionChanged;
+
+    /// <summary>
+    /// The unique identifier for the rule.
+    /// </summary>
+    public Guid Id { get; } = Guid.NewGuid();
+
     /// <summary>
     /// Gets the unique identifier for this type of mapping rule.
     /// This is used for serialization and deserialization.
@@ -16,50 +27,58 @@ public abstract class MappingRuleBase : ICloneable
     public string TypeId { get; protected set; }
 
     /// <summary>
-    /// The event that is raised when the definition of the rule changes.
+    /// The additional information for the rule.
     /// </summary>
-    public event Func<Task>? OnDefinitionChanged;
+    public string? RuleDetail { get; set; }
 
     /// <summary>
-    /// The name of the enum member that was previously used for this rule type.
-    /// This will be removed once the old enum system is fully deprecated.
+    /// Gets or sets the source field.
     /// </summary>
-    public abstract string EnumMemberName { get; } // To be removed
+    public string? SourceField { get; set; }
 
     /// <summary>
-    /// The display name of the rule.
+    /// Gets or sets the target field.
+    /// </summary>
+    public string? TargetField { get; set; }
+
+    /// <summary>
+    /// Gets or sets the parent table definition that this rule operates within.
+    /// </summary>
+    [JsonIgnore]
+    public ImportTableDefinition? ParentTableDefinition { get; set; }
+
+    /// <summary>
+    /// Gets or sets the source field transformations.
+    /// </summary>
+    public List<ValueTransformationBase> SourceFieldTransformations { get; set; } = [];
+
+    /// <summary>
+    /// Gets the display name of the mapping rule.
     /// </summary>
     [JsonIgnore]
     public abstract string DisplayName { get; }
 
     /// <summary>
-    /// The short name to display for the rule.
-    /// </summary>
-    [JsonIgnore]
-    public virtual string ShortName => DisplayName;
-
-    /// <summary>
-    /// The description of the rule.
+    /// Gets the description of the mapping rule.
     /// </summary>
     [JsonIgnore]
     public abstract string Description { get; }
 
     /// <summary>
-    /// The error message if the rule configuration is invalid.
+    /// Gets the short name of the mapping rule.
     /// </summary>
     [JsonIgnore]
-    public string? ErrorMessage { get; protected set; }
+    public abstract string ShortName { get; }
 
     /// <summary>
-    /// Indicates whether the rule configuration has an error.
+    /// Indicates whether the mapping rule is empty or not configured.
     /// </summary>
-    [JsonIgnore]
-    public bool IsError => !string.IsNullOrWhiteSpace(ErrorMessage);
+    public virtual bool IsEmpty => false;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappingRuleBase"/> class.
     /// </summary>
-    /// <param name="typeId">The unique identifier for this rule type.</param>
+    /// <param name="typeId">The unique identifier for this mapping rule type.</param>
     protected MappingRuleBase(string typeId)
     {
         if (string.IsNullOrWhiteSpace(typeId))
@@ -72,29 +91,98 @@ public abstract class MappingRuleBase : ICloneable
     /// <summary>
     /// Applies the mapping rule.
     /// </summary>
-    /// <param name="context">The transformation context.</param>
-    /// <returns>The result of the mapping rule.</returns>
-    public abstract Task<TransformationResult> ApplyRule(ITransformationContext context);
+    /// <returns>A collection of transformation results.</returns>
+    public abstract Task<IEnumerable<TransformationResult?>> Apply();
 
     /// <summary>
-    /// Creates a deep clone of this mapping rule.
+    /// Applies the mapping rule to the provided data table.
     /// </summary>
-    /// <returns>A new instance with the same properties.</returns>
-    public virtual MappingRuleBase Clone()
-    {
-        return (MappingRuleBase)MemberwiseClone();
-    }
+    /// <param name="data">The data table.</param>
+    /// <returns>A collection of transformation results.</returns>
+    public abstract Task<IEnumerable<TransformationResult?>> Apply(DataTable data);
 
+    /// <summary>
+    /// Applies the mapping rule to the provided data row.
+    /// </summary>
+    /// <param name="dataRow">The data row.</param>
+    /// <returns>A transformation result.</returns>
+    public abstract Task<TransformationResult?> Apply(DataRow dataRow);
+
+    /// <summary>
+    /// Applies the mapping rule to the provided transformation context.
+    /// </summary>
+    /// <param name="context">The transformation context.</param>
+    /// <returns>A transformation result.</returns>
+    public abstract Task<TransformationResult?> Apply(ITransformationContext context);
+
+    /// <summary>
+    /// Clones the mapping rule.
+    /// </summary>
+    /// <returns>A clone of the mapping rule.</returns>
+    public abstract MappingRuleBase Clone();
+
+    /// <summary>
+    /// Clones the mapping rule (IMappingRule interface implementation).
+    /// </summary>
+    /// <returns>A cloned IMappingRule.</returns>
+    IMappingRule IMappingRule.Clone() => this.Clone();
+
+    /// <summary>
+    /// Clones the mapping rule (ICloneable interface implementation).
+    /// </summary>
+    /// <returns>A cloned ICloneable.</returns>
     object ICloneable.Clone()
     {
         return Clone();
     }
 
     /// <summary>
-    /// Invokes the OnDefinitionChanged event.
+    /// Gets the value based on the source record and target field.
     /// </summary>
-    protected virtual Task InvokeOnDefinitionChangedAsync()
+    /// <param name="sourceRecord">The source record.</param>
+    /// <param name="targetField">The target field descriptor.</param>
+    /// <returns>A transformation result.</returns>
+    public abstract TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecord, ImportedRecordFieldDescriptor targetField);
+
+    /// <summary>
+    /// Gets the value based on the data row and target type.
+    /// </summary>
+    /// <param name="row">The data row to get the value from.</param>
+    /// <param name="targetType">The type to convert the value to.</param>
+    /// <returns>A transformation result.</returns>
+    public virtual async Task<TransformationResult> GetValue(DataRow row, Type targetType)
     {
-        return OnDefinitionChanged?.Invoke() ?? Task.CompletedTask;
+        if (row == null)
+        {
+            throw new ArgumentNullException(nameof(row));
+        }
+        var result = await Apply(row);
+        return result ?? TransformationResult.Failure(
+            originalValue: null,
+            targetType: targetType,
+            errorMessage: "Rule.Apply(DataRow) returned null",
+            originalValueType: null,
+            currentValueType: null);
+    }
+
+    /// <summary>
+    /// Helper method to clone base properties. Derived classes should call this in their Clone implementation.
+    /// </summary>
+    /// <param name="target">The target mapping rule to clone properties to.</param>
+    protected virtual void CloneBaseProperties(MappingRuleBase target)
+    {
+        target.SourceField = this.SourceField;
+        target.TargetField = this.TargetField;
+        target.RuleDetail = this.RuleDetail;
+        target.TypeId = this.TypeId;
+        target.SourceFieldTransformations = [.. this.SourceFieldTransformations.Select(t => t.Clone())];
+    }
+
+    /// <summary>
+    /// Disposes the mapping rule, releasing any resources.
+    /// </summary>
+    public virtual void Dispose()
+    {
+        GC.SuppressFinalize(this);
     }
 }

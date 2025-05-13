@@ -1,7 +1,9 @@
 using System.Data;
+using System.Text.Json.Serialization;
+using System.Linq; // Added for Enumerable.Empty
+using System.Collections.Generic; // Added for List
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules
@@ -13,18 +15,23 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
     public class CopyRule : MappingRuleBase
     {
         /// <summary>
+        /// Gets the unique identifier for this type of mapping rule.
+        /// </summary>
+        public static readonly string TypeIdString = "Core.CopyRule";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CopyRule"/> class.
+        /// </summary>
+        public CopyRule() : base(TypeIdString) { }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CopyRule"/> class.
         /// </summary>
         /// <param name="sourceFieldName">The name of the source field to copy the value from.</param>
-        public CopyRule(string sourceFieldName)
+        public CopyRule(string sourceFieldName) : base(TypeIdString)
         {
             this.SourceField = sourceFieldName;
         }
-
-        /// <summary>
-        /// Gets the order value for the enum member.
-        /// </summary>
-        public override int EnumMemberOrder => 1;
 
         /// <summary>
         /// Gets the display name of the mapping rule.
@@ -35,16 +42,6 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         /// Gets the description of the mapping rule.
         /// </summary>
         public override string Description => $"Copies the value from the source field '{this.SourceField ?? "[undefined]"}'.";
-
-        /// <summary>
-        /// Gets the type of the mapping rule.
-        /// </summary>
-        public override MappingRuleType RuleType => MappingRuleType.CopyRule;
-
-        /// <summary>
-        /// Gets the enum member name for the mapping rule type.
-        /// </summary>
-        public override string EnumMemberName => nameof(CopyRule);
 
         /// <summary>
         /// Gets the short name of the mapping rule.
@@ -58,154 +55,110 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         public override bool IsEmpty => string.IsNullOrEmpty(this.SourceField);
 
         /// <summary>
-        /// Gets the <see cref="MappingRuleType"/> enum value for this rule.
+        /// Applies the mapping rule to the provided transformation context.
         /// </summary>
-        /// <returns>The <see cref="MappingRuleType.CopyRule"/> enum value.</returns>
-        public override MappingRuleType GetEnumValue() => this.RuleType;
-
-        /// <summary>
-        /// Applies the mapping rule to the provided data row.
-        /// </summary>
-        /// <param name="dataRow">The data row to apply the rule to.</param>
-        /// <returns>A transformation result, or null if the rule could not be applied.</returns>
-        public override async Task<TransformationResult?> Apply(DataRow dataRow)
-        {
-            if (string.IsNullOrEmpty(SourceField))
-            {
-                return TransformationResult.Failure(null, typeof(object), "Source field name is not configured for CopyRule.", originalValueType: null, record: dataRow, tableDefinition: null);
-            }
-
-            if (dataRow == null || !dataRow.Table.Columns.Contains(SourceField))
-            {
-                return TransformationResult.Failure(null, typeof(object), $"Source field '{SourceField}' not found in DataRow or DataRow is null.", originalValueType: null, record: dataRow, tableDefinition: null);
-            }
-
-            await Task.CompletedTask;
-
-            object? sourceValue = dataRow[SourceField];
-            Type? sourceValueType = sourceValue?.GetType();
-
-            TransformationResult currentProcessingResult = TransformationResult.Success(
-                originalValue: sourceValue,
-                originalValueType: sourceValueType,
-                currentValue: sourceValue,
-                currentValueType: sourceValueType,
-                appliedTransformations: new List<string>(),
-                record: dataRow,
-                tableDefinition: null
-            );
-
-            return currentProcessingResult;
-        }
-
-        /// <summary>
-        /// Applies the mapping rule using the provided transformation context.
-        /// </summary>
-        /// <param name="context">The transformation context, which includes the DataRow and TableDefinition.</param>
+        /// <param name="context">The transformation context containing the data row and other relevant information.</param>
         /// <returns>A transformation result, or null if the rule could not be applied.</returns>
         public override async Task<TransformationResult?> Apply(ITransformationContext context)
         {
             if (string.IsNullOrEmpty(SourceField))
             {
-                return TransformationResult.Failure(null, typeof(object), "Source field name is not configured for CopyRule.",
-                    originalValueType: null,
-                    record: (context as TransformationResult)?.Record,
-                    tableDefinition: (context as TransformationResult)?.TableDefinition);
+                return TransformationResult.Failure(
+                    originalValue: null, 
+                    targetType: context.TargetFieldType ?? typeof(object), 
+                    errorMessage: "Source field name is not configured for CopyRule.", 
+                    record: context.Record, 
+                    sourceRecordContext: context.SourceRecordContext,
+                    explicitTargetFieldType: context.TargetFieldType ?? typeof(object));
             }
 
-            var transformationContext = context as TransformationResult;
-            DataRow? dataRow = transformationContext?.Record;
-            ImportTableDefinition? tableDefinition = transformationContext?.TableDefinition;
-
+            DataRow? dataRow = context.Record;
             if (dataRow == null || !dataRow.Table.Columns.Contains(SourceField))
             {
-                return TransformationResult.Failure(null, typeof(object), $"Source field '{SourceField}' not found in DataRow or DataRow is null.",
-                    originalValueType: null,
-                    record: dataRow,
-                    tableDefinition: tableDefinition);
+                return TransformationResult.Failure(
+                    originalValue: null, 
+                    targetType: context.TargetFieldType ?? typeof(object), 
+                    errorMessage: $"Source field '{SourceField}' not found in DataRow or DataRow is null.", 
+                    record: dataRow, 
+                    sourceRecordContext: context.SourceRecordContext,
+                    explicitTargetFieldType: context.TargetFieldType ?? typeof(object));
             }
-
-            await Task.CompletedTask;
 
             object? sourceValue = dataRow[SourceField];
             Type? sourceValueType = sourceValue?.GetType();
+            Type targetType = context.TargetFieldType ?? sourceValueType ?? typeof(object);
+
+            var initialLog = new List<string> { $"CopyRule: Initial value from '{SourceField}' ('{sourceValue ?? "null"}')." };
 
             TransformationResult currentProcessingResult = TransformationResult.Success(
                 originalValue: sourceValue,
                 originalValueType: sourceValueType,
                 currentValue: sourceValue,
                 currentValueType: sourceValueType,
-                appliedTransformations: new List<string>(),
+                appliedTransformations: initialLog,
                 record: dataRow,
-                tableDefinition: tableDefinition
+                sourceRecordContext: context.SourceRecordContext,
+                targetFieldType: targetType
             );
 
-            return currentProcessingResult;
-        }
-
-        /// <summary>
-        /// Applies the mapping rule to all rows in the provided data table.
-        /// </summary>
-        /// <param name="data">The data table to apply the rule to.</param>
-        /// <returns>An enumerable collection of transformation results for each row.</returns>
-        public override async Task<IEnumerable<TransformationResult?>> Apply(DataTable data)
-        {
-            if (data == null) return new List<TransformationResult?>();
-            var results = new List<TransformationResult?>();
-            foreach (DataRow row in data.Rows)
+            foreach (var transformation in SourceFieldTransformations)
             {
-                var rowContext = TransformationResult.Success(null, null, null, null, record: row, tableDefinition: null);
-                results.Add(await Apply(rowContext).ConfigureAwait(false));
+                currentProcessingResult = await transformation.ApplyTransformationAsync(currentProcessingResult);
+                if (currentProcessingResult.WasFailure)
+                {
+                    return currentProcessingResult; // Propagate failure
+                }
             }
-            return results;
+            
+            var finalLog = new List<string>(currentProcessingResult.AppliedTransformations ?? Enumerable.Empty<string>());
+            finalLog.Add($"CopyRule: Copied value from '{SourceField}' after all transformations. Final value: '{currentProcessingResult.CurrentValue ?? "null"}'.");
+
+            return currentProcessingResult with { AppliedTransformations = finalLog };
         }
 
         /// <summary>
-        /// Applies the mapping rule in a context where no specific data table or row is provided.
-        /// This might imply a default or pre-configured source. For CopyRule, this is typically not used without data.
+        /// Clones this mapping rule.
         /// </summary>
-        /// <returns>An enumerable collection of transformation results.</returns>
-        public override Task<IEnumerable<TransformationResult?>> Apply()
-        {
-            return Task.FromResult(new List<TransformationResult?>().AsEnumerable());
-        }
-
-        /// <summary>
-        /// Gets the value from a source record represented by a list of field descriptors.
-        /// </summary>
-        /// <param name="sourceRecord">The source record, represented as a list of <see cref="ImportedRecordFieldDescriptor"/>.</param>
-        /// <param name="targetField">The descriptor of the target field (used to determine target type if needed).</param>
-        /// <returns>A <see cref="TransformationResult"/> containing the copied value.</returns>
-        public override TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecord, ImportedRecordFieldDescriptor targetField)
-        {
-            Type targetValueType = targetField?.FieldType ?? typeof(object);
-
-            if (string.IsNullOrEmpty(SourceField))
-            {
-                return TransformationResult.Failure(null, targetValueType, "Source field name is not configured for CopyRule.");
-            }
-
-            var sourceFieldDescriptor = sourceRecord?.FirstOrDefault(f => f.FieldName == SourceField);
-            if (sourceFieldDescriptor == null)
-            {
-                return TransformationResult.Failure(null, targetValueType, $"Source field '{SourceField}' not found in source record.");
-            }
-
-            object? val = sourceFieldDescriptor.ValueSet?.FirstOrDefault();
-            Type valType = sourceFieldDescriptor.FieldType ?? (val?.GetType() ?? typeof(object));
-
-            return TransformationResult.Success(val, valType, val, valType, new List<string>());
-        }
-
-        /// <summary>
-        /// Creates a clone of this <see cref="CopyRule"/> instance.
-        /// </summary>
-        /// <returns>A new <see cref="CopyRule"/> instance with the same configuration.</returns>
+        /// <returns>A new instance of <see cref="CopyRule"/> with copied values.</returns>
         public override MappingRuleBase Clone()
         {
-            var clone = new CopyRule(this.SourceField!);
-            base.CloneBaseProperties(clone);
+            var clone = new CopyRule(); 
+            this.CloneBaseProperties(clone); 
             return clone;
         }
+
+        #region Obsolete Abstract Implementations
+        // These methods are now obsolete due to refactoring in MappingRuleBase.
+        // They are implemented here to satisfy the abstract class requirements but should not be used directly.
+        // Prefer using Apply(ITransformationContext context) for applying rules.
+
+        /// <inheritdoc/>
+        /// <remarks>This method is obsolete. Use <see cref="Apply(ITransformationContext)"/> instead.</remarks>
+        public override Task<TransformationResult?> Apply(DataRow dataRow)
+        {
+            throw new System.NotImplementedException("This method is obsolete. Use Apply(ITransformationContext) instead, which can be constructed with a DataRow.");
+        }
+
+        /// <inheritdoc/>
+        /// <remarks>This method is obsolete. Use <see cref="Apply(ITransformationContext)"/> instead.</remarks>
+        public override Task<IEnumerable<TransformationResult?>> Apply(DataTable dataTable)
+        {
+            throw new System.NotImplementedException("This method is obsolete. Iterate through rows and use Apply(ITransformationContext) for each DataRow instead.");
+        }
+
+        /// <inheritdoc/>
+        /// <remarks>This method is obsolete. Use <see cref="Apply(ITransformationContext)"/> instead.</remarks>
+        public override Task<IEnumerable<TransformationResult?>> Apply()
+        {
+            throw new System.NotImplementedException("This method is obsolete. Use Apply(ITransformationContext) instead, providing a context.");
+        }
+
+        /// <inheritdoc/>
+        /// <remarks>This method is obsolete or its usage is unclear in this context. The primary rule application logic is in <see cref="Apply(ITransformationContext)"/>.</remarks>
+        public override TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecord, ImportedRecordFieldDescriptor targetField)
+        {
+            throw new System.NotImplementedException("This method is obsolete or its usage is unclear in this context. Consider using Apply(ITransformationContext) and accessing TransformationResult.CurrentValue.");
+        }
+        #endregion
     }
 }

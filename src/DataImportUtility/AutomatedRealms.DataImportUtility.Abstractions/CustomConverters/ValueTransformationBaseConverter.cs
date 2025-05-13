@@ -1,8 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
-using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
+using AutomatedRealms.DataImportUtility.Abstractions.Services; // Added for ITypeRegistryService
+using System; // Added for ArgumentNullException
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.CustomConverters;
 
@@ -11,7 +10,23 @@ namespace AutomatedRealms.DataImportUtility.Abstractions.CustomConverters;
 /// </summary>
 public class ValueTransformationBaseConverter : JsonConverter<ValueTransformationBase>
 {
-    private static readonly string _opNamePropCamelCase = nameof(ValueTransformationBase.EnumMemberName).ToCamelCase()!;
+    private readonly ITypeRegistryService _typeRegistryService;
+    private const string TypeIdPropertyNameCamelCase = "typeId";
+    private const string TypeIdPropertyNamePascalCase = "TypeId";
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ValueTransformationBaseConverter"/> class.
+    /// </summary>
+    /// <param name="typeRegistryService">The type registry service to resolve TypeIds.</param>
+    /// <exception cref="ArgumentNullException">Thrown if typeRegistryService is null.</exception>
+    public ValueTransformationBaseConverter(ITypeRegistryService typeRegistryService)
+    {
+        if (typeRegistryService == null)
+        {
+            throw new ArgumentNullException(nameof(typeRegistryService));
+        }
+        _typeRegistryService = typeRegistryService;
+    }
 
     /// <inheritdoc />
     public override ValueTransformationBase Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -19,21 +34,39 @@ public class ValueTransformationBaseConverter : JsonConverter<ValueTransformatio
         using var doc = JsonDocument.ParseValue(ref reader);
         var root = doc.RootElement;
 
-        if (root.TryGetProperty(_opNamePropCamelCase, out JsonElement opNameElement) || root.TryGetProperty(nameof(ValueTransformationBase.EnumMemberName), out opNameElement))
+        if (!root.TryGetProperty(TypeIdPropertyNameCamelCase, out JsonElement typeIdElement) &&
+            !root.TryGetProperty(TypeIdPropertyNamePascalCase, out typeIdElement))
         {
-            var operationName = opNameElement.GetString();
-            var operationType = Enum.TryParse<ValueTransformationType>(operationName, out var vt) ? vt : throw new JsonException($"Failed to parse {nameof(ValueTransformationType)} from Name property value: '{operationName}'.");
-            // Ensure GetClassType is accessible, potentially via Core.Helpers or Abstractions.Helpers
-            return JsonSerializer.Deserialize(root.GetRawText(), operationType.GetClassType()!, options) as ValueTransformationBase
-                ?? throw new JsonException($"Failed to deserialize {nameof(ValueTransformationBase)}.");
+            throw new JsonException($"Property '{TypeIdPropertyNameCamelCase}' or '{TypeIdPropertyNamePascalCase}' not found for deserializing {nameof(ValueTransformationBase)}.");
         }
 
-        throw new JsonException($"{nameof(ValueTransformationBase.EnumMemberName)} property not found.");
+        var typeIdString = typeIdElement.GetString();
+        if (string.IsNullOrWhiteSpace(typeIdString))
+        {
+            throw new JsonException($"TypeId value is null or empty for {nameof(ValueTransformationBase)}.");
+        }
+
+        // typeIdString is guaranteed not to be null here due to the IsNullOrWhiteSpace check above.
+        if (!_typeRegistryService.TryResolveType(typeIdString!, out Type? concreteType) || concreteType == null)
+        {
+            throw new JsonException($"Unable to resolve TypeId '{typeIdString}' to a registered type for {nameof(ValueTransformationBase)}. Ensure the type is registered with ITypeRegistryService.");
+        }
+
+        if (!typeof(ValueTransformationBase).IsAssignableFrom(concreteType))
+        {
+            throw new JsonException($"The resolved type '{concreteType.FullName}' for TypeId '{typeIdString}' does not inherit from {nameof(ValueTransformationBase)}.");
+        }
+
+        var deserializedObject = JsonSerializer.Deserialize(root.GetRawText(), concreteType, options);
+
+        return deserializedObject as ValueTransformationBase
+               ?? throw new JsonException($"Failed to deserialize {nameof(ValueTransformationBase)} to concrete type '{concreteType.FullName}' using TypeId '{typeIdString}'. The deserialized object was null or not assignable.");
     }
 
     /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, ValueTransformationBase value, JsonSerializerOptions options)
     {
+        // The TypeId property on the value object will be serialized as part of its properties.
         JsonSerializer.Serialize(writer, value, value.GetType(), options);
     }
 }

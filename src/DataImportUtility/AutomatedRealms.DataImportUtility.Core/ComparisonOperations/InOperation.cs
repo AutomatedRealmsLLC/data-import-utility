@@ -1,7 +1,11 @@
 using System.Text.Json.Serialization;
-
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
+
+using AutomatedRealms.DataImportUtility.Core.Rules; // For StaticValueRule
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -10,9 +14,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 /// </summary>
 public class InOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    [JsonIgnore]
-    public override string EnumMemberName { get; } = nameof(InOperation);
+    /// <summary>
+    /// The unique type identifier for this comparison operation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.InOperation";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -24,20 +29,68 @@ public class InOperation : ComparisonOperationBase
 
     /// <summary>
     /// The set of values to check against.
+    /// These are rules that will be evaluated to get the actual values for comparison.
     /// </summary>
-    public IEnumerable<MappingRuleBase>? Values { get; set; }
+    public List<MappingRuleBase> Values { get; private set; } = new List<MappingRuleBase>();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InOperation"/> class.
+    /// </summary>
+    public InOperation() : base(TypeIdString)
+    {
+    }
+
+    /// <inheritdoc />
+    public override void ConfigureOperands(
+        MappingRuleBase leftOperand,
+        MappingRuleBase? rightOperand, // Expected to be a StaticValueRule with a comma-separated list of values
+        MappingRuleBase? secondaryRightOperand) // Not used by InOperation
+    {
+        this.LeftOperand = leftOperand ?? throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
+        this.RightOperand = rightOperand;
+        this.HighLimit = secondaryRightOperand; 
+
+        if (rightOperand is StaticValueRule staticValueRule && staticValueRule.Value != null && !string.IsNullOrWhiteSpace(staticValueRule.Value.ToString()))
+        {
+            var rawValue = staticValueRule.Value.ToString();
+            var individualValues = (rawValue ?? string.Empty).Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s));
+            
+            foreach (var valStr in individualValues)
+            {
+                // Use DisplayName from the left operand to create a more descriptive identifier for the generated rules.
+                var namePart = this.LeftOperand?.DisplayName ?? "UnknownLeftOperand";
+                // Create a unique identifier for the StaticValueRule using its value and the context from the left operand.
+                var ruleIdentifier = $"InValue_{valStr}_for_{namePart.Replace(" ", "_")}";
+                var valueItemRule = new StaticValueRule(valStr, ruleIdentifier);
+                if (staticValueRule.ParentTableDefinition != null)
+                {
+                    valueItemRule.ParentTableDefinition = staticValueRule.ParentTableDefinition;
+                }
+                this.Values.Add(valueItemRule);
+            }
+        }
+        else if (rightOperand != null && !(rightOperand is StaticValueRule && ((StaticValueRule)rightOperand).Value == null))
+        {
+            throw new InvalidOperationException($"For {TypeIdString}, if 'rightOperand' (ComparisonValue) is provided, it must be a StaticValueRule containing a non-empty, comma-separated string of values. Current rightOperand type: {rightOperand.GetType().Name}, Value: '{(rightOperand as StaticValueRule)?.Value?.ToString()}'.");
+        }
+
+        if (!this.Values.Any())
+        {
+            throw new InvalidOperationException($"The '{nameof(Values)}' collection must be populated for the {TypeIdString} operation. This typically comes from parsing the 'rightOperand' (ComparisonValue) as a comma-separated string.");
+        }
+    }
 
     /// <inheritdoc />
     public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
         if (LeftOperand is null)
         {
-            throw new InvalidOperationException($"Both {nameof(LeftOperand)} must be set for {DisplayName} operation.");
+            throw new InvalidOperationException($"LeftOperand must be set for {DisplayName} operation. Ensure ConfigureOperands was called.");
         }
 
-        if (Values is null || !Values.Any())
+        if (!Values.Any())
         {
-            throw new InvalidOperationException($"{nameof(Values)} must be set and contain at least one value for {DisplayName} operation.");
+            throw new InvalidOperationException($"'{nameof(Values)}' collection must not be empty for {DisplayName} operation. Ensure ConfigureOperands was called and processed valid input.");
         }
 
         var leftResult = await LeftOperand.Apply(contextResult);
@@ -50,27 +103,31 @@ public class InOperation : ComparisonOperationBase
         var valueResults = new List<TransformationResult>();
         foreach (var valueRule in Values)
         {
-            if (valueRule == null) continue;
             var valueEvaluationResult = await valueRule.Apply(contextResult);
             if (valueEvaluationResult == null || valueEvaluationResult.WasFailure)
             {
-                throw new InvalidOperationException($"Failed to evaluate a value in {nameof(Values)} for {DisplayName} operation: {valueEvaluationResult?.ErrorMessage ?? "Result was null."}");
+                // Include DisplayName or TypeId in the error for better diagnostics.
+                var ruleDesc = !string.IsNullOrEmpty(valueRule.DisplayName) ? valueRule.DisplayName : valueRule.TypeId;
+                throw new InvalidOperationException($"Failed to evaluate a value in {nameof(Values)} for {DisplayName} operation (Rule: {ruleDesc}): {valueEvaluationResult?.ErrorMessage ?? "Result was null."}");
             }
             valueResults.Add(valueEvaluationResult);
         }
 
         return leftResult.In([.. valueResults]);
     }
-
+    
     /// <inheritdoc />
     public override ComparisonOperationBase Clone()
     {
-        return new InOperation
-        {
-            LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(),
-            Values = Values?.Select(v => v.Clone()).ToList(),
-        };
+        var clone = (InOperation)MemberwiseClone(); 
+        clone.TypeId = this.TypeId; 
+
+        clone.LeftOperand = this.LeftOperand?.Clone() as MappingRuleBase;
+        clone.RightOperand = this.RightOperand?.Clone() as MappingRuleBase;
+        clone.HighLimit = this.HighLimit?.Clone() as MappingRuleBase;
+
+        clone.Values = this.Values.Select(v => (MappingRuleBase)v.Clone()).ToList();
+        return clone;
     }
 }
 

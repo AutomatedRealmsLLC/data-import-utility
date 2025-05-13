@@ -3,8 +3,8 @@ using System.Data;
 using System.Text.Json.Serialization;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Extensions;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules
 {
@@ -13,11 +13,17 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
     /// The primary purpose is to retrieve a value from a specified source field.
     /// </summary>
     public class FieldAccessRule : MappingRuleBase
-    {        /// <summary>
-             /// Initializes a new instance of the <see cref="FieldAccessRule"/> class.
-             /// </summary>
-             /// <param name="sourceFieldName">The name of the field to access.</param>
-        public FieldAccessRule(string sourceFieldName)
+    {
+        /// <summary>
+        /// Static TypeId for this rule.
+        /// </summary>
+        public static readonly string TypeIdString = "Core.FieldAccessRule";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldAccessRule"/> class.
+        /// </summary>
+        /// <param name="sourceFieldName">The name of the field to access.</param>
+        public FieldAccessRule(string sourceFieldName) : base(TypeIdString)
         {
             this.SourceField = sourceFieldName;
         }
@@ -27,7 +33,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         /// </summary>
         /// <param name="sourceFieldName">The name of the field to access.</param>
         /// <param name="ruleDetail">Additional information about the rule.</param>
-        public FieldAccessRule(string sourceFieldName, string ruleDetail)
+        public FieldAccessRule(string sourceFieldName, string ruleDetail) : base(TypeIdString)
         {
             this.SourceField = sourceFieldName;
             this.RuleDetail = ruleDetail;
@@ -37,17 +43,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         /// Initializes a new instance of the <see cref="FieldAccessRule"/> class.
         /// Parameterless constructor for serialization.
         /// </summary>
-        public FieldAccessRule() { }
-
-        /// <summary>
-        /// Gets the type of the mapping rule.
-        /// </summary>
-        public override MappingRuleType RuleType => MappingRuleType.FieldAccessRule;
-
-        /// <summary>
-        /// Gets the enum member name for the mapping rule type.
-        /// </summary>
-        public override string EnumMemberName => nameof(MappingRuleType.FieldAccessRule);
+        public FieldAccessRule() : base(TypeIdString) { }
 
         /// <summary>
         /// Gets the display name of the mapping rule.
@@ -73,17 +69,6 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         public override bool IsEmpty => string.IsNullOrEmpty(this.SourceField);
 
         /// <summary>
-        /// Gets the <see cref="MappingRuleType"/> enum value for this rule.
-        /// </summary>
-        /// <returns>The <see cref="MappingRuleType.FieldAccessRule"/> enum value.</returns>
-        public override MappingRuleType GetEnumValue() => this.RuleType;
-
-        /// <summary>
-        /// Gets the order value for the enum member.
-        /// </summary>
-        public override int EnumMemberOrder => 3;
-
-        /// <summary>
         /// Applies the rule to a DataRow. This overload extracts the field value directly from the row.
         /// </summary>
         /// <param name="dataRow">The DataRow to apply the rule to.</param>
@@ -91,15 +76,15 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         public override async Task<TransformationResult?> Apply(DataRow dataRow)
         {
             var context = TransformationResult.Success(
-                originalValue: null, // Original value is what we are trying to fetch
+                originalValue: null,
                 originalValueType: null,
-                currentValue: null, // Current value will be the fetched value
+                currentValue: null,
                 currentValueType: null,
                 appliedTransformations: new List<string>(),
                 record: dataRow,
-                tableDefinition: null, // Potentially ParentTableDefinition if available and relevant
-                sourceRecordContext: null, // DataRow is the primary source here
-                targetFieldType: null // Target type will be inferred from the source field
+                tableDefinition: ParentTableDefinition,
+                sourceRecordContext: null,
+                targetFieldType: null
             );
             return await Apply(context);
         }
@@ -127,13 +112,14 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
             object? value = null;
             Type? valueType = null;
             bool found = false;
+            string? actualSourceFieldName = this.SourceField;
 
             if (context.Record != null)
             {
-                if (context.Record.Table.Columns.Contains(this.SourceField))
+                if (context.Record.Table.Columns.Contains(actualSourceFieldName))
                 {
-                    value = context.Record[this.SourceField];
-                    valueType = value?.GetType();
+                    value = context.Record[actualSourceFieldName];
+                    valueType = context.Record.Table.Columns[actualSourceFieldName]?.DataType ?? value?.GetType();
                     found = true;
                 }
                 else
@@ -141,7 +127,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                     return Task.FromResult<TransformationResult?>(TransformationResult.Failure(
                         originalValue: null,
                         targetType: context.TargetFieldType ?? typeof(object),
-                        errorMessage: $"Field '{this.SourceField}' not found in DataRow.",
+                        errorMessage: $"Field '{actualSourceFieldName}' not found in DataRow.",
                         record: context.Record,
                         tableDefinition: context.TableDefinition,
                         sourceRecordContext: context.SourceRecordContext,
@@ -151,7 +137,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
             }
             else if (context.SourceRecordContext != null)
             {
-                var fieldDesc = context.SourceRecordContext.FirstOrDefault(f => f.FieldName == this.SourceField);
+                var fieldDesc = context.SourceRecordContext.FirstOrDefault(f => f.FieldName.Equals(actualSourceFieldName, StringComparison.OrdinalIgnoreCase));
                 if (fieldDesc != null)
                 {
                     value = fieldDesc.ValueSet?.FirstOrDefault();
@@ -163,7 +149,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                     return Task.FromResult<TransformationResult?>(TransformationResult.Failure(
                         originalValue: null,
                         targetType: context.TargetFieldType ?? typeof(object),
-                        errorMessage: $"Field '{this.SourceField}' not found in SourceRecordContext.",
+                        errorMessage: $"Field '{actualSourceFieldName}' not found in SourceRecordContext.",
                         record: context.Record,
                         tableDefinition: context.TableDefinition,
                         sourceRecordContext: context.SourceRecordContext,
@@ -174,20 +160,41 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
 
             if (found)
             {
+                if (context.TargetFieldType != null && value != null && valueType != context.TargetFieldType)
+                {
+                    try
+                    {
+                        value = Convert.ChangeType(value, context.TargetFieldType, System.Globalization.CultureInfo.InvariantCulture);
+                        valueType = context.TargetFieldType;
+                    }
+                    catch (Exception ex)
+                    {
+                        return Task.FromResult<TransformationResult?>(TransformationResult.Failure(
+                            originalValue: value,
+                            targetType: context.TargetFieldType,
+                            errorMessage: $"FieldAccessRule: Could not convert value from field '{actualSourceFieldName}' to target type '{context.TargetFieldType.Name}'. Error: {ex.Message}",
+                            originalValueType: value?.GetType(),
+                            record: context.Record,
+                            tableDefinition: context.TableDefinition,
+                            sourceRecordContext: context.SourceRecordContext,
+                            explicitTargetFieldType: context.TargetFieldType
+                        ));
+                    }
+                }
+
                 return Task.FromResult<TransformationResult?>(TransformationResult.Success(
-                    originalValue: value, // The accessed value is the original in this context
+                    originalValue: value,
                     originalValueType: valueType,
                     currentValue: value,
                     currentValueType: valueType,
-                    appliedTransformations: new List<string> { $"Accessed field '{this.SourceField}'." },
+                    appliedTransformations: new List<string> { $"Accessed field '{actualSourceFieldName}'." },
                     record: context.Record,
                     tableDefinition: context.TableDefinition,
                     sourceRecordContext: context.SourceRecordContext,
-                    targetFieldType: context.TargetFieldType ?? valueType // Use actual value type if target not specified
+                    targetFieldType: context.TargetFieldType ?? valueType
                 ));
             }
 
-            // If neither DataRow nor SourceRecordContext is available, or field not found in available context
             return Task.FromResult<TransformationResult?>(TransformationResult.Failure(
                 originalValue: null,
                 targetType: context.TargetFieldType ?? typeof(object),
@@ -206,31 +213,30 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         /// <returns>An enumerable collection of transformation results for each row.</returns>
         public override async Task<IEnumerable<TransformationResult?>> Apply(DataTable data)
         {
-            if (data == null) return new List<TransformationResult?>();
+            if (data == null) throw new ArgumentNullException(nameof(data));
 
             if (string.IsNullOrEmpty(this.SourceField))
             {
-                var failureTemplate = TransformationResult.Failure(
+                var failureResult = TransformationResult.Failure(
                     originalValue: null,
                     targetType: typeof(object),
                     errorMessage: "FieldAccessRule is not configured: SourceField is missing.",
                     explicitTargetFieldType: typeof(object)
-                    );
-                return Enumerable.Repeat(failureTemplate, data.Rows.Count).Cast<TransformationResult?>();
+                );
+                return Enumerable.Repeat(failureResult, data.Rows.Count).Cast<TransformationResult?>();
             }
 
             var results = new List<TransformationResult?>();
             foreach (DataRow row in data.Rows)
             {
-                // Create context for each row
                 var rowContext = TransformationResult.Success(
                     originalValue: null, originalValueType: null,
                     currentValue: null, currentValueType: null,
                     appliedTransformations: new List<string>(),
                     record: row,
-                    tableDefinition: null, // Or resolve from ParentTableDefinition or data.ExtendedProperties
+                    tableDefinition: ParentTableDefinition,
                     sourceRecordContext: null,
-                    targetFieldType: null // Will be inferred by Apply(ITransformationContext)
+                    targetFieldType: row.Table.Columns.Contains(this.SourceField) ? row.Table.Columns[this.SourceField]?.DataType : null
                 );
                 results.Add(await Apply(rowContext).ConfigureAwait(false));
             }
@@ -239,21 +245,18 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
 
         /// <summary>
         /// Applies the field access rule in a context where no specific data table or row is provided initially.
+        /// This typically implies an attempt to apply the rule without sufficient context, leading to failure.
         /// </summary>
-        /// <returns>A collection containing a failure result, as context is required.</returns>
-        public override async Task<IEnumerable<TransformationResult?>> Apply()
+        /// <returns>A collection containing a single failure result, as context is required for field access.</returns>
+        public override Task<IEnumerable<TransformationResult?>> Apply()
         {
-            var emptyContext = TransformationResult.Success(
-                originalValue: null, originalValueType: null,
-                currentValue: null, currentValueType: null,
-                appliedTransformations: new List<string>(),
-                record: null,
-                tableDefinition: null,
-                sourceRecordContext: null,
-                targetFieldType: null
+            var failureResult = TransformationResult.Failure(
+                originalValue: null,
+                targetType: typeof(object),
+                errorMessage: "FieldAccessRule cannot be applied without a DataRow or SourceRecordContext.",
+                explicitTargetFieldType: typeof(object)
             );
-            var result = await Apply(emptyContext);
-            return new List<TransformationResult?> { result };
+            return Task.FromResult(new List<TransformationResult?> { failureResult }.AsEnumerable());
         }
 
         /// <summary>
@@ -272,7 +275,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                 currentValue: null,
                 currentValueType: null,
                 appliedTransformations: new List<string>(),
-                record: null, // No DataRow in this specific GetValue signature.
+                record: null,
                 tableDefinition: null,
                 sourceRecordContext: sourceRecordContextList,
                 targetFieldType: effectiveTargetType

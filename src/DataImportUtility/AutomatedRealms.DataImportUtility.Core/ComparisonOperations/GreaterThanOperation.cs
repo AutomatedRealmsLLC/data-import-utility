@@ -11,9 +11,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 /// </summary>
 public class GreaterThanOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    [JsonIgnore]
-    public override string EnumMemberName { get; } = nameof(GreaterThanOperation);
+    /// <summary>
+    /// The unique type identifier for this comparison operation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.GreaterThan";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -23,32 +24,52 @@ public class GreaterThanOperation : ComparisonOperationBase
     [JsonIgnore]
     public override string Description { get; } = "Checks if a value is greater than another value.";
 
-    // Removed EnumMemberOrder property
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GreaterThanOperation"/> class.
+    /// </summary>
+    public GreaterThanOperation() : base(TypeIdString) // Pass TypeIdString to base constructor
+    {
+    }
 
     /// <inheritdoc />
-    public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is a TransformationResult, which implements ITransformationContext
+    public override void ConfigureOperands(
+        MappingRuleBase leftOperand,
+        MappingRuleBase? rightOperand,
+        MappingRuleBase? secondaryRightOperand)
     {
-        if (LeftOperand is null || RightOperand is null)
+        base.ConfigureOperands(leftOperand, rightOperand, secondaryRightOperand); // Calls base to set LeftOperand and RightOperand
+
+        if (this.LeftOperand is null) // Validation after base call
         {
-            // TODO: Log this failure more formally if a logging mechanism is integrated.
-            return false;
+            throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
+        }
+        if (this.RightOperand is null) // Validation after base call
+        {
+            // For GreaterThan, RightOperand is the value to compare against (like LowLimit in base, but conceptually the primary comparison value)
+            throw new ArgumentNullException(nameof(rightOperand), $"Right operand (value to compare against) must be provided for {TypeIdString}.");
+        }
+        // secondaryRightOperand is not used by GreaterThanOperation.
+        // Base ConfigureOperands sets HighLimit to secondaryRightOperand, which is fine as it won't be used.
+    }
+
+    /// <inheritdoc />
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
+    {
+        if (LeftOperand is null || RightOperand is null) // Should be caught by ConfigureOperands
+        {
+            throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set for {DisplayName} operation. Ensure ConfigureOperands was called.");
         }
 
-        // This should now call MappingRuleBase.Apply(ITransformationContext context)
         TransformationResult? leftOpResult = await LeftOperand.Apply(contextResult);
-
         if (leftOpResult is null || leftOpResult.WasFailure)
         {
-            // TODO: Log leftOpResult?.ErrorMessage or null operand
-            return false;
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOpResult?.ErrorMessage ?? "Result was null."}");
         }
 
         TransformationResult? rightOpResult = await RightOperand.Apply(contextResult);
-
         if (rightOpResult is null || rightOpResult.WasFailure)
         {
-            // TODO: Log rightOpResult?.ErrorMessage or null operand
-            return false;
+            throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOpResult?.ErrorMessage ?? "Result was null."}");
         }
 
         return leftOpResult.GreaterThan(rightOpResult); // Extension method on TransformationResult
@@ -57,9 +78,8 @@ public class GreaterThanOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override ComparisonOperationBase Clone()
     {
-        // Base Clone() handles operands and MemberwiseClone.
-        // Specific properties of GreaterThanOperation (if any) would be cloned here.
-        return base.Clone();
+        // Base Clone() handles LeftOperand, RightOperand and MemberwiseClone.
+        return (GreaterThanOperation)base.Clone();
     }
 }
 

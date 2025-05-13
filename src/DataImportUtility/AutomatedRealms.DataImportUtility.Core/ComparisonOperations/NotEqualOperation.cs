@@ -2,7 +2,7 @@ using System.Globalization; // For CultureInfo and NumberStyles
 using System.Text.Json.Serialization;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and MappingRuleBase
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -11,9 +11,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 /// </summary>
 public class NotEqualOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    [JsonIgnore]
-    public override string EnumMemberName { get; } = nameof(NotEqualOperation);
+    /// <summary>
+    /// The unique type identifier for this comparison operation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.NotEqual";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -24,22 +25,41 @@ public class NotEqualOperation : ComparisonOperationBase
     public override string Description { get; } = "Checks if two values are not equal.";
 
     /// <summary>
-    /// Gets or sets the order of this operation if it's part of an enumerated list of operations.
+    /// Initializes a new instance of the <see cref="NotEqualOperation"/> class.
     /// </summary>
-    public int EnumMemberOrder { get; set; }
+    public NotEqualOperation() : base(TypeIdString)
+    {
+    }
 
     /// <inheritdoc />
-    public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is an ITransformationContext
+    public override void ConfigureOperands(
+        MappingRuleBase leftOperand,
+        MappingRuleBase? rightOperand,
+        MappingRuleBase? secondaryRightOperand)
     {
-        if (LeftOperand is null)
+        base.ConfigureOperands(leftOperand, rightOperand, secondaryRightOperand); // Calls base to set LeftOperand and RightOperand
+
+        if (this.LeftOperand is null) // Validation after base call
         {
-            throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
+            throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
         }
-        if (RightOperand is null)
+        if (this.RightOperand is null) // Validation after base call
         {
-            // For NotEqual, if Left is something and Right is not specified, it's arguably not equal.
-            // However, consistent with EqualsOperation, let's require both operands.
-            throw new InvalidOperationException($"{nameof(RightOperand)} must be set for {DisplayName} operation.");
+            throw new ArgumentNullException(nameof(rightOperand), $"Right operand must be provided for {TypeIdString}.");
+        }
+        // secondaryRightOperand is not used by NotEqualOperation, base class handles it (sets HighLimit which is fine)
+    }
+
+    /// <inheritdoc />
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
+    {
+        if (LeftOperand is null) // Should be caught by ConfigureOperands, but defensive check.
+        {
+            throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {DisplayName} operation. Ensure ConfigureOperands was called.");
+        }
+        if (RightOperand is null) // Should be caught by ConfigureOperands, but defensive check.
+        {
+            throw new InvalidOperationException($"{nameof(RightOperand)} must be set for {DisplayName} operation. Ensure ConfigureOperands was called.");
         }
 
         var leftResult = await LeftOperand.Apply(contextResult);
@@ -75,38 +95,25 @@ public class NotEqualOperation : ComparisonOperationBase
             {
                 return leftDate.Equals(rightDate);
             }
-            // If one is DateTime and the other isn't (or not parsable as such), they are not equal.
-            // Or if targetFieldType is DateTime and parsing fails for either.
             return false;
         }
 
         // Attempt numeric comparison
         if (IsNumericType(leftValue) && IsNumericType(rightValue))
         {
-            // Using double for comparison can lose precision. Prefer decimal for financial or exact comparisons.
-            // For general cases, double is often used. Let's try to be robust.
             if (TryParseDecimal(leftValue, out var leftDecimal) && TryParseDecimal(rightValue, out var rightDecimal))
             {
                 return leftDecimal == rightDecimal;
             }
-            // Fallback to double if decimal parsing fails or if types are mixed (e.g. int and double string)
             if (TryParseDouble(leftValue, out var leftDouble) && TryParseDouble(rightValue, out var rightDouble))
             {
-                // Using a small epsilon for floating-point comparison might be needed if precision issues are a concern.
-                // For now, direct comparison.
                 return leftDouble.Equals(rightDouble);
             }
-            // If numeric types but cannot parse to a common comparable type, consider them not equal.
             return false;
         }
 
-        // Fallback to string comparison (case-insensitive as per original likely intent for "Equals")
-        // If one is numeric and the other is string (and not parsable as numeric), they are not equal by type.
         if ((IsNumericType(leftValue) && rightValue is string) || (leftValue is string && IsNumericType(rightValue)))
         {
-            // If one is clearly numeric and the other is a string that wasn't parsed as numeric above,
-            // they are not equal. (e.g. 5 vs "apple")
-            // This check assumes TryParseDouble/Decimal would have handled cases like 5 vs "5.0"
             return false;
         }
 
@@ -151,7 +158,7 @@ public class NotEqualOperation : ComparisonOperationBase
             try { result = convertible.ToDouble(CultureInfo.InvariantCulture); return true; }
             catch { /* Fall through */ }
         }
-        return double.TryParse(obj.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out result);
+        return double.TryParse(obj.ToString(), System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture, out result);
     }
 
     private static bool TryParseDecimal(object? obj, out decimal result)
@@ -164,19 +171,15 @@ public class NotEqualOperation : ComparisonOperationBase
             try { result = convertible.ToDecimal(CultureInfo.InvariantCulture); return true; }
             catch { /* Fall through */ }
         }
-        return decimal.TryParse(obj.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out result);
+        return decimal.TryParse(obj.ToString(), System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture, out result);
     }
 
-
     /// <inheritdoc />
-    public override ComparisonOperationBase Clone() // Ensure return type is ComparisonOperationBase
+    public override ComparisonOperationBase Clone()
     {
-        return new NotEqualOperation
-        {
-            LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(),
-            EnumMemberOrder = EnumMemberOrder
-        };
+        // Base clone handles LeftOperand and RightOperand.
+        // No NotEqualOperation-specific properties to clone after removing EnumMemberOrder.
+        return (NotEqualOperation)base.Clone();
     }
 }
 

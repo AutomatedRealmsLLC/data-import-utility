@@ -1,5 +1,5 @@
+using System.Text.Json.Serialization;
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
@@ -10,25 +10,34 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
     public class IsNotNullOrWhiteSpaceOperation : ComparisonOperationBase
     {
         /// <summary>
-        /// Gets the display name of the operation.
+        /// Static TypeId for this operation.
         /// </summary>
-        public override string DisplayName => "Is Not Null or WhiteSpace";
+        public static readonly string TypeIdString = "Core.IsNotNullOrWhiteSpace";
 
-        /// <summary>
-        /// Gets the description of the operation.
-        /// </summary>
-        public override string Description => "Checks if the input value is not null, empty, and does not consist only of white-space characters.";
+        /// <inheritdoc />
+        [JsonIgnore]
+        public override string DisplayName { get; } = "Is Not Null or WhiteSpace";
 
-        /// <summary>
-        /// Gets the enum member name as a string.
-        /// </summary>
-        public override string EnumMemberName => ComparisonOperationType.IsNotNullOrWhiteSpace.ToString();
+        /// <inheritdoc />
+        [JsonIgnore]
+        public override string Description { get; } = "Checks if the input value is not null, empty, and does not consist only of white-space characters.";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IsNotNullOrWhiteSpaceOperation"/> class.
         /// </summary>
-        public IsNotNullOrWhiteSpaceOperation() : base()
+        public IsNotNullOrWhiteSpaceOperation() : base(TypeIdString)
         {
+        }
+
+        /// <inheritdoc />
+        public override void ConfigureOperands(MappingRuleBase? leftOperand, MappingRuleBase? rightOperand = null, MappingRuleBase? secondaryRightOperand = null)
+        {
+            if (leftOperand == null)
+            {
+                throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
+            }
+            LeftOperand = leftOperand;
+            // RightOperand and SecondaryRightOperand are not used by this operation.
         }
 
         /// <summary>
@@ -36,14 +45,27 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
         /// </summary>
         /// <param name="contextResult">The transformation context.</param>
         /// <returns>True if the value is not null or white space, otherwise false.</returns>
-        public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is an ITransformationContext
+        public override async Task<bool> Evaluate(TransformationResult contextResult)
         {
-            if (LeftOperand == null)
+            ITransformationContext? context = contextResult as ITransformationContext;
+            if (context == null)
             {
-                throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
+                if (contextResult is ITransformationContext directContext)
+                {
+                    context = directContext;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"The provided contextResult (type: {contextResult?.GetType().FullName}) could not be interpreted as an {nameof(ITransformationContext)} for {DisplayName} operation.");
+                }
             }
 
-            var leftValueResult = await LeftOperand.Apply(contextResult);
+            if (LeftOperand == null)
+            {
+                throw new InvalidOperationException($"{nameof(LeftOperand)} must be configured for {DisplayName} operation.");
+            }
+
+            var leftValueResult = await LeftOperand.Apply(context);
 
             if (leftValueResult == null || leftValueResult.WasFailure)
             {
@@ -64,6 +86,18 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations
 
             // If it's not a string and not null, it is considered not null or whitespace.
             return true;
+        }
+
+        /// <inheritdoc />
+        public override ComparisonOperationBase Clone()
+        {
+            var clone = new IsNotNullOrWhiteSpaceOperation();
+            if (LeftOperand != null)
+            {
+                clone.LeftOperand = LeftOperand.Clone();
+            }
+            // RightOperand is not used by this operation.
+            return clone;
         }
     }
 }

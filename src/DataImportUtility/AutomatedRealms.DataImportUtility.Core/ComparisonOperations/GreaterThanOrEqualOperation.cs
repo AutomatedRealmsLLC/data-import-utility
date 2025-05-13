@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
 
-using AutomatedRealms.DataImportUtility.Abstractions; // For ITransformationContext, ComparisonOperationBase
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and MappingRuleBase
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -11,9 +11,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 /// </summary>
 public class GreaterThanOrEqualOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    [JsonIgnore]
-    public override string EnumMemberName { get; } = nameof(GreaterThanOrEqualOperation);
+    /// <summary>
+    /// The unique type identifier for this comparison operation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.GreaterThanOrEqual";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -23,32 +24,50 @@ public class GreaterThanOrEqualOperation : ComparisonOperationBase
     [JsonIgnore]
     public override string Description { get; } = "Checks if a value is greater than or equal to another value.";
 
-    // Removed EnumMemberOrder property
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GreaterThanOrEqualOperation"/> class.
+    /// </summary>
+    public GreaterThanOrEqualOperation() : base(TypeIdString) // Pass TypeIdString to base constructor
+    {
+    }
 
     /// <inheritdoc />
-    public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is a TransformationResult, which implements ITransformationContext
+    public override void ConfigureOperands(
+        MappingRuleBase leftOperand,
+        MappingRuleBase? rightOperand,
+        MappingRuleBase? secondaryRightOperand)
     {
-        if (LeftOperand is null || RightOperand is null)
+        base.ConfigureOperands(leftOperand, rightOperand, secondaryRightOperand); // Calls base to set LeftOperand and RightOperand
+
+        if (this.LeftOperand is null) // Validation after base call
         {
-            // TODO: Log this failure.
-            return false;
+            throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
+        }
+        if (this.RightOperand is null) // Validation after base call
+        {
+            throw new ArgumentNullException(nameof(rightOperand), $"Right operand (value to compare against) must be provided for {TypeIdString}.");
+        }
+        // secondaryRightOperand is not used by GreaterThanOrEqualOperation.
+    }
+
+    /// <inheritdoc />
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
+    {
+        if (LeftOperand is null || RightOperand is null) // Should be caught by ConfigureOperands
+        {
+            throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set for {DisplayName} operation. Ensure ConfigureOperands was called.");
         }
 
-        // This should now call MappingRuleBase.Apply(ITransformationContext context)
         TransformationResult? leftOpResult = await LeftOperand.Apply(contextResult);
-
         if (leftOpResult is null || leftOpResult.WasFailure)
         {
-            // TODO: Log leftOpResult?.ErrorMessage or null operand
-            return false;
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOpResult?.ErrorMessage ?? "Result was null."}");
         }
 
         TransformationResult? rightOpResult = await RightOperand.Apply(contextResult);
-
         if (rightOpResult is null || rightOpResult.WasFailure)
         {
-            // TODO: Log rightOpResult?.ErrorMessage or null operand
-            return false;
+            throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOpResult?.ErrorMessage ?? "Result was null."}");
         }
 
         return leftOpResult.GreaterThanOrEqual(rightOpResult); // Extension method
@@ -57,8 +76,8 @@ public class GreaterThanOrEqualOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override ComparisonOperationBase Clone()
     {
-        // Base Clone() handles operands and MemberwiseClone.
-        return base.Clone();
+        // Base Clone() handles LeftOperand, RightOperand and MemberwiseClone.
+        return (GreaterThanOrEqualOperation)base.Clone();
     }
 }
 

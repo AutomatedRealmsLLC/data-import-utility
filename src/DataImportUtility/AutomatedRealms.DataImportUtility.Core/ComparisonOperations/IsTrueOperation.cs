@@ -2,7 +2,7 @@ using System.Globalization; // Added for CultureInfo.InvariantCulture
 using System.Text.Json.Serialization;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // Added for TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and ITransformationContext
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -11,9 +11,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 /// </summary>
 public class IsTrueOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    [JsonIgnore]
-    public override string EnumMemberName { get; } = nameof(IsTrueOperation);
+    /// <summary>
+    /// Static TypeId for this operation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.IsTrue";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -21,12 +22,25 @@ public class IsTrueOperation : ComparisonOperationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override string Description { get; } = "Checks if a value is true.";
+    public override string Description { get; } = "Checks if a value is considered true (e.g., boolean true, non-zero number, or 'true' string).";
 
     /// <summary>
-    /// Gets or sets the order of this operation if it's part of an enumerated list of operations.
+    /// Initializes a new instance of the <see cref="IsTrueOperation"/> class.
     /// </summary>
-    public int EnumMemberOrder { get; set; }
+    public IsTrueOperation() : base(TypeIdString)
+    {
+    }
+
+    /// <inheritdoc />
+    public override void ConfigureOperands(MappingRuleBase? leftOperand, MappingRuleBase? rightOperand = null, MappingRuleBase? secondaryRightOperand = null)
+    {
+        if (leftOperand == null)
+        {
+            throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
+        }
+        LeftOperand = leftOperand;
+        // RightOperand and SecondaryRightOperand are not used by this operation.
+    }
 
     /// <summary>
     /// Evaluates whether the left operand's value is considered true.
@@ -35,14 +49,27 @@ public class IsTrueOperation : ComparisonOperationBase
     /// </summary>
     /// <param name="contextResult">The transformation context.</param>
     /// <returns>True if the value is considered true, otherwise false.</returns>
-    public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is an ITransformationContext
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
-        if (LeftOperand is null)
+        ITransformationContext? context = contextResult as ITransformationContext;
+        if (context == null)
         {
-            throw new InvalidOperationException($"LeftOperand must be set for {DisplayName} operation.");
+            if (contextResult is ITransformationContext directContext)
+            {
+                context = directContext;
+            }
+            else
+            {
+                throw new InvalidOperationException($"The provided contextResult (type: {contextResult?.GetType().FullName}) could not be interpreted as an {nameof(ITransformationContext)} for {DisplayName} operation.");
+            }
         }
 
-        var leftResult = await LeftOperand.Apply(contextResult);
+        if (LeftOperand is null)
+        {
+            throw new InvalidOperationException($"{nameof(LeftOperand)} must be configured for {DisplayName} operation.");
+        }
+
+        var leftResult = await LeftOperand.Apply(context);
 
         if (leftResult == null)
         {
@@ -72,44 +99,33 @@ public class IsTrueOperation : ComparisonOperationBase
             {
                 return false; // Empty or whitespace string is not true
             }
+            // bool.TryParse handles "true"/"false" case-insensitively
             if (bool.TryParse(stringValue, out var parsedBool))
             {
                 return parsedBool;
             }
-            // Check for "true" case-insensitively, though bool.TryParse usually handles this.
-            // Adding explicit check for "true" for robustness if TryParse behavior varies or for clarity.
-            if (string.Equals(stringValue, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-            // Check for numeric interpretations
+            // Check for numeric interpretations if not parsed as bool
             if (double.TryParse(stringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var numberValue))
             {
                 return numberValue != 0;
             }
-            return false; // String is not recognizably true
+            return false; // String is not recognizably true (and not a valid bool string like "True")
         }
 
         // Handle numeric types directly (e.g., int, double, decimal)
         if (value is sbyte || value is byte || value is short || value is ushort || value is int || value is uint || value is long || value is ulong || value is float || value is double || value is decimal)
         {
-            // Convert to double for a common check against zero.
-            // This avoids a complex switch or multiple if-else statements for each numeric type.
-            // Using Convert.ToDouble for simplicity, assuming standard numeric conversions.
             try
             {
                 return Convert.ToDouble(value, CultureInfo.InvariantCulture) != 0;
             }
             catch (OverflowException)
             {
-                // If the number is too large to fit in a double but is non-zero, it's true.
-                // This case is rare for typical data but included for completeness.
-                // A more robust check might involve type-specific comparisons if precision is critical.
-                return true; // Or handle based on specific requirements for extreme values.
+                // If the number is too large/small for a double but is non-zero, it's true.
+                return true; 
             }
             catch (InvalidCastException)
             {
-                // Should not happen if type checks are correct, but as a fallback.
                 return false;
             }
         }
@@ -121,11 +137,12 @@ public class IsTrueOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override ComparisonOperationBase Clone()
     {
-        return new IsTrueOperation
+        var clone = new IsTrueOperation();
+        if (LeftOperand != null)
         {
-            LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(),
-            EnumMemberOrder = EnumMemberOrder
-        };
+            clone.LeftOperand = LeftOperand.Clone();
+        }
+        // RightOperand is not used by this operation.
+        return clone;
     }
 }

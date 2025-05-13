@@ -2,14 +2,8 @@ using System.Collections;
 using System.Text.Json.Serialization;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 // Alias for Abstractions.Models to avoid ambiguity with any potential Core.Models.TransformationResult
-using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models;
-
-// Assuming FieldTransformation will be in Core.Models. This using is specific.
-// If FieldTransformation moves, this will need to change.
-// For now, we also assume Core.Models does NOT have its own TransformationResult,
-// or if it does, the alias AbstractionsModels.TransformationResult will ensure we use the correct one.
-using CoreModels = AutomatedRealms.DataImportUtility.Core.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -18,8 +12,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 /// </summary>
 public partial class CombineFieldsTransformation : ValueTransformationBase
 {
-    /// <inheritdoc />
-    public override string EnumMemberName { get; } = nameof(CombineFieldsTransformation);
+    /// <summary>
+    /// Static TypeId for this transformation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.CombineFieldsTransformation";
 
     /// <summary>
     /// The error message when the number of values to combine does not match the number of field mappings.
@@ -40,7 +36,7 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
     /// The actual values to combine are expected in previousResult.CurrentValue.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public List<CoreModels.FieldTransformation> SourceFieldTransforms { get; set; } = [];
+    public List<FieldTransformation> SourceFieldTransforms { get; set; } = [];
 
     /// <inheritdoc />
     public override Type OutputType => typeof(string);
@@ -48,8 +44,13 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
     /// <inheritdoc />
     public override bool IsEmpty => (SourceFieldTransforms == null || !SourceFieldTransforms.Any()) && string.IsNullOrWhiteSpace(TransformationDetail);
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CombineFieldsTransformation"/> class.
+    /// </summary>
+    public CombineFieldsTransformation() : base(TypeIdString) { }
+
     /// <inheritdoc />
-    public override Task<AbstractionsModels.TransformationResult> ApplyTransformationAsync(AbstractionsModels.TransformationResult previousResult)
+    public override Task<TransformationResult> ApplyTransformationAsync(TransformationResult previousResult)
     {
         if (previousResult.WasFailure)
         {
@@ -60,7 +61,7 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
 
         if (string.IsNullOrWhiteSpace(pattern))
         {
-            return Task.FromResult(AbstractionsModels.TransformationResult.Success(
+            return Task.FromResult(TransformationResult.Success(
                 originalValue: previousResult.OriginalValue,
                 originalValueType: previousResult.OriginalValueType,
                 currentValue: pattern, // pattern is null or whitespace
@@ -101,7 +102,7 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
                 finalCombinedValue = finalCombinedValue.Replace($"${{{i}}}", valuesToInterpolate[i] ?? string.Empty);
             }
 
-            return Task.FromResult(AbstractionsModels.TransformationResult.Success(
+            return Task.FromResult(TransformationResult.Success(
                 originalValue: previousResult.OriginalValue,
                 originalValueType: previousResult.OriginalValueType,
                 currentValue: finalCombinedValue,
@@ -115,7 +116,7 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
         }
         catch (Exception ex)
         {
-            return Task.FromResult(AbstractionsModels.TransformationResult.Failure(
+            return Task.FromResult(TransformationResult.Failure(
                 originalValue: previousResult.OriginalValue,
                 targetType: OutputType, // Target type for this transformation
                 errorMessage: $"Error in CombineFields transformation: {ex.Message}",
@@ -131,10 +132,10 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
     }
 
     /// <inheritdoc />
-    public override async Task<AbstractionsModels.TransformationResult> Transform(object? value, Type targetType)
+    public override async Task<TransformationResult> Transform(object? value, Type targetType)
     {
         // 'value' for CombineFields is expected to be an IEnumerable of the pre-transformed values to combine.
-        var initialResult = AbstractionsModels.TransformationResult.Success(
+        var initialResult = TransformationResult.Success(
             originalValue: value, // This might be the collection itself, or null if not applicable directly
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value, // This is the collection of values to be combined
@@ -152,10 +153,13 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
     /// <inheritdoc />
     public override ValueTransformationBase Clone()
     {
-        // Create a shallow copy for simple properties.
-        var clone = (CombineFieldsTransformation)this.MemberwiseClone();
-        // Deep copy SourceFieldTransforms if it's not null, assuming FieldTransformation has a Clone method.
-        clone.SourceFieldTransforms = this.SourceFieldTransforms?.Select(ft => ft.Clone() as CoreModels.FieldTransformation ?? throw new InvalidOperationException("Cloned FieldTransformation is null or not of expected type.")).ToList() ?? [];
+        var clone = new CombineFieldsTransformation
+        {
+            // Deep copy SourceFieldTransforms if it's not null, assuming FieldTransformation has a Clone method.
+            SourceFieldTransforms = this.SourceFieldTransforms?.Select(t => t.Clone()).ToList() ?? new List<FieldTransformation>()
+        };
+        // Clones TransformationDetail, TypeId
+        this.CloneBaseProperties(clone);
         return clone;
     }
 }
@@ -179,8 +183,8 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
 // {
 // This method orchestrated the application of multiple FieldTransformation objects
 // and then combined their results. This is beyond the scope of a single ValueTransformationBase.
-// public static async Task<IEnumerable<AbstractionsModels.TransformationResult>> CombineFields(
-//     this IEnumerable<CoreModels.FieldTransformation> fieldTransforms, // FieldTransformation needs refactoring
+// public static async Task<IEnumerable<TransformationResult>> CombineFields(
+//     this IEnumerable<FieldTransformation> fieldTransforms, // FieldTransformation needs refactoring
 //     string? transformationDetail // This is the pattern, now part of CombineFieldsTransformation instance
 // Implicitly, this method also dealt with a "current row" or "current context"
 // from which FieldTransformation instances would draw their initial values.
@@ -204,7 +208,7 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
 // }
 
 // The logic of this extension method is now primarily within CombineFieldsTransformation.Transform
-// public static AbstractionsModels.TransformationResult CombineFields(this AbstractionsModels.TransformationResult result, string? operationDetail)
+// public static TransformationResult CombineFields(this TransformationResult result, string? operationDetail)
 // {
 //     // ... original logic ...
 // }

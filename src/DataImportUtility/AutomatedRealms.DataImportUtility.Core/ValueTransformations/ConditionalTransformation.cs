@@ -1,8 +1,7 @@
 using System.Text.Json.Serialization;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-
-using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 using CoreRules = AutomatedRealms.DataImportUtility.Core.Rules;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
@@ -12,11 +11,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 /// </summary>
 public partial class ConditionalTransformation : ValueTransformationBase
 {
-    /// <inheritdoc />
-    public override int EnumMemberOrder { get; } = 3;
-
-    /// <inheritdoc />
-    public override string EnumMemberName => nameof(ConditionalTransformation);
+    /// <summary>
+    /// Static TypeId for this transformation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.ConditionalTransformation";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -29,6 +27,11 @@ public partial class ConditionalTransformation : ValueTransformationBase
     /// <inheritdoc />
     [JsonIgnore]
     public override string Description => "Evaluate a condition and apply a transformation based on the result";
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConditionalTransformation"/> class.
+    /// </summary>
+    public ConditionalTransformation() : base(TypeIdString) { }
 
     /// <summary>
     /// The error message when any required component is missing
@@ -50,13 +53,13 @@ public partial class ConditionalTransformation : ValueTransformationBase
     /// The mapping rule to apply when the condition is true
     /// </summary>
     [JsonInclude]
-    public AbstractionsModels.MappingRuleBase? TrueMappingRule { get; set; }
+    public MappingRuleBase? TrueMappingRule { get; set; }
 
     /// <summary>
     /// The mapping rule to apply when the condition is false
     /// </summary>
     [JsonInclude]
-    public AbstractionsModels.MappingRuleBase? FalseMappingRule { get; set; }
+    public MappingRuleBase? FalseMappingRule { get; set; }
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -67,7 +70,7 @@ public partial class ConditionalTransformation : ValueTransformationBase
     public override Type OutputType => typeof(object);
 
     /// <inheritdoc />
-    public override async Task<AbstractionsModels.TransformationResult> ApplyTransformationAsync(AbstractionsModels.TransformationResult previousResult)
+    public override async Task<TransformationResult> ApplyTransformationAsync(TransformationResult previousResult)
     {
         if (previousResult.WasFailure)
         {
@@ -76,7 +79,7 @@ public partial class ConditionalTransformation : ValueTransformationBase
 
         if (ComparisonOperation is null)
         {
-            return AbstractionsModels.TransformationResult.Failure(
+            return TransformationResult.Failure(
                 originalValue: previousResult.OriginalValue,
                 targetType: OutputType,
                 errorMessage: $"{nameof(ComparisonOperation)} is null. {MissingComponentMessage}",
@@ -91,7 +94,7 @@ public partial class ConditionalTransformation : ValueTransformationBase
 
         if (TrueMappingRule is null)
         {
-            return AbstractionsModels.TransformationResult.Failure(
+            return TransformationResult.Failure(
                 originalValue: previousResult.OriginalValue,
                 targetType: OutputType,
                 errorMessage: $"{nameof(TrueMappingRule)} is null. {MissingComponentMessage}",
@@ -106,7 +109,7 @@ public partial class ConditionalTransformation : ValueTransformationBase
 
         if (FalseMappingRule is null)
         {
-            return AbstractionsModels.TransformationResult.Failure(
+            return TransformationResult.Failure(
                 originalValue: previousResult.OriginalValue,
                 targetType: OutputType,
                 errorMessage: $"{nameof(FalseMappingRule)} is null. {MissingComponentMessage}",
@@ -135,7 +138,7 @@ public partial class ConditionalTransformation : ValueTransformationBase
 
         if (ruleNeedsRecord && previousResult.Record is null)
         {
-            return AbstractionsModels.TransformationResult.Failure(
+            return TransformationResult.Failure(
                 originalValue: previousResult.OriginalValue,
                 targetType: OutputType,
                 errorMessage: MissingRecordMessage,
@@ -150,7 +153,7 @@ public partial class ConditionalTransformation : ValueTransformationBase
 
         try
         {
-            AbstractionsModels.TransformationResult? ruleResult;
+            TransformationResult? ruleResult;
             if (conditionMet)
             {
                 // TrueMappingRule is guaranteed non-null by checks above
@@ -164,7 +167,7 @@ public partial class ConditionalTransformation : ValueTransformationBase
 
             if (ruleResult == null)
             {
-                return AbstractionsModels.TransformationResult.Failure(
+                return TransformationResult.Failure(
                     originalValue: previousResult.OriginalValue,
                     targetType: OutputType,
                     errorMessage: "The executed conditional rule returned a null result.",
@@ -180,7 +183,7 @@ public partial class ConditionalTransformation : ValueTransformationBase
         }
         catch (Exception ex)
         {
-            return AbstractionsModels.TransformationResult.Failure(
+            return TransformationResult.Failure(
                 originalValue: previousResult.OriginalValue,
                 targetType: OutputType,
                 errorMessage: $"Error in conditional transformation: {ex.Message}",
@@ -195,9 +198,9 @@ public partial class ConditionalTransformation : ValueTransformationBase
     }
 
     /// <inheritdoc />
-    public override async Task<AbstractionsModels.TransformationResult> Transform(object? value, Type targetType)
+    public override async Task<TransformationResult> Transform(object? value, Type targetType)
     {
-        var initialResult = AbstractionsModels.TransformationResult.Success(
+        var initialResult = TransformationResult.Success(
             originalValue: value,
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value,
@@ -215,12 +218,13 @@ public partial class ConditionalTransformation : ValueTransformationBase
     /// <inheritdoc />
     public override ValueTransformationBase Clone()
     {
-        var clone = (ConditionalTransformation)MemberwiseClone();
-        clone.TransformationDetail = TransformationDetail;
-
-        clone.ComparisonOperation = ComparisonOperation?.Clone();
-        clone.TrueMappingRule = TrueMappingRule?.Clone();
-        clone.FalseMappingRule = FalseMappingRule?.Clone();
+        var clone = new ConditionalTransformation() // Ensure new instance with TypeId set by constructor
+        {
+            TransformationDetail = this.TransformationDetail,
+            ComparisonOperation = this.ComparisonOperation?.Clone(),
+            TrueMappingRule = this.TrueMappingRule?.Clone(),
+            FalseMappingRule = this.FalseMappingRule?.Clone()
+        };
         return clone;
     }
 }

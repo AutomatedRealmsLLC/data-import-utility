@@ -1,4 +1,5 @@
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions;
 
@@ -8,18 +9,21 @@ namespace AutomatedRealms.DataImportUtility.Abstractions;
 public abstract class ComparisonOperationBase
 {
     /// <summary>
-    /// The name of the enum member
+    /// Gets the unique identifier for this type of comparison operation.
+    /// This is used for serialization and deserialization.
     /// </summary>
-    public abstract string EnumMemberName { get; }
+    public string TypeId { get; protected set; }
 
     /// <summary>
     /// The display name of the operation
     /// </summary>
+    [JsonIgnore] // Typically not needed for serialization if TypeId is primary identifier
     public abstract string DisplayName { get; }
 
     /// <summary>
     /// The description of the operation
     /// </summary>
+    [JsonIgnore] // Typically not needed for serialization
     public abstract string Description { get; }
 
     /// <summary>
@@ -45,9 +49,38 @@ public abstract class ComparisonOperationBase
     /// <summary>
     /// Initializes a new instance of the <see cref="ComparisonOperationBase"/> class.
     /// </summary>
-    protected ComparisonOperationBase()
+    /// <param name="typeId">The unique identifier for this comparison operation type.</param>
+    protected ComparisonOperationBase(string typeId)
     {
-        // Operands are intended to be set via properties by the configuring rule.
+        if (string.IsNullOrWhiteSpace(typeId))
+        {
+            throw new ArgumentException("TypeId cannot be null or whitespace.", nameof(typeId));
+        }
+        TypeId = typeId;
+    }
+
+    /// <summary>
+    /// Configures the operands for the comparison operation.
+    /// Derived classes should override this to assign operands to their specific properties (e.g., LeftOperand, RightOperand, LowLimit, HighLimit)
+    /// and perform any necessary validation (e.g., checking for null if an operand is required).
+    /// </summary>
+    /// <param name="leftOperand">The primary rule providing the value to be compared (usually the source field value).</param>
+    /// <param name="rightOperand">The primary rule providing the value to compare against (e.g., a static value, another field's value).</param>
+    /// <param name="secondaryRightOperand">An optional secondary rule, used by operations like 'Between' for the upper limit.</param>
+    public virtual void ConfigureOperands(
+        MappingRuleBase leftOperand,
+        MappingRuleBase? rightOperand,
+        MappingRuleBase? secondaryRightOperand)
+    {
+        this.LeftOperand = leftOperand ?? throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {TypeId}.");
+        // Basic operations will use RightOperand. Range operations (like Between) will override to use LowLimit and HighLimit.
+        // Operations that don't need a right operand (e.g., IsNull) will override and might ignore it or validate it as null.
+        this.RightOperand = rightOperand; 
+        // Similarly, secondaryRightOperand is for specific cases like BetweenOperation's HighLimit.
+        // Default behavior is to assign it to HighLimit, but most operations won't use it.
+        // This can be refined in overrides.
+        this.LowLimit = rightOperand; // Default for operations that might use LowLimit (e.g. GreaterThan, Between)
+        this.HighLimit = secondaryRightOperand; // Default for operations that might use HighLimit (e.g. Between)
     }
 
     /// <summary>
@@ -67,19 +100,19 @@ public abstract class ComparisonOperationBase
         var clone = (ComparisonOperationBase)MemberwiseClone();
         if (LeftOperand != null)
         {
-            clone.LeftOperand = LeftOperand.Clone();
+            clone.LeftOperand = (MappingRuleBase)LeftOperand.Clone();
         }
         if (RightOperand != null)
         {
-            clone.RightOperand = RightOperand.Clone();
+            clone.RightOperand = (MappingRuleBase)RightOperand.Clone();
         }
         if (LowLimit != null)
         {
-            clone.LowLimit = LowLimit.Clone();
+            clone.LowLimit = (MappingRuleBase)LowLimit.Clone();
         }
         if (HighLimit != null)
         {
-            clone.HighLimit = HighLimit.Clone();
+            clone.HighLimit = (MappingRuleBase)HighLimit.Clone();
         }
         return clone;
     }

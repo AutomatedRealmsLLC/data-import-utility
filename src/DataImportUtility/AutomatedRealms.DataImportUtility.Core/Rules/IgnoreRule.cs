@@ -2,22 +2,24 @@ using System.Data;
 using System.Text.Json.Serialization;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
-
-using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules;
 
 /// <summary>
 /// A rule indicating the field should be ignored and not output to the destination.
 /// </summary>
-public class IgnoreRule : AbstractionsModels.MappingRuleBase
+public class IgnoreRule : MappingRuleBase
 {
-    /// <inheritdoc />
-    public override MappingRuleType RuleType => MappingRuleType.IgnoreRule;
+    /// <summary>
+    /// Static TypeId for this rule.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.IgnoreRule";
 
-    /// <inheritdoc />
-    public override string EnumMemberName => nameof(IgnoreRule);
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IgnoreRule"/> class.
+    /// </summary>
+    public IgnoreRule() : base(TypeIdString) { }
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -36,15 +38,9 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
     public override bool IsEmpty => false; // An ignore rule is never considered empty in terms of configuration.
 
     /// <inheritdoc />
-    public override MappingRuleType GetEnumValue() => this.RuleType;
-
-    /// <inheritdoc />
-    public override int EnumMemberOrder => 2;
-
-    /// <inheritdoc />
-    public override async Task<AbstractionsModels.TransformationResult?> Apply(DataRow dataRow)
+    public override async Task<TransformationResult?> Apply(DataRow dataRow)
     {
-        var context = AbstractionsModels.TransformationResult.Success(
+        var context = TransformationResult.Success(
             originalValue: null,
             originalValueType: null,
             currentValue: null,
@@ -64,11 +60,11 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
     /// </summary>
     /// <param name="context">The transformation context.</param>
     /// <returns>A transformation result indicating the field was ignored.</returns>
-    public override Task<AbstractionsModels.TransformationResult?> Apply(ITransformationContext context)
+    public override Task<TransformationResult?> Apply(ITransformationContext context)
     {
         // For an IgnoreRule, the CurrentValue is effectively null or not applicable.
         // The key is the AppliedTransformations message.
-        return Task.FromResult<AbstractionsModels.TransformationResult?>(AbstractionsModels.TransformationResult.Success(
+        return Task.FromResult<TransformationResult?>(TransformationResult.Success(
             originalValue: null, // No original value is processed or relevant for ignore
             originalValueType: null,
             currentValue: null, // Current value is null as it's ignored
@@ -82,13 +78,13 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
     }
 
     /// <inheritdoc />
-    public override async Task<IEnumerable<AbstractionsModels.TransformationResult?>> Apply(DataTable data)
+    public override async Task<IEnumerable<TransformationResult?>> Apply(DataTable data)
     {
-        if (data == null) return new List<AbstractionsModels.TransformationResult?>();
-        var results = new List<AbstractionsModels.TransformationResult?>();
+        if (data == null) return new List<TransformationResult?>();
+        var results = new List<TransformationResult?>();
         foreach (DataRow row in data.Rows)
         {
-            var rowContext = AbstractionsModels.TransformationResult.Success(
+            var rowContext = TransformationResult.Success(
                 originalValue: null, originalValueType: null,
                 currentValue: null, currentValueType: typeof(object),
                 appliedTransformations: new List<string>(),
@@ -103,10 +99,10 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
     }
 
     /// <inheritdoc />
-    public override async Task<IEnumerable<AbstractionsModels.TransformationResult?>> Apply()
+    public override async Task<IEnumerable<TransformationResult?>> Apply()
     {
         // Apply for an IgnoreRule without specific record context.
-        var emptyContext = AbstractionsModels.TransformationResult.Success(
+        var emptyContext = TransformationResult.Success(
             originalValue: null, originalValueType: null,
             currentValue: null, currentValueType: typeof(object),
             appliedTransformations: new List<string>(),
@@ -116,14 +112,14 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
             targetFieldType: null
         );
         var result = await Apply(emptyContext);
-        return new List<AbstractionsModels.TransformationResult?> { result }.AsEnumerable();
+        return new List<TransformationResult?> { result }.AsEnumerable();
     }
 
     /// <inheritdoc />
-    public override AbstractionsModels.TransformationResult GetValue(List<AbstractionsModels.ImportedRecordFieldDescriptor> sourceRecord, AbstractionsModels.ImportedRecordFieldDescriptor targetField)
+    public override TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecord, ImportedRecordFieldDescriptor targetField)
     {
         Type effectiveTargetType = targetField?.FieldType ?? typeof(object);
-        var context = AbstractionsModels.TransformationResult.Success(
+        var context = TransformationResult.Success(
             originalValue: null,
             originalValueType: null,
             currentValue: null,
@@ -136,9 +132,9 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
         );
 
         var task = Apply(context);
-        AbstractionsModels.TransformationResult? result = task.ConfigureAwait(false).GetAwaiter().GetResult();
+        TransformationResult? result = task.ConfigureAwait(false).GetAwaiter().GetResult();
 
-        return result ?? AbstractionsModels.TransformationResult.Failure(
+        return result ?? TransformationResult.Failure(
             originalValue: null,
             targetType: effectiveTargetType,
             errorMessage: "IgnoreRule.Apply returned null unexpectedly in GetValue.",
@@ -148,7 +144,7 @@ public class IgnoreRule : AbstractionsModels.MappingRuleBase
     }
 
     /// <inheritdoc />
-    public override AbstractionsModels.MappingRuleBase Clone()
+    public override MappingRuleBase Clone()
     {
         var clone = new IgnoreRule();
         base.CloneBaseProperties(clone);

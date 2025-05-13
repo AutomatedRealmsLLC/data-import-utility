@@ -2,7 +2,7 @@ using System.Collections; // For IEnumerable
 using System.Text.Json.Serialization;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and ITransformationContext
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -11,9 +11,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 /// </summary>
 public class NotContainsOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    [JsonIgnore]
-    public override string EnumMemberName { get; } = nameof(NotContainsOperation);
+    /// <summary>
+    /// Static TypeId for this operation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.NotContains";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -24,24 +25,56 @@ public class NotContainsOperation : ComparisonOperationBase
     public override string Description { get; } = "Checks if a value does not contain another value (case-insensitive).";
 
     /// <summary>
-    /// Gets or sets the order of this operation if it's part of an enumerated list of operations.
+    /// Initializes a new instance of the <see cref="NotContainsOperation"/> class.
     /// </summary>
-    public int EnumMemberOrder { get; set; }
+    public NotContainsOperation() : base(TypeIdString)
+    {
+    }
+
+    /// <inheritdoc />
+    public override void ConfigureOperands(MappingRuleBase? leftOperand, MappingRuleBase? rightOperand, MappingRuleBase? secondaryRightOperand = null)
+    {
+        if (leftOperand == null)
+        {
+            throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
+        }
+        if (rightOperand == null)
+        {
+            throw new ArgumentNullException(nameof(rightOperand), $"Right operand cannot be null for {DisplayName}.");
+        }
+        LeftOperand = leftOperand;
+        RightOperand = rightOperand;
+        // SecondaryRightOperand is not used by this operation.
+    }
 
     /// <inheritdoc />
     public override async Task<bool> Evaluate(TransformationResult contextResult) // contextResult is an ITransformationContext
     {
+        ITransformationContext? transformationContext = contextResult as ITransformationContext;
+        if (transformationContext == null)
+        {
+            // If contextResult is not directly an ITransformationContext,
+            // and it doesn't carry one, this will be an issue.
+            // For now, proceeding with the assumption based on prior comments that it is.
+            // If TransformationResult has a property like .Context, that should be used.
+            // Based on the error "NotContainsOperation' does not implement inherited abstract member 'ComparisonOperationBase.Evaluate(TransformationResult)'"
+            // this signature is correct. The issue is how to get ITransformationContext.
+            // Let's assume for now that TransformationResult itself implements ITransformationContext
+            // or this specific contextResult instance passed in will be one.
+             throw new InvalidOperationException($"The provided contextResult could not be interpreted as an {nameof(ITransformationContext)} for {DisplayName} operation. Actual type: {contextResult?.GetType().FullName}");
+        }
+
         if (LeftOperand is null)
         {
-            throw new InvalidOperationException($"{nameof(LeftOperand)} must be set for {DisplayName} operation.");
+            throw new InvalidOperationException($"{nameof(LeftOperand)} must be configured for {DisplayName} operation.");
         }
         if (RightOperand is null)
         {
-            throw new InvalidOperationException($"{nameof(RightOperand)} must be set for {DisplayName} operation.");
+            throw new InvalidOperationException($"{nameof(RightOperand)} must be configured for {DisplayName} operation.");
         }
 
-        var leftResult = await LeftOperand.Apply(contextResult);
-        var rightResult = await RightOperand.Apply(contextResult);
+        var leftResult = await LeftOperand.Apply(transformationContext);
+        var rightResult = await RightOperand.Apply(transformationContext);
 
         if (leftResult == null || leftResult.WasFailure)
         {
@@ -57,7 +90,7 @@ public class NotContainsOperation : ComparisonOperationBase
 
         if (leftValue == null)
         {
-            // null does not contain anything, unless rightValue is also null (which is debatable for 'contains')
+            // null does not contain anything, unless rightValue is also null.
             // If rightValue is null, previous Contains logic said true (everything contains null).
             // So, !(null contains null) = !true = false.
             // If rightValue is not null, previous Contains logic said false (null does not contain non-null).
@@ -69,7 +102,7 @@ public class NotContainsOperation : ComparisonOperationBase
         {
             // Previous Contains logic: everything contains null (empty string) -> true.
             // So, NotContains null is false.
-            return false;
+            return false; 
         }
 
         string leftString = leftValue.ToString() ?? ""; // Ensure not null for operations
@@ -87,19 +120,17 @@ public class NotContainsOperation : ComparisonOperationBase
             }
             return true; // No match in the collection, so "NotContains" is true.
         }
-
+        
         // Standard string contains check (case-insensitive)
         return leftString.IndexOf(rightString, StringComparison.OrdinalIgnoreCase) < 0;
     }
 
     /// <inheritdoc />
-    public override ComparisonOperationBase Clone() // Changed return type
+    public override ComparisonOperationBase Clone()
     {
-        return new NotContainsOperation
-        {
-            LeftOperand = LeftOperand?.Clone(),
-            RightOperand = RightOperand?.Clone(),
-            EnumMemberOrder = EnumMemberOrder
-        };
+        var clone = new NotContainsOperation();
+        clone.LeftOperand = LeftOperand?.Clone(); 
+        clone.RightOperand = RightOperand?.Clone();
+        return clone;
     }
 }

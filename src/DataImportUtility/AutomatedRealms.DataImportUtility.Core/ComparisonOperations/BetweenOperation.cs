@@ -10,8 +10,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 /// </summary>
 public class BetweenOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    public override string EnumMemberName { get; } = nameof(BetweenOperation);
+    /// <summary>
+    /// The unique type identifier for this comparison operation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.Between";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -24,7 +26,7 @@ public class BetweenOperation : ComparisonOperationBase
     /// <summary>
     /// Initializes a new instance of the <see cref="BetweenOperation"/> class.
     /// </summary>
-    public BetweenOperation() : base()
+    public BetweenOperation() : base(TypeIdString)
     {
     }
 
@@ -41,22 +43,19 @@ public class BetweenOperation : ComparisonOperationBase
             throw new InvalidOperationException($"Base {nameof(LowLimit)} and base {nameof(HighLimit)} must be set for {nameof(BetweenOperation)}.");
         }
 
-        // contextResult is a TransformationResult, which implements ITransformationContext.
-        // It can be passed to Apply methods expecting ITransformationContext.
-
-        var leftOperandActualResult = await LeftOperand.Apply(contextResult); // Pass contextResult (as ITransformationContext)
+        var leftOperandActualResult = await LeftOperand.Apply(contextResult); 
         if (leftOperandActualResult == null || leftOperandActualResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOperandActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        var lowLimitActualResult = await base.LowLimit.Apply(contextResult); // Pass contextResult
+        var lowLimitActualResult = await base.LowLimit.Apply(contextResult); 
         if (lowLimitActualResult == null || lowLimitActualResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LowLimit)} for {DisplayName} operation: {lowLimitActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        var highLimitActualResult = await base.HighLimit.Apply(contextResult); // Pass contextResult
+        var highLimitActualResult = await base.HighLimit.Apply(contextResult); 
         if (highLimitActualResult == null || highLimitActualResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(HighLimit)} for {DisplayName} operation: {highLimitActualResult?.ErrorMessage ?? "Result was null."}");
@@ -68,7 +67,8 @@ public class BetweenOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override ComparisonOperationBase Clone()
     {
-        return (BetweenOperation)base.Clone();
+        var clone = (BetweenOperation)base.Clone();
+        return clone;
     }
 }
 
@@ -122,7 +122,6 @@ public static class BetweenOperationExtensions
                 var dateVal = Convert.ToDateTime(leftCurrentValue);
                 var dateLow = Convert.ToDateTime(lowCurrentValue);
                 var dateHigh = Convert.ToDateTime(highCurrentValue);
-                // Corrected: dateVal <= dateHigh
                 return dateVal >= dateLow && dateVal <= dateHigh;
             }
             catch (Exception) { /* Fall through */ }

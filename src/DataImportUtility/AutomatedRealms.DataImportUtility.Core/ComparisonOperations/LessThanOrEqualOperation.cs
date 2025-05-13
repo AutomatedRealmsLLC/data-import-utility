@@ -1,8 +1,9 @@
-using System.Globalization; // For CultureInfo
+using System;
+using System.Globalization;
 using System.Text.Json.Serialization;
-
+using System.Threading.Tasks;
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For non-generic TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -11,9 +12,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 /// </summary>
 public class LessThanOrEqualOperation : ComparisonOperationBase
 {
-    /// <inheritdoc />
-    [JsonIgnore]
-    public override string EnumMemberName { get; } = nameof(LessThanOrEqualOperation);
+    /// <summary>
+    /// The unique type identifier for this comparison operation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.LessThanOrEqual";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -23,44 +25,98 @@ public class LessThanOrEqualOperation : ComparisonOperationBase
     [JsonIgnore]
     public override string Description { get; } = "Checks if a value is less than or equal to another value.";
 
-    /// <inheritdoc />
-    public override async Task<bool> Evaluate(TransformationResult contextResult) // Changed to non-generic TransformationResult
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LessThanOrEqualOperation"/> class.
+    /// </summary>
+    public LessThanOrEqualOperation() : base(TypeIdString)
     {
-        if (LeftOperand is null || RightOperand is null)
+    }
+
+    /// <inheritdoc />
+    public override void ConfigureOperands(
+        MappingRuleBase leftOperand,
+        MappingRuleBase? rightOperand,
+        MappingRuleBase? secondaryRightOperand) // Not used by LessThanOrEqualOperation
+    {
+        base.ConfigureOperands(leftOperand, rightOperand, null); // secondaryRightOperand is not used
+
+        if (this.LeftOperand is null)
         {
-            // TODO: Log this failure
-            return false;
+            throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
+        }
+        if (this.RightOperand is null)
+        {
+            throw new ArgumentNullException(nameof(rightOperand), $"Right operand must be provided for {TypeIdString}.");
+        }
+    }
+
+    /// <inheritdoc />
+    public override async Task<bool> Evaluate(TransformationResult contextResult)
+    {
+        if (LeftOperand is null || RightOperand is null) // Should be caught by ConfigureOperands
+        {
+            throw new InvalidOperationException($"Both LeftOperand and RightOperand must be set for {DisplayName} operation. Ensure ConfigureOperands was called.");
         }
 
         var leftOpResult = await LeftOperand.Apply(contextResult);
-        if (leftOpResult is null || leftOpResult.WasFailure)
+        if (leftOpResult == null)
         {
-            // TODO: Log leftOpResult?.ErrorMessage or null operand
-            return false;
+            throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned a null TransformationResult.");
+        }
+        if (leftOpResult.WasFailure)
+        {
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOpResult.ErrorMessage}");
         }
 
         var rightOpResult = await RightOperand.Apply(contextResult);
-        if (rightOpResult is null || rightOpResult.WasFailure)
+        if (rightOpResult == null)
         {
-            // TODO: Log rightOpResult?.ErrorMessage or null operand
-            return false;
+            throw new InvalidOperationException($"Applying {nameof(RightOperand)} for {DisplayName} operation returned a null TransformationResult.");
+        }
+        if (rightOpResult.WasFailure)
+        {
+            throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOpResult.ErrorMessage}");
         }
 
-        return leftOpResult.LessThanOrEqual(rightOpResult); // Extension method on non-generic TransformationResult
+        object? leftVal = leftOpResult.CurrentValue;
+        object? rightVal = rightOpResult.CurrentValue;
+
+        if (leftVal == null && rightVal == null) return true; // null is considered equal to null
+        if (leftVal == null || rightVal == null) return false; // if one is null and the other isn't, they are not equal, and less/greater is not applicable.
+
+        // Try numeric comparison first
+        if (IsNumeric(leftVal) && IsNumeric(rightVal))
+        {
+            try
+            {
+                // Convert to decimal for comparison to handle various numeric types consistently.
+                decimal leftDecimal = Convert.ToDecimal(leftVal, CultureInfo.InvariantCulture);
+                decimal rightDecimal = Convert.ToDecimal(rightVal, CultureInfo.InvariantCulture);
+                return leftDecimal <= rightDecimal;
+            }
+            catch (OverflowException ex)
+            {
+                throw new InvalidOperationException($"Numeric comparison in {DisplayName} failed due to an overflow. Left: '{leftVal}', Right: '{rightVal}'.", ex);
+            }
+            catch (FormatException ex)
+            {
+                 throw new InvalidOperationException($"Numeric comparison in {DisplayName} failed due to a format error. Left: '{leftVal}', Right: '{rightVal}'.", ex);
+            }
+        }
+
+        // Try DateTime comparison
+        if (CanConvertToDateTime(leftVal, out DateTime leftDate) && CanConvertToDateTime(rightVal, out DateTime rightDate))
+        {
+            return leftDate <= rightDate;
+        }
+
+        // Fallback to string comparison
+        var leftString = Convert.ToString(leftVal, CultureInfo.InvariantCulture);
+        var rightString = Convert.ToString(rightVal, CultureInfo.InvariantCulture);
+        
+        return string.Compare(leftString, rightString, StringComparison.Ordinal) <= 0;
     }
 
-    /// <inheritdoc />
-    public override ComparisonOperationBase Clone() // Changed return type to ComparisonOperationBase
-    {
-        return base.Clone(); // Utilize base class cloning
-    }
-}
-
-/// <summary>
-/// Extension methods for the LessThanOrEqual operation.
-/// </summary>
-public static class LessThanOrEqualOperationExtensions
-{
     private static bool IsNumeric(object? value)
     {
         if (value == null) return false;
@@ -79,7 +135,7 @@ public static class LessThanOrEqualOperationExtensions
         }
         if (value is DateTimeOffset dto)
         {
-            result = dto.UtcDateTime;
+            result = dto.UtcDateTime; // Ensure comparison in UTC
             return true;
         }
         var stringValue = value.ToString();
@@ -87,49 +143,9 @@ public static class LessThanOrEqualOperationExtensions
         return DateTime.TryParse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out result);
     }
 
-    /// <summary>
-    /// Checks if the left result is less than or equal to the right result.
-    /// </summary>
-    /// <param name="leftResult">The result of the left operand (non-generic TransformationResult).</param>
-    /// <param name="rightResult">The result of the right operand (non-generic TransformationResult).</param>
-    /// <returns>True if the left result is less than or equal to the right result; otherwise, false.</returns>
-    public static bool LessThanOrEqual(this TransformationResult leftResult, TransformationResult rightResult)
+    /// <inheritdoc />
+    public override ComparisonOperationBase Clone()
     {
-        object? leftVal = leftResult.CurrentValue;
-        object? rightVal = rightResult.CurrentValue;
-
-        if (leftVal == null && rightVal == null) return true; // Consistent with Equals: null is equal to null
-        if (leftVal == null || rightVal == null) return false;
-
-        if (IsNumeric(leftVal) && IsNumeric(rightVal))
-        {
-            try
-            {
-                decimal dLeft = Convert.ToDecimal(leftVal, CultureInfo.InvariantCulture);
-                decimal dRight = Convert.ToDecimal(rightVal, CultureInfo.InvariantCulture);
-                return dLeft <= dRight;
-            }
-            catch (OverflowException)
-            {
-                try
-                {
-                    double dblLeft = Convert.ToDouble(leftVal, CultureInfo.InvariantCulture);
-                    double dblRight = Convert.ToDouble(rightVal, CultureInfo.InvariantCulture);
-                    return dblLeft <= dblRight;
-                }
-                catch { /* Fall through */ }
-            }
-            catch (FormatException) { /* Fall through */ }
-        }
-
-        if (CanConvertToDateTime(leftVal, out var leftDate) && CanConvertToDateTime(rightVal, out var rightDate))
-        {
-            return leftDate <= rightDate;
-        }
-
-        var sLeft = leftVal.ToString();
-        var sRight = rightVal.ToString();
-        if (sLeft == null || sRight == null) return false; // Should not happen due to earlier null checks for leftVal/rightVal
-        return string.Compare(sLeft, sRight, StringComparison.OrdinalIgnoreCase) <= 0;
+        return (LessThanOrEqualOperation)base.Clone();
     }
 }

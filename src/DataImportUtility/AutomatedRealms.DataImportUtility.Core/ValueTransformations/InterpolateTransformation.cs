@@ -2,8 +2,7 @@ using System.Collections; // Added for IEnumerable
 using System.Text.Json.Serialization;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-
-using AbstractionsModels = AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -12,11 +11,10 @@ namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 /// </summary>
 public class InterpolateTransformation : ValueTransformationBase
 {
-    /// <inheritdoc />
-    public override int EnumMemberOrder { get; } = 4;
-
-    /// <inheritdoc />
-    public override string EnumMemberName { get; } = nameof(InterpolateTransformation);
+    /// <summary>
+    /// Static TypeId for this transformation.
+    /// </summary>
+    public static readonly string TypeIdString = "Core.InterpolateTransformation";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -38,6 +36,11 @@ public class InterpolateTransformation : ValueTransformationBase
     /// </remarks>
     public override string? TransformationDetail { get; set; } = "${0}";
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InterpolateTransformation"/> class.
+    /// </summary>
+    public InterpolateTransformation() : base(TypeIdString) { }
+
     /// <inheritdoc />
     [JsonIgnore]
     public override bool IsEmpty => string.IsNullOrEmpty(TransformationDetail);
@@ -47,7 +50,7 @@ public class InterpolateTransformation : ValueTransformationBase
     public override Type OutputType => typeof(string);
 
     /// <inheritdoc />
-    public override Task<AbstractionsModels.TransformationResult> ApplyTransformationAsync(AbstractionsModels.TransformationResult previousResult)
+    public override Task<TransformationResult> ApplyTransformationAsync(TransformationResult previousResult)
     {
         try
         {
@@ -60,7 +63,7 @@ public class InterpolateTransformation : ValueTransformationBase
 
             if (string.IsNullOrWhiteSpace(pattern))
             {
-                return Task.FromResult(AbstractionsModels.TransformationResult.Success(
+                return Task.FromResult(TransformationResult.Success(
                     originalValue: previousResult.OriginalValue,
                     originalValueType: previousResult.OriginalValueType,
                     currentValue: previousResult.CurrentValue?.ToString(),
@@ -102,7 +105,7 @@ public class InterpolateTransformation : ValueTransformationBase
             }
             // End of integrated logic
 
-            return Task.FromResult(AbstractionsModels.TransformationResult.Success(
+            return Task.FromResult(TransformationResult.Success(
                 originalValue: previousResult.OriginalValue,
                 originalValueType: previousResult.OriginalValueType,
                 currentValue: interpolatedValue,
@@ -116,7 +119,7 @@ public class InterpolateTransformation : ValueTransformationBase
         }
         catch (Exception ex)
         {
-            return Task.FromResult(AbstractionsModels.TransformationResult.Failure(
+            return Task.FromResult(TransformationResult.Failure(
                 originalValue: previousResult.OriginalValue,
                 targetType: OutputType,
                 errorMessage: ex.Message,
@@ -132,9 +135,9 @@ public class InterpolateTransformation : ValueTransformationBase
     }
 
     /// <inheritdoc />
-    public override async Task<AbstractionsModels.TransformationResult> Transform(object? value, Type targetType)
+    public override async Task<TransformationResult> Transform(object? value, Type targetType)
     {
-        var initialResult = AbstractionsModels.TransformationResult.Success(
+        var initialResult = TransformationResult.Success(
             originalValue: value,
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value,
@@ -152,8 +155,11 @@ public class InterpolateTransformation : ValueTransformationBase
     /// <inheritdoc />
     public override ValueTransformationBase Clone()
     {
-        var clone = (InterpolateTransformation)MemberwiseClone();
-        clone.TransformationDetail = TransformationDetail;
+        var clone = new InterpolateTransformation()
+        {
+            TransformationDetail = this.TransformationDetail
+        };
+        // TypeId is set by the constructor
         return clone;
     }
 }

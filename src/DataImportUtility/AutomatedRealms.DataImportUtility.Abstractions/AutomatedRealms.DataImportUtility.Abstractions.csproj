@@ -13,6 +13,8 @@
     <PackageReference Include="System.Text.Json" Version="9.0.4" /> <!-- Updated to 9.0.4 for latest features, netstandard2.0 compatibility, and security -->
     <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" /> <!-- Added for DataAnnotations -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" /> <!-- Added for IServiceCollection -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" /> <!-- Added for BuildServiceProvider -->
   </ItemGroup>
 
 </Project>
