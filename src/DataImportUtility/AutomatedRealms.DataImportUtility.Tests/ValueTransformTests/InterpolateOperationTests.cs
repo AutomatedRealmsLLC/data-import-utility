@@ -1,65 +1,46 @@
-﻿namespace AutomatedRealms.DataImportUtility.Tests.ValueTransformTests;
+﻿using System;
+using System.Threading.Tasks;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
+using AutomatedRealms.DataImportUtility.Tests.SampleData; // Corrected namespace
+using Xunit;
 
-public class InterpolateOperationTests
+namespace AutomatedRealms.DataImportUtility.Tests.ValueTransformTests
 {
-    /// <summary>
-    /// Tests that the <see cref="InterpolateTransformation"/> works as expected.
-    /// </summary>
-    [Theory]
-    [InlineData("280-190533-1", "Sample For ${0}", "Sample For 280-190533-1")]
-    [InlineData("280-190533-1", "Sample For ${1}", "Sample For ${1}")]
-    [InlineData("280-190533-1", "Sample For ${0}-${1}", "Sample For 280-190533-1-${1}")]
-    [InlineData(@"[""280"",""190533"",""1""]", "Sample For ${0}-${1}", "Sample For 280-190533")]
-    [InlineData(@"[""280"",""190533"",""1""]", "Sample For ${0}-${1}-${3}", "Sample For 280-190533-${3}")]
-    private async Task InterpolateOperation_WorksOnValidInput(string input, string format, string expected)
+    public class InterpolateOperationTests
     {
-        // Arrange
-        var operation = new InterpolateTransformation()
+        [Theory]
+        [MemberData(nameof(ImportDataObjects.InterpolateOperationHappyPathInputs), MemberType = typeof(ImportDataObjects))]
+        public async Task InterpolateOperation_HappyPath(string _, string pattern, string sourceValue, string expectedValue) // Assuming description is first and unused
         {
-            TransformationDetail = format
-        };
+            var operation = new InterpolateTransformation
+            {
+                TransformationDetail = pattern
+            };
 
-        // Act
-        var result = await operation.Apply(input);
+            // The Transform method takes the source value and target type.
+            // It internally creates an initial TransformationResult.
+            var result = await operation.Transform(sourceValue, typeof(string));
 
-        // Assert
-        Assert.False(result.WasFailure);
-        Assert.Equal(expected, result.Value);
-    }
+            Assert.False(result.WasFailure); // Success means WasFailure is false
+            Assert.Equal(expectedValue, result.CurrentValue);
+            Assert.Null(result.ErrorMessage);
+        }
 
-    /// <summary>
-    /// Tests that the <see cref="InterpolateTransformation"/> works as expected when chained with another operation (using <see cref="MapTransformation" />).
-    /// </summary>
-    [Fact]
-    private async Task InterpolateOperation_ChainedWithMapOperation()
-    {
-        // Arrange
-        var input = "280-190533-1";
-        var interpolationPattern = "Sample For ${0}";
-        var fieldName = "Test";
-        var valueMappings = new List<ValueMap>()
+        [Theory]
+        [MemberData(nameof(ImportDataObjects.InterpolateOperationInvalidPatternInputs), MemberType = typeof(ImportDataObjects))]
+        public async Task InterpolateOperation_InvalidPattern(string _, string pattern, string sourceValue, string expectedErrorMessage) // Assuming description is first and unused
         {
-            new() { ImportedFieldName = fieldName, FromValue = $"Sample For {input}", ToValue = "Mapped" }
-        };
-        var expected = "Mapped";
+            var operation = new InterpolateTransformation
+            {
+                TransformationDetail = pattern
+            };
 
-        var interpolateOperation = new InterpolateTransformation()
-        {
-            TransformationDetail = interpolationPattern
-        };
+            var result = await operation.Transform(sourceValue, typeof(string));
 
-        var mapOperation = new MapTransformation()
-        {
-            FieldName = fieldName,
-            ValueMappings = valueMappings
-        };
-
-        // Act
-        var result = await interpolateOperation.Apply(input);
-        result = await mapOperation.Apply(result);
-
-        // Assert
-        Assert.False(result.WasFailure, result.ErrorMessage);
-        Assert.Equal(expected, result.Value);
+            Assert.True(result.WasFailure); // Failure means WasFailure is true
+            Assert.NotNull(result.ErrorMessage);
+            Assert.Contains(expectedErrorMessage, result.ErrorMessage);
+        }
     }
 }

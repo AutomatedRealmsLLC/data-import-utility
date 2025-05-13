@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
 
 namespace AutomatedRealms.DataImportUtility.Tests.ExtensionTests;
 

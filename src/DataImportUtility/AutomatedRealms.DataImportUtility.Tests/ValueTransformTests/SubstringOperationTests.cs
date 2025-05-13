@@ -1,6 +1,10 @@
 ﻿using System.Text.Json;
 
-using DataImportUtility.Tests.SampleData;
+using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
+
+using AutomatedRealms.DataImportUtility.Tests.SampleData;
 
 namespace AutomatedRealms.DataImportUtility.Tests.ValueTransformTests;
 
@@ -40,11 +44,11 @@ public class SubstringOperationTests
         };
 
         // Act
-        var result = await operation.Apply(input);
+        var result = await operation.Transform(input, typeof(string));
 
         // Assert
         Assert.False(result.WasFailure);
-        Assert.Equal(expected, result.Value);
+        Assert.Equal(expected, result.CurrentValue);
     }
     /// <summary>
     /// Tests that the <see cref="SubstringTransformation"/> fails when applied to a collection.
@@ -64,10 +68,10 @@ public class SubstringOperationTests
         };
 
         // Act
-        var result = await operation.Apply(input);
+        var result = await operation.Transform(input, typeof(string));
 
         // Assert
         Assert.True(result.WasFailure);
-        Assert.Equal(ValueTransformationBase.OperationInvalidForCollectionsMessage, result.ErrorMessage);
+        Assert.Equal(AutomatedRealms.DataImportUtility.Abstractions.ValueTransformationBase.OperationInvalidForCollectionsMessage, result.ErrorMessage);
     }
 }

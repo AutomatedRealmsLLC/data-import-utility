@@ -1,6 +1,6 @@
 ﻿using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
-namespace DataImportUtility.Tests.SampleData;
+namespace AutomatedRealms.DataImportUtility.Tests.SampleData;
 
 internal partial class ImportDataObjects
 {

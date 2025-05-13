@@ -1,4 +1,9 @@
-﻿namespace AutomatedRealms.DataImportUtility.Tests.ValueTransformTests;
+﻿using AutomatedRealms.DataImportUtility.Core.ValueTransformations; // Added using
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // Added for TransformationResult
+using Xunit; // Added for Test attributes
+using System.Threading.Tasks; // Added for Task
+
+namespace AutomatedRealms.DataImportUtility.Tests.ValueTransformTests;
 
 public class CalculateOperationTests
 {
@@ -26,11 +31,11 @@ public class CalculateOperationTests
         };
 
         // Act
-        var result = await operation.Apply(input);
+        var result = await operation.Transform(input, typeof(string));
 
         // Assert
         Assert.False(result.WasFailure, result.ErrorMessage);
-        Assert.Equal(expected, result.Value);
+        Assert.Equal(expected, result.CurrentValue);
     }
 
     /// <summary>
@@ -40,7 +45,7 @@ public class CalculateOperationTests
     [InlineData("5493.39", "1 + 1 +", 0, CalculateTransformation.InvalidFormatMessage)]
     [InlineData("5493.39", "${0} + 1 +", 1, CalculateTransformation.InvalidFormatMessage)]
     [InlineData("5493.39", "${0 + 1 +", 1, CalculateTransformation.InvalidFormatMessage)]
-    public async Task CalculateOperationTest_FailsWithInvalidFormulae(string input, string formula, int decimalPlaces, string expected)
+    public async Task CalculateOperationTest_FailsWithInvalidFormulae(string input, string formula, int decimalPlaces, string expectedMessage)
     {
         // Arrange
         var operation = new CalculateTransformation()
@@ -50,11 +55,11 @@ public class CalculateOperationTests
         };
 
         // Act
-        var result = await operation.Apply(input);
+        var result = await operation.Transform(input, typeof(string));
 
         // Assert
-        Assert.True(result.WasFailure, $"The formula produced the result: {result.Value}");
-        Assert.Equal(expected, result.ErrorMessage);
+        Assert.True(result.WasFailure, $"The formula produced the result: {result.CurrentValue}");
+        Assert.Contains(expectedMessage, result.ErrorMessage);
     }
 
     /// <summary>
@@ -63,7 +68,7 @@ public class CalculateOperationTests
     [Theory]
     [InlineData("Not a number", "${0}", 0, CalculateTransformation.InvalidFormatMessage)]
     [InlineData(@"[""25"", ""Not a number""]", "${0} + ${1}", 0, CalculateTransformation.InvalidFormatMessage)]
-    public async Task CalculateOperationTest_FailsWithNonNumericInput(string input, string formula, int decimalPlaces, string expected)
+    public async Task CalculateOperationTest_FailsWithNonNumericInput(string input, string formula, int decimalPlaces, string expectedMessage)
     {
         // Arrange
         var operation = new CalculateTransformation()
@@ -73,19 +78,18 @@ public class CalculateOperationTests
         };
 
         // Act
-        var result = await operation.Apply(input);
+        var result = await operation.Transform(input, typeof(string));
 
         // Assert
-        Assert.True(result.WasFailure, $"The formula produced the result: {result.Value}");
-        Assert.Equal(expected, result.ErrorMessage);
+        Assert.True(result.WasFailure, $"The formula produced the result: {result.CurrentValue}");
+        Assert.Contains(expectedMessage, result.ErrorMessage);
     }
-
 
     // Works with RegexMatch as long as the regex gives back numeric values
     [Theory]
     [InlineData(@"[""5493.39""]", "${0}", 0, "5493")]
     [InlineData(@"[""5493.39"", ""1.02""]", "${0} + ${1}", 1, "5494.4")]
-    public async Task CalculateOperationTest_WorksWithStringArray_WhenElementsAreNumeric(string input, string formula, int decimalPlaces, string expected)
+    public async Task CalculateOperationTest_WorksWithStringArray_WhenElementsAreNumeric(string jsonInput, string formula, int decimalPlaces, string expected)
     {
         // Arrange
         var operation = new CalculateTransformation()
@@ -93,12 +97,14 @@ public class CalculateOperationTests
             TransformationDetail = formula,
             DecimalPlaces = decimalPlaces
         };
+        
+        var inputArray = System.Text.Json.JsonSerializer.Deserialize<string[]>(jsonInput);
 
         // Act
-        var result = await operation.Apply(input);
+        var result = await operation.Transform(inputArray, typeof(string));
 
         // Assert
         Assert.False(result.WasFailure, result.ErrorMessage);
-        Assert.Equal(expected, result.Value);
+        Assert.Equal(expected, result.CurrentValue);
     }
 }

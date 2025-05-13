@@ -1,11 +1,33 @@
 ﻿using System.Data;
+using System.Linq; // Added for OfType<DataRow>(), Skip(), First()
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // Added for TransformationResult, ImportedRecordFieldDescriptor, FieldMapping
+using System.Collections.Generic;
 
-namespace DataImportUtility.Tests.SampleData;
+namespace AutomatedRealms.DataImportUtility.Tests.SampleData;
 
 internal static partial class ImportDataObjects
 {
-    internal static string[] ValueCollectionForFailures { get; } = ["1234567890", "1234567890"];
-    internal static TransformationResult TransformResultForRuleInput { get; } = new() { OriginalValue = "Test Input", Value = "Test Input" };
+    // Changed collection expression to new string[] for compatibility with older .NET versions
+    internal static string[] ValueCollectionForFailures { get; } = new string[] { "1234567890", "1234567890" };
+    // Corrected the TransformationResult.Success call to have 9 arguments
+    internal static TransformationResult TransformResultForRuleInput { get; } = TransformationResult.Success("Test Input", typeof(string), "Test Input", typeof(string), null, null, null, null, typeof(string));
+
+    public static IEnumerable<object[]> InterpolateOperationHappyPathInputs =>
+        new List<object[]>
+        {
+            new object[] { "Simple Interpolation", "Hello {0}", "World", "Hello World" },
+            new object[] { "Multiple Interpolations", "{0} {1}", "Hello", "World", "Hello World" }, // This case needs adjustment if Transform takes only one source value
+            new object[] { "No Interpolation Token", "Hello World", "Test", "Hello World" },
+            new object[] { "Empty Source Value", "Hello {0}", "", "Hello " },
+            new object[] { "Empty Pattern", "", "Test", "" },
+        };
+
+    public static IEnumerable<object[]> InterpolateOperationInvalidPatternInputs =>
+        new List<object[]>
+        {
+            new object[] { "Mismatched Brace", "Hello {0", "World", "Invalid interpolation pattern" },
+            // Add more invalid pattern test cases if necessary
+        };
 
     /// <summary>
     /// Gets the data row at the specified index from the main data table.

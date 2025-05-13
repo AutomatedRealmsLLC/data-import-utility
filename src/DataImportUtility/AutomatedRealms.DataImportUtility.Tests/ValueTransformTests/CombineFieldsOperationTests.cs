@@ -1,4 +1,9 @@
 ﻿using System.Text.Json;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
+using System.Collections.Immutable;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AutomatedRealms.DataImportUtility.Tests.ValueTransformTests;
 
@@ -15,16 +20,16 @@ public class CombineFieldsOperationTests
     public async Task CombineFieldsOperation_PreviousResultIsSingleString_ShouldReturnCorrectInterpolation(string prevResult, string operationDetail, string expectedOutput)
     {
         // Arrange
-        var prevTransformResult = new TransformationResult() { Value = prevResult };
+        var prevTransformResult = TransformationResult.Success(prevResult, prevResult?.GetType(), prevResult, prevResult?.GetType());
 
         var operation = new CombineFieldsTransformation()
         {
             TransformationDetail = operationDetail,
-            SourceFieldTransforms = [new() { Field = new() { FieldName = "Field 1", ImportedDataFile = new(), ForTableName = string.Empty } }]
+            SourceFieldTransforms = new List<FieldTransformation> { new FieldTransformation(new ImportedRecordFieldDescriptor { FieldName = "Field 1" }) }
         };
 
         // Act
-        var result = (await operation.Apply(prevTransformResult)).Value;
+        var result = (await operation.ApplyTransformationAsync(prevTransformResult)).CurrentValue;
 
         // Assert
         Assert.Equal(expectedOutput, result);
@@ -42,9 +47,9 @@ public class CombineFieldsOperationTests
     public async Task CombineFieldsOperation_PreviousResultProducedArray_ShouldReturnCorrectInterpolation(string prevResult, string operationDetail, string expectedOutput)
     {
         // Arrange
-        var prevTransformResult = new TransformationResult() { Value = prevResult };
+        var prevTransformResult = TransformationResult.Success(prevResult, prevResult?.GetType(), prevResult, prevResult?.GetType());
 
-        var values = JsonSerializer.Deserialize<string[]>(prevResult) ?? [];
+        var values = JsonSerializer.Deserialize<string[]>(prevResult ?? "[]") ?? Array.Empty<string>();
 
         var importFields = values
             .Select((_, index) => new ImportedRecordFieldDescriptor()
@@ -66,7 +71,7 @@ public class CombineFieldsOperationTests
         };
 
         // Act
-        var result = (await operation.Apply(prevTransformResult)).Value;
+        var result = (await operation.ApplyTransformationAsync(prevTransformResult)).CurrentValue;
 
         // Assert
         Assert.Equal(expectedOutput, result);

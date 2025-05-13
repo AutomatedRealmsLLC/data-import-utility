@@ -2,7 +2,7 @@
 
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
-using DataImportUtility.Tests.SampleData;
+using AutomatedRealms.DataImportUtility.Tests.SampleData;
 
 namespace AutomatedRealms.DataImportUtility.Tests.TestHelpers;
 

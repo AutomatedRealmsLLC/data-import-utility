@@ -6,12 +6,12 @@
 
 This phase focuses on modifying the base abstractions and setting up the core infrastructure for the new `TypeId`-driven registration and serialization model.
 
-- [ ] **1. Modify Base Abstraction Classes (`MappingRuleBase`, `ValueTransformationBase`, etc.):**
-    - [ ] **Task:** Add `TypeId` Property.
+- [X] **1. Modify Base Abstraction Classes (`MappingRuleBase`, `ValueTransformationBase`, etc.):**
+    - [X] **Task:** Add `TypeId` Property.
         - **Details:** Add a `public string TypeId { get; protected set; }` (or `init;`) property to each base class.
         - The `TypeId` should be a unique string identifier (e.g., "Core.CopyRule", "MyCompany.CustomRule").
         - Concrete implementations will be responsible for setting this `TypeId` in their constructors (e.g., `public CopyRule() : base("Core.CopyRule") { ... }`) or by overriding an abstract property.
-    - [ ] **Task:** Remove Obsolete Enum Properties.
+    - [X] **Task:** Remove Obsolete Enum Properties.
         - **Details:** Remove properties like `public MappingRuleType RuleType { get; }` if their sole purpose was for the old enum-based discrimination.
 
 - [ ] **2. Develop Central Type Registry & DI Integration:**
@@ -38,10 +38,10 @@ This phase focuses on modifying the base abstractions and setting up the core in
 
 ## Phase 2: Removing Old Enum-Based System & UI Updates
 
-- [ ] **4. Decouple and Remove Obsolete Enum-Based Logic:**
-    - [ ] **Task:** Remove Enum Definitions.
+- [X] **4. Decouple and Remove Obsolete Enum-Based Logic:**
+    - [X] **Task:** Remove Enum Definitions.
         - **Details:** Delete enum files like `MappingRuleType.cs`, `ValueTransformationType.cs` from `Abstractions/Enums/`.
-    - [ ] **Task:** Remove Enum-Based Helper Extensions.
+    - [X] **Task:** Remove Enum-Based Helper Extensions.
         - **Details:** Delete files like `MappingRuleTypeExtensions.cs` from `Abstractions/Helpers/` that contained the old `CreateNewInstance` logic.
     - [ ] **Task:** Clean up any remaining direct usages of these enums for type discrimination logic if not already covered.
 

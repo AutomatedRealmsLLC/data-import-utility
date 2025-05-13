@@ -1,4 +1,4 @@
-﻿namespace DataImportUtility.Tests.SampleData;
+﻿namespace AutomatedRealms.DataImportUtility.Tests.SampleData;
 
 internal static partial class ImportDataObjects
 {

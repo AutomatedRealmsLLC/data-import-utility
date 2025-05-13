@@ -1,4 +1,7 @@
-﻿namespace AutomatedRealms.DataImportUtility.Tests.ModelTests;
+﻿using AutomatedRealms.DataImportUtility.Abstractions.Models; // Added for TransformationResult
+using Xunit; // Added for Fact attribute
+
+namespace AutomatedRealms.DataImportUtility.Tests.ModelTests;
 
 public class TransformationResultTests
 {

@@ -1,4 +1,6 @@
-﻿using AutomatedRealms.DataImportUtility.Tests.TestHelpers;
+﻿using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Tests.TestHelpers;
 
 namespace AutomatedRealms.DataImportUtility.Tests.MappingRuleTests;
 
@@ -16,6 +18,7 @@ public class MappingRuleBaseTests : MappingRuleBaseTestContext
     {
         var result = await rule.Apply(input);
 
-        Assert.False(result.WasFailure, $"Expected no failure for rule {rule.GetType().Name} with input {input}. Error Message: {result.ErrorMessage}");
+        Assert.NotNull(result); // Add null check for result
+        Assert.False(result.WasFailure, $"Expected no failure for rule {rule.GetType().Name} with input {input}. Error Message: {result.ErrorMessage ?? "Error message was null."}");
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Data;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
-using DataImportUtility.Tests.SampleData;
+using AutomatedRealms.DataImportUtility.Tests.SampleData;
 
 namespace AutomatedRealms.DataImportUtility.Tests.ModelTests;
 public class ImportedRecordFieldDescriptorTests
@@ -33,6 +34,7 @@ public class ImportedRecordFieldDescriptorTests
         var valueSet = fieldDescriptor.ValueSet;
 
         // Assert
+        Assert.NotNull(valueSet);
         Assert.Equal(expected, valueSet[0]);
     }
 
@@ -64,6 +66,7 @@ public class ImportedRecordFieldDescriptorTests
         var valueSet = fieldDescriptor.ValueSet;
 
         // Assert
+        Assert.NotNull(valueSet);
         Assert.Equal(expected, valueSet[0]);
 
         // Arrange
@@ -75,6 +78,7 @@ public class ImportedRecordFieldDescriptorTests
         valueSet = fieldDescriptor.ValueSet;
 
         // Assert
+        Assert.NotNull(valueSet);
         Assert.Equal(newExpected, valueSet[0]);
     }
 
@@ -109,6 +113,7 @@ public class ImportedRecordFieldDescriptorTests
         var valueSet = fieldDescriptor.ValueSet;
 
         // Assert
+        Assert.NotNull(valueSet);
         Assert.All(valueSet, (value, index) => Assert.Equal(expected[index], value));
 
         // Arrange
@@ -119,6 +124,7 @@ public class ImportedRecordFieldDescriptorTests
         valueSet = fieldDescriptor.ValueSet;
 
         // Assert
+        Assert.NotNull(valueSet);
         Assert.All(valueSet, (value, index) => Assert.Equal(expected[index], value));
     }
 }

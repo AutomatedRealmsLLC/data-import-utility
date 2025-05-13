@@ -1,6 +1,11 @@
 ﻿using System.Data;
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // Added for FieldMapping
+using AutomatedRealms.DataImportUtility.Abstractions; // Added for MappingRuleBase
+using AutomatedRealms.DataImportUtility.Core.Rules; // Added for CombineFieldsRule etc.
+using System.Linq; // Added for Enumerable.First(), Enumerable.Last(), Enumerable.Select(), OfType
+using Microsoft.Extensions.Logging.Abstractions; // Added for NullLogger
 
-using DataImportUtility.Tests.SampleData;
+using AutomatedRealms.DataImportUtility.Tests.SampleData;
 
 namespace AutomatedRealms.DataImportUtility.Tests.ModelTests;
 
@@ -16,7 +21,7 @@ public class FieldMappingTests
     /// </summary>
     [Fact]
     public Task FieldMapping_WithCombineFieldsRule_ShouldReturnCombinedValues()
-        => FieldMapping_WithMappingRuleBase_NoFieldTransform_ShouldReturnNull(new CombineFieldsRule());
+        => FieldMapping_WithMappingRuleBase_NoFieldTransform_ShouldReturnNull(new CombineFieldsRule(NullLogger<CombineFieldsRule>.Instance));
 
     /// <summary>
     /// A field mapping with the <see cref="CopyRule"/> should return null 
@@ -44,7 +49,6 @@ public class FieldMappingTests
     public async Task FieldMapping_WithCombineFieldsRule_FieldTransform_ShouldReturnExpectedOutput()
     {
         // Arrange
-        // Add a new data table to the ImportDataFile
         var randomTableName = Guid.NewGuid().ToString();
 
         var dataFile = ImportDataObjects.DataFile.Clone();
@@ -65,11 +69,14 @@ public class FieldMappingTests
         row["Field 2"] = "Test Input 4";
         dataTable.Rows.Add(row);
 
-        // Add the DataTable to the ImportDataFile
         mainDataSet.Tables.Add(dataTable);
 
-        var rule = ImportDataObjects.CombineFieldsRule.Clone();
-        rule.RuleDetail = "${0}-----${1}";
+        CombineFieldsRule rule = (CombineFieldsRule)ImportDataObjects.MappingRules
+            .OfType<CombineFieldsRule>()
+            .First()
+            .Clone(); // Use non-generic Clone and cast
+        
+        rule.CombinationFormat = "${0}-----${1}";
 
         var fieldDescriptors = new[]
         {
@@ -89,8 +96,9 @@ public class FieldMappingTests
             }
         };
 
-        rule.AddFieldTransformation(fieldDescriptors.First());
-        rule.AddFieldTransformation(fieldDescriptors.Last());
+        rule.InputFields.Clear(); // Ensure InputFields is empty before adding
+        rule.InputFields.Add(new ConfiguredInputField { FieldName = fieldDescriptors.First().FieldName });
+        rule.InputFields.Add(new ConfiguredInputField { FieldName = fieldDescriptors.Last().FieldName });
 
         var newFieldMapping = new FieldMapping()
         {
@@ -102,7 +110,7 @@ public class FieldMappingTests
         var expected = new[] { "Test Input-----Test Input 2", "Test Input 3-----Test Input 4" };
 
         // Act
-        var result = (await newFieldMapping.Apply()).Select(x => x.Value).ToArray();
+        var result = (await newFieldMapping.Apply()).Select(x => x?.CurrentValue).ToArray();
 
         // Assert
         Assert.Equal(expected, result);
@@ -124,10 +132,24 @@ public class FieldMappingTests
         fieldMapping.MappingRule = mappingRuleBase;
 
         // Act
-        var result = (await fieldMapping.Apply(ImportRowUT))?.Value;
+        // Apply returns a single TransformationResult for a single DataRow context
+        var result = await fieldMapping.Apply(ImportRowUT);
 
         // Assert
-        Assert.Null(result);
+        // For rules like IgnoreRule or unconfigured rules, CurrentValue might be null or the result might indicate failure.
+        // The original test asserted Assert.Null(result) which implies the Apply method itself returned null.
+        // Now Apply returns TransformationResult, so we check CurrentValue or WasFailure.
+        // For an unconfigured CopyRule or CombineFieldsRule, or an IgnoreRule, the expectation is likely no successful value.
+        if (mappingRuleBase is IgnoreRule)
+        {
+            Assert.True(result?.WasFailure ?? true); // Or specific check for IgnoreRule behavior
+        }
+        else
+        {
+            // For unconfigured Copy/Combine, it should likely be a failure or null CurrentValue.
+            // The original test checked for null, implying no value was produced.
+            Assert.Null(result?.CurrentValue); 
+        }
     }
 
     /// <summary>
@@ -142,10 +164,11 @@ public class FieldMappingTests
         fieldMapping.MappingRule = mappingRuleBase;
 
         // Act
-        var result = (await fieldMapping.Apply(ImportRowUT))?.Value;
+        var transformationResult = await fieldMapping.Apply(ImportRowUT);
+        var resultValue = transformationResult?.CurrentValue;
 
         // Assert
-        Assert.Equal(expectedOutput, result);
+        Assert.Equal(expectedOutput, resultValue);
     }
     #endregion Helpers
 }

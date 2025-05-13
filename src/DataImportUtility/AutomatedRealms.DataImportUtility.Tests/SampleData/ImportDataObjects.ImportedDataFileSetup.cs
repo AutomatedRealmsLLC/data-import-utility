@@ -2,9 +2,8 @@
 using System.Text.Json;
 
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Tests.SampleData;
 
-namespace DataImportUtility.Tests.SampleData;
+namespace AutomatedRealms.DataImportUtility.Tests.SampleData;
 
 internal static partial class ImportDataObjects
 {
@@ -61,9 +60,9 @@ internal static partial class ImportDataObjects
                 HasHeader = true
             };
             var dataSet = new DataSet(FileAndDataSetName);
-            _dataFile.SetTargetType<FakeTargetType>();
+            _dataFile.SetTargetType(typeof(FakeTargetType));
             _dataFile.RefreshFieldDescriptors(false);
-            _dataFile.RefreshFieldMappings(preserveValidMappings: false);
+            _dataFile.RefreshFieldMappings(overwriteExisting: true);
 
             var importTable = new DataTable(DataTableName);
             dataSet.Tables.Add(importTable);
@@ -103,7 +102,7 @@ internal static partial class ImportDataObjects
                 importTable.Rows.Add(newRow);
             }
 
-            _dataFile.SetData(dataSet);
+            _dataFile.SetData(dataSet, _dataFile.HasHeader);
         }
     }
 
@@ -115,10 +114,10 @@ internal static partial class ImportDataObjects
             Extension = importDataFile.Extension,
             HasHeader = importDataFile.HasHeader
         };
-        clone.SetData(importDataFile.DataSet!.Copy());
+        clone.SetData(importDataFile.DataSet!.Copy(), importDataFile.HasHeader);
         clone.RefreshFieldDescriptors(false);
         clone.SetTargetType(importDataFile.TargetType!);
-        clone.RefreshFieldMappings(preserveValidMappings: false);
+        clone.RefreshFieldMappings(overwriteExisting: true);
         return clone;
     }
 }

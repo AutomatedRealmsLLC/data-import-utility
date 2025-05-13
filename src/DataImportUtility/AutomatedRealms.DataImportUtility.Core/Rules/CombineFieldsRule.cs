@@ -1,8 +1,9 @@
 using System.Data;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Abstractions.Models; // Added for TransformationContext
 using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules;
@@ -18,9 +19,15 @@ public class ConfiguredInputField
     public string FieldName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets a constant value to be used for this input.
+    /// If this is set, FieldName might be ignored.
+    /// </summary>
+    public string? ConstantValue { get; set; }
+
+    /// <summary>
     /// Gets or sets the list of value transformations to apply to this field before combining.
     /// </summary>
-    public List<ValueTransformationBase> ValueTransformations { get; set; } = [];
+    public List<ValueTransformationBase> ValueTransformations { get; set; } = new();
 
     /// <summary>
     /// Clones this configured input field.
@@ -31,7 +38,8 @@ public class ConfiguredInputField
         var clone = new ConfiguredInputField
         {
             FieldName = this.FieldName,
-            ValueTransformations = [.. this.ValueTransformations.Select(t => t.Clone())]
+            ConstantValue = this.ConstantValue,
+            ValueTransformations = this.ValueTransformations.Select(t => t.Clone()).ToList()
         };
         return clone;
     }
@@ -42,6 +50,8 @@ public class ConfiguredInputField
 /// </summary>
 public class CombineFieldsRule : MappingRuleBase
 {
+    private readonly ILogger _logger;
+
     /// <summary>
     /// Gets the unique identifier for this type of mapping rule.
     /// </summary>
@@ -50,7 +60,7 @@ public class CombineFieldsRule : MappingRuleBase
     /// <summary>
     /// Gets or sets the list of input fields to be combined. Each field can have its own transformations.
     /// </summary>
-    public List<ConfiguredInputField> InputFields { get; set; } = [];
+    public List<ConfiguredInputField> InputFields { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the format string used to combine the field values (e.g., "{0} - {1}").
@@ -61,7 +71,19 @@ public class CombineFieldsRule : MappingRuleBase
     /// <summary>
     /// Initializes a new instance of the <see cref="CombineFieldsRule"/> class.
     /// </summary>
-    public CombineFieldsRule() : base(TypeIdString) { }
+    /// <param name="logger">The logger instance.</param>
+    public CombineFieldsRule(ILogger<CombineFieldsRule> logger) : base(TypeIdString)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CombineFieldsRule"/> class. Used for cloning.
+    /// </summary>
+    private CombineFieldsRule() : base(TypeIdString)
+    {
+        _logger = null!;
+    }
 
     /// <summary>
     /// Gets the display name of the mapping rule.
@@ -86,57 +108,83 @@ public class CombineFieldsRule : MappingRuleBase
     [JsonIgnore]
     public override bool IsEmpty => !InputFields.Any() || string.IsNullOrWhiteSpace(CombinationFormat);
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Applies the combine fields rule to the provided transformation context.
+    /// </summary>
+    /// <param name="context">The transformation context containing the data row and other relevant information.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the transformation result, or null if the rule could not be applied.</returns>
     public override async Task<TransformationResult?> Apply(ITransformationContext context)
     {
+        _logger?.LogDebug("CombineFieldsRule.Apply(ITransformationContext) for target '{TargetField}' started.", TargetField ?? context.TargetFieldType?.Name);
         if (IsEmpty)
         {
+            _logger?.LogWarning("CombineFieldsRule for target '{TargetField}' is not configured: InputFields or CombinationFormat is missing.", TargetField);
             return TransformationResult.Failure(
-                originalValue: null, 
-                targetType: context.TargetFieldType ?? typeof(string), 
-                errorMessage: "CombineFieldsRule is not configured: InputFields or CombinationFormat is missing.", 
-                record: context.Record, 
-                sourceRecordContext: context.SourceRecordContext, 
+                originalValue: null,
+                targetType: context.TargetFieldType ?? typeof(string),
+                errorMessage: "CombineFieldsRule is not configured: InputFields or CombinationFormat is missing.",
+                record: context.Record,
+                sourceRecordContext: context.SourceRecordContext,
                 explicitTargetFieldType: context.TargetFieldType ?? typeof(string));
         }
 
         DataRow? dataRow = context.Record;
-        if (dataRow == null && InputFields.Any(cf => !string.IsNullOrEmpty(cf.FieldName)))
+        if (dataRow == null && InputFields.Any(cf => string.IsNullOrEmpty(cf.ConstantValue) && !string.IsNullOrEmpty(cf.FieldName)))
         {
+            _logger?.LogWarning("CombineFieldsRule for target '{TargetField}' requires a DataRow when FieldNames are specified and no ConstantValue is provided.", TargetField);
             return TransformationResult.Failure(
-                originalValue: null, 
-                targetType: context.TargetFieldType ?? typeof(string), 
-                errorMessage: "CombineFieldsRule requires a DataRow in the context when FieldNames are specified.", 
-                record: null, 
-                sourceRecordContext: context.SourceRecordContext, 
+                originalValue: null,
+                targetType: context.TargetFieldType ?? typeof(string),
+                errorMessage: "CombineFieldsRule requires a DataRow in the context when FieldNames are specified and no ConstantValue is provided for those fields.",
+                record: null,
+                sourceRecordContext: context.SourceRecordContext,
                 explicitTargetFieldType: context.TargetFieldType ?? typeof(string));
         }
 
         var collectedValuesForCombination = new List<object?>();
-        var appliedTransformationsLog = new List<string> { "CombineFieldsRule.Apply(ITransformationContext) started." };
+        var appliedTransformationsLog = new List<string> { $"CombineFieldsRule.Apply(ITransformationContext) for target '{TargetField ?? context.TargetFieldType?.Name}' processing." };
 
         foreach (var configuredField in InputFields)
         {
             object? initialValue = null;
             Type? initialValueType = null;
-            List<string> fieldLog = [];
+            List<string> fieldLog = new();
+            string fieldIdentifier;
 
-            if (!string.IsNullOrEmpty(configuredField.FieldName))
+            if (!string.IsNullOrEmpty(configuredField.ConstantValue))
             {
-                if (dataRow == null || !dataRow.Table.Columns.Contains(configuredField.FieldName))
+                initialValue = configuredField.ConstantValue;
+                initialValueType = typeof(string);
+                fieldIdentifier = $"constant value '{initialValue}'";
+                fieldLog.Add($"Using {fieldIdentifier}.");
+                _logger?.LogTrace("Using {FieldIdentifier} for target '{TargetField}'.", fieldIdentifier, TargetField);
+            }
+            else if (!string.IsNullOrEmpty(configuredField.FieldName))
+            {
+                fieldIdentifier = $"field '{configuredField.FieldName}'";
+                if (dataRow != null && dataRow.Table.Columns.Contains(configuredField.FieldName))
                 {
-                    collectedValuesForCombination.Add(null);
-                    fieldLog.Add($"Source field '{configuredField.FieldName ?? "N/A"}' not found or DataRow not available, using null.");
-                    appliedTransformationsLog.AddRange(fieldLog);
-                    continue;
+                    initialValue = dataRow[configuredField.FieldName];
+                    if (initialValue == DBNull.Value) initialValue = null;
+                    initialValueType = initialValue?.GetType();
+                    fieldLog.Add($"Initial value from {fieldIdentifier}: '{initialValue ?? "null"}'.");
+                    _logger?.LogTrace("Initial value from {FieldIdentifier}: '{InitialValue}' for target '{TargetField}'.", fieldIdentifier, initialValue ?? "null", TargetField);
                 }
-                initialValue = dataRow[configuredField.FieldName];
-                initialValueType = initialValue?.GetType();
-                fieldLog.Add($"Initial value from '{configuredField.FieldName}': '{initialValue ?? "null"}'.");
+                else
+                {
+                    fieldLog.Add($"Source {fieldIdentifier} not found in DataRow (or DataRow is null) and no ConstantValue. Using null for this input.");
+                    _logger?.LogDebug("Source {FieldIdentifier} not found or DataRow null for target '{TargetField}'. Using null.", fieldIdentifier, TargetField);
+                    initialValue = null;
+                    initialValueType = null;
+                }
             }
             else
             {
-                fieldLog.Add("Configured field has no FieldName, initial value is null.");
+                fieldIdentifier = "an unnamed input without constant value";
+                fieldLog.Add($"Configured field has no FieldName and no ConstantValue. Initial value is null.");
+                _logger?.LogDebug("Configured input for target '{TargetField}' has no FieldName or ConstantValue. Using null.", TargetField);
+                initialValue = null;
+                initialValueType = null;
             }
 
             TransformationResult currentStepResult = TransformationResult.Success(
@@ -152,31 +200,36 @@ public class CombineFieldsRule : MappingRuleBase
 
             foreach (var valueTransformation in configuredField.ValueTransformations)
             {
+                _logger?.LogTrace("Applying transformation '{TransformationDisplayName}' to {FieldIdentifier} for target '{TargetField}'.", valueTransformation.DisplayName, fieldIdentifier, TargetField);
                 currentStepResult = await valueTransformation.ApplyTransformationAsync(currentStepResult);
                 if (currentStepResult.WasFailure)
                 {
-                    appliedTransformationsLog.Add($"Failure during value transformation for field '{configuredField.FieldName ?? "(no field name)"}': {currentStepResult.ErrorMessage}");
+                    appliedTransformationsLog.Add($"Failure during value transformation for {fieldIdentifier}: {currentStepResult.ErrorMessage}");
+                    _logger?.LogWarning("Failure during value transformation for {FieldIdentifier} for target '{TargetField}': {ErrorMessage}", fieldIdentifier, TargetField, currentStepResult.ErrorMessage);
                     return TransformationResult.Failure(
                         originalValue: currentStepResult.OriginalValue,
                         targetType: context.TargetFieldType ?? typeof(string),
-                        errorMessage: $"Failed to transform source field '{configuredField.FieldName ?? "(no field name)"}' for combination: {currentStepResult.ErrorMessage}",
+                        errorMessage: $"Failed to transform {fieldIdentifier} for combination: {currentStepResult.ErrorMessage}",
                         originalValueType: currentStepResult.OriginalValueType,
+                        currentValueType: currentStepResult.CurrentValueType,
                         record: dataRow,
-                        appliedTransformations: appliedTransformationsLog,
+                        appliedTransformations: appliedTransformationsLog.Concat(currentStepResult.AppliedTransformations ?? Enumerable.Empty<string>()).Distinct().ToList(),
                         sourceRecordContext: context.SourceRecordContext,
                         explicitTargetFieldType: context.TargetFieldType ?? typeof(string)
                     );
                 }
             }
             collectedValuesForCombination.Add(currentStepResult.CurrentValue);
-            appliedTransformationsLog.AddRange(currentStepResult.AppliedTransformations ?? []);
-            appliedTransformationsLog.Add($"Successfully transformed field '{configuredField.FieldName ?? "(no field name)"}'. Final value for combination: '{currentStepResult.CurrentValue ?? "null"}'.");
+            appliedTransformationsLog.AddRange(currentStepResult.AppliedTransformations?.Except(fieldLog).ToList() ?? Enumerable.Empty<string>());
+            appliedTransformationsLog.Add($"Successfully processed {fieldIdentifier}. Final value for combination: '{currentStepResult.CurrentValue ?? "null"}'.");
+            _logger?.LogTrace("Successfully processed {FieldIdentifier} for target '{TargetField}'. Value: '{CurrentValue}'.", fieldIdentifier, TargetField, currentStepResult.CurrentValue ?? "null");
         }
 
         var combineTransformation = new CombineFieldsTransformation
         {
             TransformationDetail = this.CombinationFormat
         };
+        _logger?.LogTrace("Preparing to combine {NumValues} values for target '{TargetField}' using format '{CombinationFormat}'.", collectedValuesForCombination.Count, TargetField, CombinationFormat);
 
         TransformationResult inputForCombine = TransformationResult.Success(
             originalValue: collectedValuesForCombination.ToArray(),
@@ -194,150 +247,347 @@ public class CombineFieldsRule : MappingRuleBase
         List<string> combinedLogs = appliedTransformationsLog;
         if (finalResult.AppliedTransformations != null)
         {
-            combinedLogs.AddRange(finalResult.AppliedTransformations);
+            combinedLogs.AddRange(finalResult.AppliedTransformations.Except(inputForCombine.AppliedTransformations ?? Enumerable.Empty<string>()));
         }
 
-        return finalResult with
+        var result = finalResult with
         {
             Record = dataRow,
             SourceRecordContext = context.SourceRecordContext,
             TargetFieldType = context.TargetFieldType ?? typeof(string),
-            AppliedTransformations = combinedLogs
+            AppliedTransformations = combinedLogs.Distinct().ToList()
         };
+        _logger?.LogDebug("CombineFieldsRule.Apply(ITransformationContext) for target '{TargetField}' completed. Success: {WasSuccess}, Value: '{CurrentValue}'.", TargetField, !result.WasFailure, result.CurrentValue);
+        return result;
     }
 
     /// <summary>
-    /// Applies the combine fields rule to the provided data row.
-    /// This overload creates an <see cref="ITransformationContext"/> from the DataRow and calls the context-based Apply.
+    /// Applies the combine fields rule when no specific data context is provided.
+    /// This overload is typically used when all input fields are configured with constant values.
     /// </summary>
-    /// <param name="dataRow">The data row to apply the rule to.</param>
-    /// <returns>A transformation result containing the combined value, or null/failure if issues occur.</returns>
+    /// <returns>A task that represents the asynchronous operation. The task result contains an enumerable of transformation results.</returns>
+    public override async Task<IEnumerable<TransformationResult?>> Apply()
+    {
+        _logger?.LogDebug("CombineFieldsRule.Apply() for target '{TargetField}' started (no context).", TargetField);
+        var initialLogs = new List<string> { $"CombineFieldsRule.Apply() for target '{TargetField}' processing." };
+
+        if (IsEmpty)
+        {
+            var emptyMsg = "CombineFieldsRule is not configured: InputFields or CombinationFormat is missing.";
+            _logger?.LogWarning(emptyMsg + " Target: '{TargetField}'.", TargetField);
+            initialLogs.Add(emptyMsg);
+            return new List<TransformationResult?> { TransformationResult.Failure(null, typeof(string), emptyMsg, appliedTransformations: initialLogs, explicitTargetFieldType: typeof(string)) };
+        }
+
+        if (InputFields.Any(cf => string.IsNullOrEmpty(cf.ConstantValue) && !string.IsNullOrEmpty(cf.FieldName)))
+        {
+            var failureMsg = "CombineFieldsRule.Apply() cannot be used if any input field relies on FieldName without a ConstantValue.";
+            _logger?.LogWarning(failureMsg + " Target: '{TargetField}'.", TargetField);
+            initialLogs.Add(failureMsg);
+            var failureResult = TransformationResult.Failure(null, typeof(string), failureMsg, appliedTransformations: initialLogs, explicitTargetFieldType: typeof(string));
+            return new List<TransformationResult?> { failureResult };
+        }
+
+        if (InputFields.Any(cf => string.IsNullOrEmpty(cf.ConstantValue) && string.IsNullOrEmpty(cf.FieldName)))
+        {
+            var failureMsg = "CombineFieldsRule.Apply() requires all input fields to have a ConstantValue if FieldName is not specified.";
+            _logger?.LogWarning(failureMsg + " Target: '{TargetField}'.", TargetField);
+            initialLogs.Add(failureMsg);
+            var failureResult = TransformationResult.Failure(null, typeof(string), failureMsg, appliedTransformations: initialLogs, explicitTargetFieldType: typeof(string));
+            return new List<TransformationResult?> { failureResult };
+        }
+
+        var collectedValuesForCombination = new List<object?>();
+        var appliedTransformationsLog = new List<string>(initialLogs);
+
+        foreach (var configuredField in InputFields)
+        {
+            object? initialValue = configuredField.ConstantValue;
+            Type? initialValueType = typeof(string);
+            List<string> fieldLog = new();
+            string fieldIdentifier = $"constant value '{initialValue}'";
+            fieldLog.Add($"Using {fieldIdentifier}.");
+            _logger?.LogTrace("Using {FieldIdentifier} for target '{TargetField}' (no context).", fieldIdentifier, TargetField);
+
+            TransformationResult currentStepResult = TransformationResult.Success(
+                originalValue: initialValue,
+                originalValueType: initialValueType,
+                currentValue: initialValue,
+                currentValueType: initialValueType,
+                appliedTransformations: fieldLog,
+                record: null,
+                sourceRecordContext: null,
+                targetFieldType: null
+            );
+
+            foreach (var valueTransformation in configuredField.ValueTransformations)
+            {
+                _logger?.LogTrace("Applying transformation '{TransformationDisplayName}' to {FieldIdentifier} for target '{TargetField}' (no context).", valueTransformation.DisplayName, fieldIdentifier, TargetField);
+                currentStepResult = await valueTransformation.ApplyTransformationAsync(currentStepResult);
+                if (currentStepResult.WasFailure)
+                {
+                    appliedTransformationsLog.Add($"Failure during value transformation for {fieldIdentifier}: {currentStepResult.ErrorMessage}");
+                    _logger?.LogWarning("Failure during value transformation for {FieldIdentifier} for target '{TargetField}' (no context): {ErrorMessage}", fieldIdentifier, TargetField, currentStepResult.ErrorMessage);
+                    var overallFailure = TransformationResult.Failure(
+                        originalValue: string.Join(", ", InputFields.Select(cf => cf.ConstantValue ?? "null")),
+                        targetType: typeof(string),
+                        errorMessage: $"Failed to transform {fieldIdentifier} for combination: {currentStepResult.ErrorMessage}",
+                        appliedTransformations: appliedTransformationsLog.Concat(currentStepResult.AppliedTransformations ?? Enumerable.Empty<string>()).Distinct().ToList(),
+                        explicitTargetFieldType: typeof(string)
+                    );
+                    return new List<TransformationResult?> { overallFailure };
+                }
+            }
+            collectedValuesForCombination.Add(currentStepResult.CurrentValue);
+            appliedTransformationsLog.AddRange(currentStepResult.AppliedTransformations?.Except(fieldLog).ToList() ?? Enumerable.Empty<string>());
+            appliedTransformationsLog.Add($"Successfully processed {fieldIdentifier}. Final value for combination: '{currentStepResult.CurrentValue ?? "null"}'.");
+            _logger?.LogTrace("Successfully processed {FieldIdentifier} for target '{TargetField}' (no context). Value: '{CurrentValue}'.", fieldIdentifier, TargetField, currentStepResult.CurrentValue ?? "null");
+        }
+
+        var combineTransformation = new CombineFieldsTransformation { TransformationDetail = this.CombinationFormat };
+        _logger?.LogTrace("Preparing to combine {NumValues} constant values for target '{TargetField}' using format '{CombinationFormat}' (no context).", collectedValuesForCombination.Count, TargetField, CombinationFormat);
+
+        TransformationResult inputForCombine = TransformationResult.Success(
+            originalValue: collectedValuesForCombination.ToArray(),
+            originalValueType: typeof(object[]),
+            currentValue: collectedValuesForCombination.ToArray(),
+            currentValueType: typeof(object[]),
+            appliedTransformations: new List<string> { "Preparing to combine collected constant values." },
+            targetFieldType: typeof(string)
+        );
+
+        TransformationResult finalResult = await combineTransformation.ApplyTransformationAsync(inputForCombine);
+
+        List<string> combinedLogs = appliedTransformationsLog;
+        if (finalResult.AppliedTransformations != null)
+        {
+            combinedLogs.AddRange(finalResult.AppliedTransformations.Except(inputForCombine.AppliedTransformations ?? Enumerable.Empty<string>()));
+        }
+
+        var finalResultWithLogs = finalResult with { AppliedTransformations = combinedLogs.Distinct().ToList(), TargetFieldType = typeof(string) };
+        _logger?.LogDebug("CombineFieldsRule.Apply() for target '{TargetField}' (no context) completed. Success: {WasSuccess}, Value: '{CurrentValue}'.", TargetField, !finalResultWithLogs.WasFailure, finalResultWithLogs.CurrentValue);
+        return new List<TransformationResult?> { finalResultWithLogs };
+    }
+
+    /// <summary>
+    /// Applies the combine fields rule to a single DataRow.
+    /// </summary>
+    /// <param name="dataRow">The DataRow to apply the rule to.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the transformation result, or null if the rule could not be applied.</returns>
     public override async Task<TransformationResult?> Apply(DataRow dataRow)
     {
-        var context = TransformationResult.Success(null, null, null, null, record: dataRow, targetFieldType: typeof(string));
-        return await Apply(context);
+        _logger?.LogDebug("CombineFieldsRule.Apply(DataRow) for target '{TargetField}' started.", TargetField);
+
+        Type resolvedTargetFieldType = typeof(string); // Default
+        if (this.ParentTableDefinition != null && !string.IsNullOrEmpty(this.TargetField))
+        {
+            var descriptor = this.ParentTableDefinition.FieldDescriptors?.FirstOrDefault(fd => fd.FieldName == this.TargetField);
+            if (descriptor?.FieldType != null)
+            {
+                resolvedTargetFieldType = descriptor.FieldType;
+            }
+        }
+        
+        // Construct SourceRecordContext from DataRow columns
+        List<ImportedRecordFieldDescriptor>? sourceRecordContext = dataRow?.Table.Columns
+            .Cast<DataColumn>()
+            .Select(col => new ImportedRecordFieldDescriptor { 
+                FieldName = col.ColumnName, 
+                FieldType = col.DataType,
+            })
+            .ToList();
+
+        var initialContext = TransformationResult.Success(
+            originalValue: null, 
+            originalValueType: null, 
+            currentValue: null, 
+            currentValueType: resolvedTargetFieldType, // Use resolved type
+            record: dataRow,
+            tableDefinition: this.ParentTableDefinition,
+            sourceRecordContext: sourceRecordContext, 
+            targetFieldType: resolvedTargetFieldType, // Use resolved type
+            appliedTransformations: new List<string> { $"Initial context for DataRow processing of target '{this.TargetField}'." }
+        );
+        
+        var result = await Apply(initialContext); // Call the ITransformationContext overload
+
+        if (result == null)
+        {
+            _logger?.LogWarning("CombineFieldsRule.Apply(DataRow) for target '{TargetField}' resulted in a null TransformationResult. Returning a failure.", TargetField);
+            return TransformationResult.Failure(
+                originalValue: null,
+                targetType: resolvedTargetFieldType, // Use resolved type
+                errorMessage: "CombineFieldsRule.Apply(DataRow) failed to produce a result.",
+                record: dataRow,
+                sourceRecordContext: sourceRecordContext,
+                explicitTargetFieldType: resolvedTargetFieldType // Use resolved type
+            );
+        }
+        _logger?.LogDebug("CombineFieldsRule.Apply(DataRow) for target '{TargetField}' completed. Success: {WasSuccess}, Value: '{CurrentValue}'.", TargetField, !result.WasFailure, result.CurrentValue);
+        return result;
     }
 
     /// <summary>
-    /// Applies the combine fields rule to all rows in the provided data table.
-    /// This overload iterates through rows, creating a context for each and calling the DataRow-based Apply.
+    /// Applies the combine fields rule to each DataRow in a DataTable.
     /// </summary>
-    /// <param name="data">The data table to apply the rule to.</param>
-    /// <returns>An enumerable collection of transformation results for each row.</returns>
+    /// <param name="data">The DataTable to apply the rule to.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains an enumerable of transformation results for each row.</returns>
     public override async Task<IEnumerable<TransformationResult?>> Apply(DataTable data)
     {
-        if (data == null) return new List<TransformationResult?>();
+        _logger?.LogDebug("CombineFieldsRule.Apply(DataTable) for target '{TargetField}' started for {RowCount} rows.", TargetField, data?.Rows?.Count ?? 0);
+        
+        Type resolvedTargetFieldType = typeof(string); // Default
+        if (this.ParentTableDefinition != null && !string.IsNullOrEmpty(this.TargetField))
+        {
+            var descriptor = this.ParentTableDefinition.FieldDescriptors?.FirstOrDefault(fd => fd.FieldName == this.TargetField);
+            if (descriptor?.FieldType != null)
+            {
+                resolvedTargetFieldType = descriptor.FieldType;
+            }
+        }
+
+        if (data == null)
+        {
+            _logger?.LogWarning("CombineFieldsRule.Apply(DataTable) for target '{TargetField}' received a null DataTable.", TargetField);
+            return new List<TransformationResult?> {
+                TransformationResult.Failure(null, resolvedTargetFieldType, "Input DataTable is null.", explicitTargetFieldType: resolvedTargetFieldType)
+            };
+        }
+
         var results = new List<TransformationResult?>();
         foreach (DataRow row in data.Rows)
         {
-            results.Add(await Apply(row).ConfigureAwait(false));
+            results.Add(await Apply(row)); // This will call the updated Apply(DataRow)
         }
+        _logger?.LogDebug("CombineFieldsRule.Apply(DataTable) for target '{TargetField}' completed for {RowCount} rows.", TargetField, data.Rows.Count);
         return results;
     }
 
     /// <summary>
-    /// Applies the combine fields rule in a context where no specific data table or row is provided.
-    /// If any <see cref="ConfiguredInputField"/> specifies a <see cref="ConfiguredInputField.FieldName"/>,
-    /// this method will return a failure, as DataRow context is required.
-    /// Otherwise, it proceeds with a null DataRow context.
+    /// Gets the combined value from the source record based on the rule's configuration.
+    /// This method is typically used in scenarios where an ITransformationContext is not available or suitable.
     /// </summary>
-    /// <returns>An enumerable collection containing a single transformation result (success or failure).</returns>
-    public override async Task<IEnumerable<TransformationResult?>> Apply()
-    {
-        ITransformationContext context;
-        if (InputFields.Any(cf => !string.IsNullOrEmpty(cf.FieldName)))
-        {
-            var failureResult = TransformationResult.Failure(null, typeof(string), "CombineFieldsRule cannot be applied without a DataRow context when FieldNames are specified.", explicitTargetFieldType: typeof(string));
-            return new List<TransformationResult?> { failureResult };
-        }
-        context = TransformationResult.Success(null, null, null, null, targetFieldType: typeof(string));
-        var result = await Apply(context);
-        return new List<TransformationResult?> { result };
-    }
-
-    /// <summary>
-    /// Gets the combined value from a source record represented by a list of field descriptors.
-    /// This method is intended for scenarios where a DataRow is not available, and data is provided as <see cref="ImportedRecordFieldDescriptor"/> list.
-    /// </summary>
-    /// <param name="sourceRecord">The source record, as a list of <see cref="ImportedRecordFieldDescriptor"/>.</param>
-    /// <param name="targetField">The descriptor of the target field (used to determine target type if needed).</param>
-    /// <returns>A <see cref="TransformationResult"/> containing the combined value.</returns>
+    /// <param name="sourceRecord">The list of source record field descriptors. Each descriptor provides the name and value of a field from the source.</param>
+    /// <param name="targetField">The target field descriptor, indicating the field to populate and its expected type.</param>
+    /// <returns>The transformation result containing the combined value and details of the operation.</returns>
     public override TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecord, ImportedRecordFieldDescriptor targetField)
     {
+        string targetFieldNameForLog = targetField?.FieldName ?? this.TargetField ?? "UnknownTarget";
+        _logger?.LogDebug("CombineFieldsRule.GetValue for target '{TargetFieldNameForLog}' started.", targetFieldNameForLog);
         Type targetType = targetField?.FieldType ?? typeof(string);
         if (IsEmpty)
         {
+            _logger?.LogWarning("CombineFieldsRule for target '{TargetFieldNameForLog}' is not configured: InputFields or CombinationFormat is missing.", targetFieldNameForLog);
             return TransformationResult.Failure(null, targetType, "CombineFieldsRule is not configured.", sourceRecordContext: sourceRecord, explicitTargetFieldType: targetType);
         }
 
         var collectedValuesForCombination = new List<object?>();
-        var appliedTransformationsLog = new List<string> { "CombineFieldsRule.GetValue started." };
+        var appliedTransformationsLog = new List<string> { $"CombineFieldsRule.GetValue for target '{targetFieldNameForLog}' processing." };
 
         foreach (var configuredField in InputFields)
         {
-            var fieldDesc = sourceRecord?.FirstOrDefault(f => f.FieldName == configuredField.FieldName);
             object? initialValue = null;
             Type? initialValueType = null;
-            List<string> fieldLog = [];
+            List<string> fieldLog = new();
+            string fieldIdentifier;
 
-            if (fieldDesc == null)
+            if (!string.IsNullOrEmpty(configuredField.ConstantValue))
             {
-                if (!string.IsNullOrEmpty(configuredField.FieldName))
+                initialValue = configuredField.ConstantValue;
+                initialValueType = typeof(string);
+                fieldIdentifier = $"constant value '{initialValue}'";
+                fieldLog.Add($"Using {fieldIdentifier}.");
+                _logger?.LogTrace("Using {FieldIdentifier} for target '{TargetFieldNameForLog}'.", fieldIdentifier, targetFieldNameForLog);
+            }
+            else if (!string.IsNullOrEmpty(configuredField.FieldName))
+            {
+                fieldIdentifier = $"field '{configuredField.FieldName}'";
+                var fieldDesc = sourceRecord?.FirstOrDefault(f => f.FieldName == configuredField.FieldName);
+                if (fieldDesc == null)
                 {
-                    fieldLog.Add($"Source field '{configuredField.FieldName}' not found in sourceRecord, using null.");
+                    fieldLog.Add($"Source {fieldIdentifier} not found in sourceRecord and no ConstantValue. Using null for this input.");
+                    _logger?.LogDebug("Source {FieldIdentifier} not found in sourceRecord for target '{TargetFieldNameForLog}'. Using null.", fieldIdentifier, targetFieldNameForLog);
+                    initialValue = null;
+                    initialValueType = null;
                 }
                 else
                 {
-                    fieldLog.Add("Configured field has no FieldName, initial value is null.");
+                    initialValue = fieldDesc.ValueSet?.FirstOrDefault();
+                    if (initialValue == DBNull.Value) initialValue = null;
+                    initialValueType = initialValue?.GetType() ?? fieldDesc.FieldType;
+                    fieldLog.Add($"Initial value from {fieldIdentifier}: '{initialValue ?? "null"}'.");
+                    _logger?.LogTrace("Initial value from {FieldIdentifier}: '{InitialValue}' for target '{TargetFieldNameForLog}'.", fieldIdentifier, initialValue ?? "null", targetFieldNameForLog);
                 }
-                collectedValuesForCombination.Add(null);
-                appliedTransformationsLog.AddRange(fieldLog);
-                continue;
             }
             else
             {
-                initialValue = fieldDesc.ValueSet?.FirstOrDefault();
-                initialValueType = initialValue?.GetType() ?? fieldDesc.FieldType;
-                fieldLog.Add($"Initial value from '{configuredField.FieldName}': '{initialValue ?? "null"}'.");
+                fieldIdentifier = "an unnamed input without constant value";
+                fieldLog.Add($"Configured field has no FieldName and no ConstantValue. Initial value is null.");
+                _logger?.LogDebug("Configured input for target '{TargetFieldNameForLog}' has no FieldName or ConstantValue. Using null.", targetFieldNameForLog);
+                initialValue = null;
+                initialValueType = null;
             }
 
             TransformationResult currentStepResult = TransformationResult.Success(
-                initialValue, initialValueType, initialValue, initialValueType,
-                fieldLog,
+                originalValue: initialValue,
+                originalValueType: initialValueType,
+                currentValue: initialValue,
+                currentValueType: initialValueType,
+                appliedTransformations: fieldLog,
                 sourceRecordContext: sourceRecord,
                 targetFieldType: null
             );
 
             foreach (var valueTransformation in configuredField.ValueTransformations)
             {
+                _logger?.LogTrace("Applying transformation '{TransformationDisplayName}' to {FieldIdentifier} for target '{TargetFieldNameForLog}'.", valueTransformation.DisplayName, fieldIdentifier, targetFieldNameForLog);
                 try
                 {
                     currentStepResult = Task.Run(async () => await valueTransformation.ApplyTransformationAsync(currentStepResult)).GetAwaiter().GetResult();
                 }
                 catch (Exception ex)
                 {
-                    currentStepResult = currentStepResult with { ErrorMessage = $"Error applying transformation {valueTransformation.DisplayName}: {ex.Message}" };
+                    var stepErrorMessage = $"Error applying transformation {valueTransformation.DisplayName} to {fieldIdentifier}: {ex.Message}";
+                    appliedTransformationsLog.Add(stepErrorMessage);
+                    _logger?.LogWarning("Error applying transformation {TransformationDisplayName} to {FieldIdentifier} for target '{TargetFieldNameForLog}': {ExceptionMessage}", valueTransformation.DisplayName, fieldIdentifier, targetFieldNameForLog, ex.Message);
+
+                    currentStepResult = TransformationResult.Failure(
+                        originalValue: currentStepResult.OriginalValue,
+                        targetType: targetType,
+                        errorMessage: stepErrorMessage,
+                        originalValueType: currentStepResult.OriginalValueType,
+                        currentValueType: currentStepResult.CurrentValueType,
+                        appliedTransformations: currentStepResult.AppliedTransformations?.Append(stepErrorMessage).Distinct().ToList() ?? new List<string> { stepErrorMessage },
+                        sourceRecordContext: sourceRecord,
+                        explicitTargetFieldType: targetType
+                    );
                 }
 
                 if (currentStepResult.WasFailure)
                 {
-                    appliedTransformationsLog.Add($"Failure during value transformation for field '{configuredField.FieldName}' in GetValue: {currentStepResult.ErrorMessage}");
+                    appliedTransformationsLog.Add($"Transformation failed for {fieldIdentifier}. Error: {currentStepResult.ErrorMessage}. Adding null to combination list.");
+                    _logger?.LogWarning("Transformation failed for {FieldIdentifier} for target '{TargetFieldNameForLog}'. Error: {ErrorMessage}. Adding null.", fieldIdentifier, targetFieldNameForLog, currentStepResult.ErrorMessage);
                     collectedValuesForCombination.Add(null);
                     goto nextField;
                 }
             }
             collectedValuesForCombination.Add(currentStepResult.CurrentValue);
-            appliedTransformationsLog.AddRange(currentStepResult.AppliedTransformations ?? []);
-            appliedTransformationsLog.Add($"Successfully transformed field '{configuredField.FieldName}' in GetValue. Final value for combination: '{currentStepResult.CurrentValue ?? "null"}'.");
+            appliedTransformationsLog.AddRange(currentStepResult.AppliedTransformations?.Except(fieldLog).ToList() ?? Enumerable.Empty<string>());
+            appliedTransformationsLog.Add($"Successfully processed {fieldIdentifier}. Final value for combination: '{currentStepResult.CurrentValue ?? "null"}'.");
+            _logger?.LogTrace("Successfully processed {FieldIdentifier} for target '{TargetFieldNameForLog}'. Value: '{CurrentValue}'.", fieldIdentifier, targetFieldNameForLog, currentStepResult.CurrentValue ?? "null");
 
-nextField:;
+        nextField:;
         }
 
         var combineTransformation = new CombineFieldsTransformation { TransformationDetail = this.CombinationFormat };
+        _logger?.LogTrace("Preparing to combine {NumValues} values for target '{TargetFieldNameForLog}' using format '{CombinationFormat}' (GetValue).", collectedValuesForCombination.Count, targetFieldNameForLog, CombinationFormat);
+
         TransformationResult inputForCombine = TransformationResult.Success(
-            collectedValuesForCombination.ToArray(), typeof(object[]),
-            collectedValuesForCombination.ToArray(), typeof(object[]),
-            new List<string> { "Preparing to combine collected values for GetValue." },
+            originalValue: collectedValuesForCombination.ToArray(),
+            originalValueType: typeof(object[]),
+            currentValue: collectedValuesForCombination.ToArray(),
+            currentValueType: typeof(object[]),
+            appliedTransformations: new List<string> { "Preparing to combine collected values for GetValue." },
             sourceRecordContext: sourceRecord,
             targetFieldType: targetType
         );
@@ -348,17 +598,22 @@ nextField:;
             List<string> combinedLogs = appliedTransformationsLog;
             if (finalResult.AppliedTransformations != null)
             {
-                combinedLogs.AddRange(finalResult.AppliedTransformations);
+                combinedLogs.AddRange(finalResult.AppliedTransformations.Except(inputForCombine.AppliedTransformations ?? Enumerable.Empty<string>()));
             }
-            return finalResult with { SourceRecordContext = sourceRecord, TargetFieldType = targetType, AppliedTransformations = combinedLogs };
+            var result = finalResult with { SourceRecordContext = sourceRecord, TargetFieldType = targetType, AppliedTransformations = combinedLogs.Distinct().ToList() };
+            _logger?.LogDebug("CombineFieldsRule.GetValue for target '{TargetFieldNameForLog}' completed. Success: {WasSuccess}, Value: '{CurrentValue}'.", targetFieldNameForLog, !result.WasFailure, result.CurrentValue);
+            return result;
         }
         catch (Exception ex)
         {
+            var errorMessage = $"Failed to combine fields in GetValue for target '{targetFieldNameForLog}': {ex.Message}";
+            appliedTransformationsLog.Add(errorMessage);
+            _logger?.LogError(ex, "Failed to combine fields in GetValue for target '{TargetFieldNameForLog}'.", targetFieldNameForLog);
             return TransformationResult.Failure(
-                inputForCombine.OriginalValue,
-                targetType,
-                $"Failed to combine fields in GetValue: {ex.Message}",
-                appliedTransformations: appliedTransformationsLog,
+                originalValue: inputForCombine.OriginalValue,
+                targetType: targetType,
+                errorMessage: errorMessage,
+                appliedTransformations: appliedTransformationsLog.Distinct().ToList(),
                 sourceRecordContext: sourceRecord,
                 explicitTargetFieldType: targetType
             );
@@ -366,18 +621,21 @@ nextField:;
     }
 
     /// <summary>
-    /// Creates a clone of this <see cref="CombineFieldsRule"/> instance.
-    /// This performs a deep clone of the <see cref="InputFields"/> list and their <see cref="ValueTransformationBase"/> lists.
+    /// Creates a clone of the current mapping rule.
+    /// The clone includes copies of all configurable properties, such as InputFields and CombinationFormat.
+    /// The logger instance is not cloned; the new instance will have a null logger or one provided by its constructor if applicable.
     /// </summary>
-    /// <returns>A new <see cref="CombineFieldsRule"/> instance with the same configuration.</returns>
+    /// <returns>A new instance of <see cref="CombineFieldsRule"/> with the same configuration.</returns>
     public override MappingRuleBase Clone()
     {
+        _logger?.LogTrace("Cloning CombineFieldsRule for target '{TargetField}'.", TargetField);
         var clone = new CombineFieldsRule
         {
-            InputFields = [.. this.InputFields.Select(f => f.Clone())],
+            InputFields = this.InputFields.Select(f => f.Clone()).ToList(),
             CombinationFormat = this.CombinationFormat
         };
         this.CloneBaseProperties(clone);
+        _logger?.LogDebug("Successfully cloned CombineFieldsRule for target '{TargetField}'.", clone.TargetField);
         return clone;
     }
 }

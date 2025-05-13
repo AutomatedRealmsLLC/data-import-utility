@@ -1,4 +1,7 @@
-﻿namespace AutomatedRealms.DataImportUtility.Tests.ValueTransformTests;
+﻿using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
+
+namespace AutomatedRealms.DataImportUtility.Tests.ValueTransformTests;
 
 public class RegexMatchOperationTests
 {
@@ -18,11 +21,11 @@ public class RegexMatchOperationTests
         };
 
         // Act
-        var result = await operation.Apply(input);
+        var result = await operation.Transform(input, typeof(string));
 
         // Assert
         Assert.False(result.WasFailure);
-        Assert.Equal(expected, result.Value);
+        Assert.Equal(expected, result.CurrentValue);
     }
 
     /// <summary>
@@ -48,11 +51,11 @@ public class RegexMatchOperationTests
         };
 
         // Act
-        var result = await regExOperation.Apply(input);
-        result = await interpolateOperation.Apply(result);
+        var result = await regExOperation.Transform(input, typeof(string));
+        result = await interpolateOperation.ApplyTransformationAsync(result);
 
         // Assert
         Assert.False(result.WasFailure, result.ErrorMessage);
-        Assert.Equal(expected, result.Value);
+        Assert.Equal(expected, result.CurrentValue);
     }
 }
