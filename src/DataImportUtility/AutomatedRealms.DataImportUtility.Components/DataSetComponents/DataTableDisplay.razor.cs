@@ -1,8 +1,8 @@
 ﻿using System.Data;
 
-using AutomatedRealms.DataImportUtility.Components.Abstractions; // For FileImportUtilityComponentBase
-using AutomatedRealms.DataImportUtility.Components.JsInterop; // For FileMapperJsModule
-using AutomatedRealms.DataImportUtility.Components.State; // For DataFileMapperState
+using AutomatedRealms.DataImportUtility.Components.Abstractions;
+using AutomatedRealms.DataImportUtility.Components.JsInterop;
+using AutomatedRealms.DataImportUtility.Components.State;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -85,7 +85,7 @@ public partial class DataTableDisplay : FileImportUtilityComponentBase
     /// <inheritdoc />
     protected override async void OnAfterRender(bool firstRender)
     {
-        var curIsRendered = MyDataTable is not null && (await FileMapperModule.ElementExists(Id));
+        var curIsRendered = MyDataTable is not null && await FileMapperModule.ElementExists(Id);
         if (_prevIsRendered != curIsRendered)
         {
             TableIsRendered = curIsRendered;

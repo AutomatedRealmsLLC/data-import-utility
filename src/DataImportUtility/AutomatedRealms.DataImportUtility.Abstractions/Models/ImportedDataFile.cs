@@ -1,11 +1,11 @@
+using AutomatedRealms.DataImportUtility.Abstractions.CustomExceptions;
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
+
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Reflection;
 using System.Text.Json.Serialization;
-
-using AutomatedRealms.DataImportUtility.Abstractions.CustomExceptions;
-using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Models; // Updated
 
@@ -138,16 +138,51 @@ public class ImportedDataFile
     }
 
     /// <summary>
+    /// Sets the target type for this imported data file.
+    /// </summary>
+    /// <typeparam name="TTargetType">
+    /// The type of the target object to map to.
+    /// </typeparam>
+    /// <param name="refreshFieldMappings">
+    /// Whether or not to refresh the field mappings.
+    /// </param>
+    /// <param name="autoMatch">
+    /// Whether or not to automatically match fields.
+    /// </param>
+    public void SetTargetType<TTargetType>(bool refreshFieldMappings = true, bool autoMatch = true) where TTargetType : new()
+        => SetTargetType(typeof(TTargetType), refreshFieldMappings, autoMatch);
+
+
+    /* Removing the version with the ignore/require fields for now 
+     * TODO: Restore this when we have a better way to handle the ignore/require fields
+    /// <summary>
+    /// Sets the target type for this imported data file.
+    /// </summary>
+    /// <typeparam name="TTargetType">
+    /// The type of the target object to map to.
+    /// </typeparam>
+    /// <param name="ignoreFields">
+    /// The fields to ignore when mapping to the target type.
+    /// </param>
+    /// <param name="requireFields">
+    /// The fields to mark as required when mapping to the target type.
+    /// </param>
+    public void SetTargetType<TTargetType>(IEnumerable<string>? ignoreFields = null, IEnumerable<string>? requireFields = null) where TTargetType : new()
+        => SetTargetType(typeof(TTargetType), ignoreFields, requireFields);
+    */
+
+    /// <summary>
     /// Sets the target type for the file.
     /// </summary>
     /// <param name="targetType">The target type to set.</param>
     /// <param name="refreshFieldMappings">Whether or not to refresh the field mappings.</param>
-    public void SetTargetType(Type? targetType, bool refreshFieldMappings = true)
+    /// <param name="autoMatch">Whether or not to automatically match fields.</param>
+    public void SetTargetType(Type? targetType, bool refreshFieldMappings = true, bool autoMatch = true)
     {
         TargetType = targetType;
         if (refreshFieldMappings)
         {
-            RefreshFieldMappings(true, true);
+            RefreshFieldMappings(true, autoMatch);
         }
     }
 
@@ -286,6 +321,115 @@ public class ImportedDataFile
     public Task<List<T>> GetData<T>(CancellationToken ct = default) where T : class, new()
         => GetData<T>(TableDefinitions.First(), ct);
 
+    // NOTE: Some of this may have been replaced by the GetData methods above
+    #region Apply Methods
+    /// <summary>
+    /// Applies the transformations to this imported data file and outputs the results as a 
+    /// <see cref="DataTable"/>.
+    /// </summary>
+    /// <param name="tableName">The name of the table to apply the transformation to.</param>
+    /// <param name="selectedRecords">The records to select from the table.</param>
+    /// <returns>
+    /// The transformed data as a <see cref="DataTable"/>.
+    /// </returns>
+    /// <remarks>
+    /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
+    /// </remarks>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the table does not exist in the data set.
+    /// </exception>
+    public async Task<DataTable?> GenerateOutputDataTable(string tableName, List<int>? selectedRecords = null)
+    {
+        if (DataSet is null) { return null; }
+
+        var table = DataSet.Tables[tableName]
+            ?? throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
+
+        if (!TableDefinitions.TryGetFieldMappings(tableName, out var fieldMappings) || fieldMappings is null)
+        {
+            throw new ArgumentException($"The table '{tableName}' does not have any field mappings.");
+        }
+
+        // Uses the helper/extension method to apply the transformation
+        return await table.ApplyTransformation(fieldMappings, selectedRecords);
+    }
+
+    /// <summary>
+    /// Applies the transformations to this imported data file and outputs the results as the specified
+    /// type.
+    /// </summary>
+    /// <typeparam name="TTargetType">The type of the target object to map to.</typeparam>
+    /// <param name="tableName">The name of the table to apply the transformation to.</param>
+    /// <param name="selectedRecords">The records to select from the table.</param>
+    /// <returns>A list of objects of the specified type.</returns>
+    /// <remarks>
+    /// Uses the helper/extension method to apply the transformation, which also applies validation
+    /// to the data.  They can be found in the <see cref="ImportedDataFile.TableDefinitions"/>.<see cref="ImportTableDefinition.FieldMappings"/>
+    /// objects.
+    /// 
+    /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
+    /// </remarks> 
+    public async Task<IEnumerable<TTargetType>?> GenerateOutput<TTargetType>(string tableName, List<int>? selectedRecords = null)
+        where TTargetType : new()
+        => (await GenerateOutputDataTable(tableName, selectedRecords))?.ToObject<TTargetType>();
+
+    /// <summary>
+    /// Applies the transformations to this imported data file and outputs the results as a list of objects.
+    /// </summary>
+    /// <param name="tableName">The name of the table to apply the transformation to.</param>
+    /// <param name="selectedRecords">The records to select from the table.</param>
+    /// <returns>A list of objects.</returns>
+    /// <remarks>
+    /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
+    /// </remarks>
+    public async Task<IEnumerable<object?>?> GenerateOutput(string tableName, List<int>? selectedRecords = null)
+        => (await GenerateOutputDataTable(tableName, selectedRecords))?.ToObject<object?>();
+    #endregion
+
+
+    // NOTE: Another method that went away during the refactor:
+    /// <summary>
+    /// Replaces the field mappings for a table.
+    /// </summary>
+    /// <param name="tableName">The name of the table.</param>
+    /// <param name="incomingFieldMappings">The new field mappings to replace the existing ones.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the data file is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when the table does not exist in the data set.</exception>
+    public void ReplaceFieldMappings(string tableName, IEnumerable<FieldMapping> incomingFieldMappings)
+    {
+        if (DataSet is null)
+        {
+            throw new InvalidOperationException("Data file's DataSet is null.");
+        }
+
+        if (DataSet.Tables[tableName] is null)
+        {
+            throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
+        }
+
+        if (!TableDefinitions.TryGetTableDefinition(tableName, out var tableDef) || tableDef is null)
+        {
+            RefreshFieldDescriptors(tableName: tableName);
+            RefreshFieldMappings();
+            if (!TableDefinitions.TryGetTableDefinition(tableName, out tableDef) || tableDef is null)
+            {
+                throw new InvalidOperationException($"Failed to populate the field descriptors for the table '{tableName}'.");
+            }
+        }
+
+        tableDef.FieldMappings = [.. incomingFieldMappings];
+        var foundDescriptors = TableDefinitions.TryGetFieldDescriptors(tableName, out var fieldDescriptors);
+
+        foreach (var fieldMapping in tableDef.FieldMappings)
+        {
+            fieldMapping.ValidationAttributes = _targetTypeFieldMappings!.First(x => x.FieldName == fieldMapping.FieldName).ValidationAttributes;
+            foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTransformations ?? []).Where(sfd => sfd?.Field is not null))
+            {
+                sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
+            }
+        }
+    }
+
     /// <summary>
     /// Clones the <see cref="ImportedDataFile" />.
     /// </summary>
@@ -298,4 +442,48 @@ public class ImportedDataFile
         forRet._targetTypeFieldMappings = _targetTypeFieldMappings?.Select(x => x.Clone()).ToImmutableList(); return forRet;
     }
     #endregion Public Methods
+}
+
+/// <summary>
+/// The result of reading a provided file with a specific target type.
+/// </summary>
+/// <typeparam name="TTargetType">
+/// The type of the target object to map to.
+/// </typeparam>
+public class ImportedDataFile<TTargetType> : ImportedDataFile
+    where TTargetType : class, new()
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ImportedDataFile{TTargetType}"/> class.
+    /// </summary>
+    public ImportedDataFile()
+    {
+        SetTargetType(typeof(TTargetType));
+    }
+
+    /// <summary>
+    /// Gets the data from the file as a list of objects of the target type.
+    /// </summary>
+    /// <param name="tableDefinition">The table definition to use for mapping.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The data from the file as a list of objects of the target type.</returns>
+    public Task<List<TTargetType>> GetData(ImportTableDefinition tableDefinition, CancellationToken ct = default)
+        => GetData<TTargetType>(tableDefinition, ct);
+
+    /// <summary>
+    /// Gets the data from the file as a list of objects of the target type.
+    /// </summary>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The data from the file as a list of objects of the target type.</returns>
+    public Task<List<TTargetType>> GetData(CancellationToken ct = default)
+        => GetData<TTargetType>(ct);
+
+    /// <summary>
+    /// Clones the <see cref="ImportedDataFile{TTargetType}" />.
+    /// </summary>
+    /// <returns>The cloned <see cref="ImportedDataFile{TTargetType}" />.</returns>
+    public new ImportedDataFile<TTargetType> Clone()
+    {
+        return (ImportedDataFile<TTargetType>)base.Clone();
+    }
 }

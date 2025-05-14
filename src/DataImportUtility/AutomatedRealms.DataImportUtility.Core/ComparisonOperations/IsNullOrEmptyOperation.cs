@@ -1,6 +1,7 @@
-using System.Text.Json.Serialization;
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -47,8 +48,7 @@ public class IsNullOrEmptyOperation : ComparisonOperationBase
     /// <returns>True if the LeftOperand's value is null or empty; otherwise, false.</returns>
     public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
-        ITransformationContext? context = contextResult as ITransformationContext;
-        if (context == null)
+        if (contextResult is not ITransformationContext context)
         {
             if (contextResult is ITransformationContext directContext)
             {

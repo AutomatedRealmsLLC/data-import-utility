@@ -82,12 +82,14 @@ public class CombineFieldsRuleTests : MappingRuleBaseTestContext
         ImportTableDefinition? tableDef = dataFile.TableDefinitions.FirstOrDefault(td => td.TableName == randomTableName);
         if (tableDef == null)
         {
-            tableDef = new ImportTableDefinition { TableName = randomTableName };
-            // FieldDescriptors for ImportTableDefinition should be ImmutableList<ImportedRecordFieldDescriptor>
-            tableDef.FieldDescriptors = new List<ImportedRecordFieldDescriptor>
+            tableDef = new ImportTableDefinition
             {
-                new ImportedRecordFieldDescriptor { FieldName = "Field1", FieldType = typeof(string), ForTableName = randomTableName, ImportedDataFile = dataFile },
-                new ImportedRecordFieldDescriptor { FieldName = "Field2", FieldType = typeof(string), ForTableName = randomTableName, ImportedDataFile = dataFile }
+                TableName = randomTableName,             // FieldDescriptors for ImportTableDefinition should be ImmutableList<ImportedRecordFieldDescriptor>
+                FieldDescriptors =
+                [
+                    new ImportedRecordFieldDescriptor { FieldName = "Field1", FieldType = typeof(string), ForTableName = randomTableName, ImportedDataFile = dataFile },
+                    new ImportedRecordFieldDescriptor { FieldName = "Field2", FieldType = typeof(string), ForTableName = randomTableName, ImportedDataFile = dataFile }
+                ]
             };
             dataFile.TableDefinitions.Add(tableDef);
         }

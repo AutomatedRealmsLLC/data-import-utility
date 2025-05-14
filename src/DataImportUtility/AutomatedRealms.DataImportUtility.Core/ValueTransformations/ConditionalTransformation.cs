@@ -1,7 +1,8 @@
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Text.Json.Serialization;
+
 using CoreRules = AutomatedRealms.DataImportUtility.Core.Rules;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
@@ -165,9 +166,8 @@ public partial class ConditionalTransformation : ValueTransformationBase
                 ruleResult = await FalseMappingRule!.Apply(previousResult);
             }
 
-            if (ruleResult == null)
-            {
-                return TransformationResult.Failure(
+            return ruleResult == null
+                ? TransformationResult.Failure(
                     originalValue: previousResult.OriginalValue,
                     targetType: OutputType,
                     errorMessage: "The executed conditional rule returned a null result.",
@@ -177,9 +177,8 @@ public partial class ConditionalTransformation : ValueTransformationBase
                     record: previousResult.Record,
                     tableDefinition: previousResult.TableDefinition,
                     sourceRecordContext: previousResult.SourceRecordContext,
-                    explicitTargetFieldType: previousResult.TargetFieldType);
-            }
-            return ruleResult;
+                    explicitTargetFieldType: previousResult.TargetFieldType)
+                : ruleResult;
         }
         catch (Exception ex)
         {
@@ -205,7 +204,7 @@ public partial class ConditionalTransformation : ValueTransformationBase
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value,
             currentValueType: value?.GetType() ?? typeof(object),
-            appliedTransformations: new List<string>(),
+            appliedTransformations: [],
             record: null,
             tableDefinition: null,
             sourceRecordContext: null,

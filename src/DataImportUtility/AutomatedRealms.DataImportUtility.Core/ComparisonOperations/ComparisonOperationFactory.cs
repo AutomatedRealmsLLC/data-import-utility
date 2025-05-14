@@ -1,8 +1,9 @@
-using System.Data; // Required for DataRow
-using AutomatedRealms.DataImportUtility.Abstractions; 
-using AutomatedRealms.DataImportUtility.Abstractions.Services; 
-using AutomatedRealms.DataImportUtility.Core.Rules; 
+using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For ConditionalRule, ImportTableDefinition
+using AutomatedRealms.DataImportUtility.Abstractions.Services;
+using AutomatedRealms.DataImportUtility.Core.Rules;
+
+using System.Data; // Required for DataRow
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -34,7 +35,7 @@ public static class ComparisonOperationFactory
         }
 
         // After the above check, conditionalRule.OperationTypeId is guaranteed not to be null or whitespace.
-        string operationTypeId = conditionalRule.OperationTypeId!; 
+        string operationTypeId = conditionalRule.OperationTypeId!;
 
         if (conditionalRule.SourceField == null || string.IsNullOrEmpty(conditionalRule.SourceField.FieldName))
         {
@@ -44,7 +45,7 @@ public static class ComparisonOperationFactory
 
         // Left operand is always based on the conditionalRule's SourceField
         MappingRuleBase leftOperandAccessRule = new FieldAccessRule(conditionalRule.SourceField.FieldName, $"Conditional_Source_{conditionalRule.SourceField.FieldName}_for_{ruleContextIdentifier}");
-        if (tableDefinition != null) 
+        if (tableDefinition != null)
         {
             leftOperandAccessRule.ParentTableDefinition = tableDefinition;
         }
@@ -54,7 +55,7 @@ public static class ComparisonOperationFactory
         if (conditionalRule.ComparisonValue != null)
         {
             rightOperandRule = new StaticValueRule(conditionalRule.ComparisonValue, $"Conditional_ComparisonValue_for_{ruleContextIdentifier}");
-            if (tableDefinition != null && rightOperandRule != null) 
+            if (tableDefinition != null && rightOperandRule != null)
             {
                 rightOperandRule.ParentTableDefinition = tableDefinition;
             }
@@ -65,54 +66,19 @@ public static class ComparisonOperationFactory
         if (conditionalRule.SecondaryComparisonValue != null)
         {
             secondaryRightOperandRule = new StaticValueRule(conditionalRule.SecondaryComparisonValue, $"Conditional_SecondaryComparisonValue_for_{ruleContextIdentifier}");
-            if (tableDefinition != null && secondaryRightOperandRule != null) 
+            if (tableDefinition != null && secondaryRightOperandRule != null)
             {
                 secondaryRightOperandRule.ParentTableDefinition = tableDefinition;
             }
         }
 
-        ComparisonOperationBase? operation = null;
-
-        if (operationTypeId == EqualsOperation.TypeIdString) { operation = new EqualsOperation(); }
-        else if (operationTypeId == NotEqualOperation.TypeIdString) { operation = new NotEqualOperation(); }
-        else if (operationTypeId == ContainsOperation.TypeIdString) { operation = new ContainsOperation(); }
-        else if (operationTypeId == NotContainsOperation.TypeIdString) { operation = new NotContainsOperation(); }
-        else if (operationTypeId == BetweenOperation.TypeIdString) { operation = new BetweenOperation(); }
-        else if (operationTypeId == GreaterThanOperation.TypeIdString) { operation = new GreaterThanOperation(); }
-        else if (operationTypeId == GreaterThanOrEqualOperation.TypeIdString) { operation = new GreaterThanOrEqualOperation(); }
-        else if (operationTypeId == InOperation.TypeIdString) { operation = new InOperation(); }
-        else if (operationTypeId == IsNullOperation.TypeIdString) { operation = new IsNullOperation(); }
-        else if (operationTypeId == IsNotNullOperation.TypeIdString) { operation = new IsNotNullOperation(); }
-        else if (operationTypeId == LessThanOperation.TypeIdString) { operation = new LessThanOperation(); }
-        else if (operationTypeId == LessThanOrEqualOperation.TypeIdString) { operation = new LessThanOrEqualOperation(); }
-        else if (operationTypeId == NotBetweenOperation.TypeIdString) { operation = new NotBetweenOperation(); }
-        else if (operationTypeId == StartsWithOperation.TypeIdString) { operation = new StartsWithOperation(); }
-        else if (operationTypeId == EndsWithOperation.TypeIdString) { operation = new EndsWithOperation(); }
-        else if (operationTypeId == IsFalseOperation.TypeIdString) { operation = new IsFalseOperation(); }
-        else if (operationTypeId == IsNotNullOrEmptyOperation.TypeIdString) { operation = new IsNotNullOrEmptyOperation(); }
-        else if (operationTypeId == IsNotNullOrWhiteSpaceOperation.TypeIdString) { operation = new IsNotNullOrWhiteSpaceOperation(); }
-        else if (operationTypeId == IsNullOrEmptyOperation.TypeIdString) { operation = new IsNullOrEmptyOperation(); }
-        else if (operationTypeId == IsNullOrWhiteSpaceOperation.TypeIdString) { operation = new IsNullOrWhiteSpaceOperation(); }
-        else if (operationTypeId == IsTrueOperation.TypeIdString) { operation = new IsTrueOperation(); }
-        else if (operationTypeId == NotInOperation.TypeIdString) { operation = new NotInOperation(); }
-        else if (operationTypeId == RegexMatchOperation.TypeIdString) { operation = new RegexMatchOperation(); } // Added this line
-        // Add other core operations here as they are refactored with TypeIdString
-        else
+        var operation = typeRegistry.ResolveComparisonOperation(operationTypeId);
+        if (operation == null)
         {
-            operation = typeRegistry.ResolveComparisonOperation(operationTypeId); // operationTypeId is non-null here
-            if (operation == null)
-            {
-                Console.WriteLine($"Error: OperationTypeId '{operationTypeId}' could not be resolved by the TypeRegistryService in context: {ruleContextIdentifier}.");
-                return Task.FromResult<ComparisonOperationBase?>(null);
-            }
-        }
-
-        if (operation == null) // Should not be reached if logic is correct
-        {
-            Console.WriteLine($"Critical Error: Failed to obtain an operation instance for TypeId: {operationTypeId} in context: {ruleContextIdentifier}.");
+            Console.WriteLine($"Error: OperationTypeId '{operationTypeId}' could not be resolved by the TypeRegistryService in context: {ruleContextIdentifier}.");
             return Task.FromResult<ComparisonOperationBase?>(null);
         }
-        
+
         try
         {
             // The ConfigureOperands method is responsible for assigning the operand rules 
@@ -124,12 +90,12 @@ public static class ComparisonOperationFactory
             Console.WriteLine($"Error configuring operands for OperationTypeId '{operationTypeId}': {ex.Message}. Context: {ruleContextIdentifier}");
             return Task.FromResult<ComparisonOperationBase?>(null);
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
-            Console.WriteLine($"Unexpected error configuring operands for OperationTypeId '{operationTypeId}': {ex.ToString()}. Context: {ruleContextIdentifier}");
+            Console.WriteLine($"Unexpected error configuring operands for OperationTypeId '{operationTypeId}': {ex}. Context: {ruleContextIdentifier}");
             return Task.FromResult<ComparisonOperationBase?>(null);
         }
-        
+
         return Task.FromResult<ComparisonOperationBase?>(operation);
     }
 }

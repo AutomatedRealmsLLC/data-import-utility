@@ -1,8 +1,8 @@
-using System.Collections; // For IEnumerable
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // Updated for TransformationResult and MappingRuleBase
+
+using System.Collections; // For IEnumerable
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -70,12 +70,9 @@ public class ContainsOperation : ComparisonOperationBase
         }
 
         var rightOperandActualResult = await RightOperand.Apply(contextResult);
-        if (rightOperandActualResult == null || rightOperandActualResult.WasFailure)
-        {
-            throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOperandActualResult?.ErrorMessage ?? "Result was null."}");
-        }
-
-        return ContainsOperationExtensions.Contains(leftOperandActualResult, rightOperandActualResult);
+        return rightOperandActualResult == null || rightOperandActualResult.WasFailure
+            ? throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOperandActualResult?.ErrorMessage ?? "Result was null."}")
+            : ContainsOperationExtensions.Contains(leftOperandActualResult, rightOperandActualResult);
     }
 
     /// <inheritdoc />

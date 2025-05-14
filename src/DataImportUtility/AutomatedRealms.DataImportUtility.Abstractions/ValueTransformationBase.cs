@@ -1,7 +1,6 @@
-// Original file path: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Abstractions\ValueTransformationBase.cs
-using System.Text.Json.Serialization; // For JsonIgnoreAttribute
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions;
 
@@ -168,14 +167,10 @@ public abstract partial class ValueTransformationBase : IDisposable
     /// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
     public override bool Equals(object? obj)
     {
-        if (obj is ValueTransformationBase other)
-        {
-            return DisplayName == other.DisplayName &&
+        return obj is ValueTransformationBase other && DisplayName == other.DisplayName &&
                    Description == other.Description &&
                    TransformationDetail == other.TransformationDetail &&
                    OutputType == other.OutputType;
-        }
-        return false;
     }
 
     /// <summary>

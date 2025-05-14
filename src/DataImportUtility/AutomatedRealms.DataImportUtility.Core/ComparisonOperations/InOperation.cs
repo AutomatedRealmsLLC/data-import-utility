@@ -1,11 +1,8 @@
-using System.Text.Json.Serialization;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
-
 using AutomatedRealms.DataImportUtility.Core.Rules; // For StaticValueRule
+
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -31,7 +28,7 @@ public class InOperation : ComparisonOperationBase
     /// The set of values to check against.
     /// These are rules that will be evaluated to get the actual values for comparison.
     /// </summary>
-    public List<MappingRuleBase> Values { get; private set; } = new List<MappingRuleBase>();
+    public List<MappingRuleBase> Values { get; private set; } = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InOperation"/> class.
@@ -48,13 +45,13 @@ public class InOperation : ComparisonOperationBase
     {
         this.LeftOperand = leftOperand ?? throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
         this.RightOperand = rightOperand;
-        this.HighLimit = secondaryRightOperand; 
+        this.HighLimit = secondaryRightOperand;
 
         if (rightOperand is StaticValueRule staticValueRule && staticValueRule.Value != null && !string.IsNullOrWhiteSpace(staticValueRule.Value.ToString()))
         {
             var rawValue = staticValueRule.Value.ToString();
             var individualValues = (rawValue ?? string.Empty).Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s));
-            
+
             foreach (var valStr in individualValues)
             {
                 // Use DisplayName from the left operand to create a more descriptive identifier for the generated rules.
@@ -115,18 +112,18 @@ public class InOperation : ComparisonOperationBase
 
         return leftResult.In([.. valueResults]);
     }
-    
+
     /// <inheritdoc />
     public override ComparisonOperationBase Clone()
     {
-        var clone = (InOperation)MemberwiseClone(); 
-        clone.TypeId = this.TypeId; 
+        var clone = (InOperation)MemberwiseClone();
+        clone.TypeId = this.TypeId;
 
         clone.LeftOperand = this.LeftOperand?.Clone() as MappingRuleBase;
         clone.RightOperand = this.RightOperand?.Clone() as MappingRuleBase;
         clone.HighLimit = this.HighLimit?.Clone() as MappingRuleBase;
 
-        clone.Values = this.Values.Select(v => (MappingRuleBase)v.Clone()).ToList();
+        clone.Values = [.. this.Values.Select(v => (MappingRuleBase)v.Clone())];
         return clone;
     }
 }
@@ -144,11 +141,8 @@ public static class InOperationExtensions
     /// <returns>True if the left result is in the set of values; otherwise, false.</returns>
     public static bool In(this TransformationResult leftResult, params TransformationResult[] values)
     {
-        if (leftResult.CurrentValue is null)
-        {
-            return values.Any(val => val.CurrentValue is null);
-        }
-
-        return values.Any(val => object.Equals(leftResult.CurrentValue, val.CurrentValue));
+        return leftResult.CurrentValue is null
+            ? values.Any(val => val.CurrentValue is null)
+            : values.Any(val => object.Equals(leftResult.CurrentValue, val.CurrentValue));
     }
 }

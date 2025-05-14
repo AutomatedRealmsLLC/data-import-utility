@@ -1,7 +1,3 @@
-// Original file path: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Abstractions\Services\ITypeRegistryService.cs
-using System;
-using System.Collections.Generic;
-
 namespace AutomatedRealms.DataImportUtility.Abstractions.Services;
 
 /// <summary>

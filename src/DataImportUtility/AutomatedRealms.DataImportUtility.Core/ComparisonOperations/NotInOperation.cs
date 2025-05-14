@@ -1,8 +1,9 @@
-using System.Globalization; // For CultureInfo and NumberStyles
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and ITransformationContext
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -39,20 +40,19 @@ public class NotInOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override void ConfigureOperands(MappingRuleBase leftOperand, MappingRuleBase? rightOperand, MappingRuleBase? secondaryRightOperand)
     {
-        this.LeftOperand = leftOperand ?? throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
+        LeftOperand = leftOperand ?? throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
         // 'Values' collection is used by this operation instead of RightOperand, LowLimit, or HighLimit from the base.
         // These base properties are explicitly not set or used by NotInOperation's core logic.
         // It's assumed 'Values' is populated via deserialization or direct assignment.
-        this.RightOperand = null; 
-        this.LowLimit = null;
-        this.HighLimit = null;
+        RightOperand = null;
+        LowLimit = null;
+        HighLimit = null;
     }
 
     /// <inheritdoc />
     public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
-        ITransformationContext? context = contextResult as ITransformationContext;
-        if (context == null)
+        if (contextResult is not ITransformationContext context)
         {
             if (contextResult is ITransformationContext directContext)
             {
@@ -96,7 +96,7 @@ public class NotInOperation : ComparisonOperationBase
             // Using TargetFieldType from the contextResult if available, otherwise null.
             // This assumes TransformationResult might have this property, or ITransformationContext does.
             // If not, the AreValuesEqual method needs to be robust to a null targetFieldType.
-            Type? targetFieldType = (context as TransformationResult)?.TargetFieldType; 
+            Type? targetFieldType = (context as TransformationResult)?.TargetFieldType;
 
             if (AreValuesEqual(leftValue, valueRuleResult.CurrentValue, targetFieldType))
             {
@@ -116,12 +116,8 @@ public class NotInOperation : ComparisonOperationBase
         if (leftValue == null || rightValue == null)
         {
             // If one is null and the other is an empty string, consider them equal for "In" checks.
-            if ((leftValue == null && rightValue is string rs && string.IsNullOrEmpty(rs)) ||
-                (rightValue == null && leftValue is string ls && string.IsNullOrEmpty(ls)))
-            {
-                return true;
-            }
-            return false;
+            return (leftValue == null && rightValue is string rs && string.IsNullOrEmpty(rs)) ||
+                (rightValue == null && leftValue is string ls && string.IsNullOrEmpty(ls));
         }
 
         // Attempt type-aware comparison first
@@ -146,9 +142,9 @@ public class NotInOperation : ComparisonOperationBase
             // If one is DateTime and other isn't parseable as such, they aren't equal in this context.
             return false;
         }
-        
-        bool leftIsNumeric = IsNumericType(leftValue);
-        bool rightIsNumeric = IsNumericType(rightValue);
+
+        bool leftIsNumeric = leftValue.IsNumericType();
+        bool rightIsNumeric = rightValue.IsNumericType();
 
         if (leftIsNumeric && rightIsNumeric)
         {
@@ -201,33 +197,28 @@ public class NotInOperation : ComparisonOperationBase
 
         try
         {
-            if (targetType.IsEnum) return Enum.Parse(targetType, value.ToString()!, true);
-            return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+            return targetType.IsEnum
+                ? Enum.Parse(targetType, value.ToString()!, true)
+                : Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
         }
         catch
         {
             // Try specific parsing for common types if ChangeType fails
-            if (targetType == typeof(DateTime))
+            if (targetType == typeof(DateTime) && TryParseDateTime(value, out var dt))
             {
-                if (TryParseDateTime(value, out var dt)) return dt;
+                return dt;
             }
-            else if (targetType == typeof(decimal))
+            else if (targetType == typeof(decimal) && TryParseDecimal(value, out var dec))
             {
-                if (TryParseDecimal(value, out var dec)) return dec;
+                return dec;
             }
-            else if (targetType == typeof(double))
+            else if (targetType == typeof(double) && TryParseDouble(value, out var dbl))
             {
-                if (TryParseDouble(value, out var dbl)) return dbl;
+                return dbl;
             }
             // Add other specific parsers if needed
             return null; // Or throw, or return original value
         }
-    }
-
-    private static bool IsNumericType(object? value)
-    {
-        if (value == null) return false;
-        return value is sbyte || value is byte || value is short || value is ushort || value is int || value is uint || value is long || value is ulong || value is float || value is double || value is decimal;
     }
 
     private static bool TryParseDateTime(object? obj, out DateTime result)
@@ -261,14 +252,14 @@ public class NotInOperation : ComparisonOperationBase
     public override ComparisonOperationBase Clone()
     {
         var clone = new NotInOperation();
-        if (this.LeftOperand != null)
+        if (LeftOperand != null)
         {
-            clone.LeftOperand = (MappingRuleBase)this.LeftOperand.Clone();
+            clone.LeftOperand = (MappingRuleBase)LeftOperand.Clone();
         }
         // RightOperand from base is not used by NotInOperation.
-        if (this.Values != null)
+        if (Values != null)
         {
-            clone.Values = this.Values.Select(v => (MappingRuleBase)v.Clone()).ToList();
+            clone.Values = [.. Values.Select(v => (MappingRuleBase)v.Clone())];
         }
         return clone;
     }

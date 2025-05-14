@@ -1,10 +1,7 @@
-using System.Data;
-using System.Text.Json.Serialization;
-using System.Linq;
-using System.Collections.Generic;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Data;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules;
 
@@ -66,23 +63,25 @@ public class CustomFieldlessRule : MappingRuleBase
         Type? initialValueType = initialValue?.GetType();
         Type targetType = context.TargetFieldType ?? typeof(object);
 
-        var log = new List<string> { $"CustomFieldlessRule: Starting with initial value: '{initialValue ?? "null"}'." }; 
+        var log = new List<string> { $"CustomFieldlessRule: Starting with initial value: '{initialValue ?? "null"}'." };
 
         TransformationResult currentProcessingResult = TransformationResult.Success(
-            originalValue: initialValue, 
+            originalValue: initialValue,
             originalValueType: initialValueType,
-            currentValue: initialValue, 
+            currentValue: initialValue,
             currentValueType: initialValueType,
             appliedTransformations: log,
-            record: context.Record, 
+            record: context.Record,
             sourceRecordContext: context.SourceRecordContext,
             targetFieldType: targetType
         );
 
         if (!SourceFieldTransformations.Any())
         {
-            var updatedLog = new List<string>(currentProcessingResult.AppliedTransformations ?? Enumerable.Empty<string>());
-            updatedLog.Add("CustomFieldlessRule: No transformations configured. Returning initial value.");
+            var updatedLog = new List<string>(currentProcessingResult.AppliedTransformations ?? [])
+            {
+                "CustomFieldlessRule: No transformations configured. Returning initial value."
+            };
             return currentProcessingResult with { AppliedTransformations = updatedLog };
         }
 
@@ -94,9 +93,11 @@ public class CustomFieldlessRule : MappingRuleBase
                 return currentProcessingResult; // Propagate failure
             }
         }
-        
-        var finalLog = new List<string>(currentProcessingResult.AppliedTransformations ?? Enumerable.Empty<string>());
-        finalLog.Add("CustomFieldlessRule: Finished applying all transformations.");
+
+        var finalLog = new List<string>(currentProcessingResult.AppliedTransformations ?? [])
+        {
+            "CustomFieldlessRule: Finished applying all transformations."
+        };
         return currentProcessingResult with { AppliedTransformations = finalLog };
     }
 
@@ -110,7 +111,7 @@ public class CustomFieldlessRule : MappingRuleBase
         // Clone base properties first. This will clone base.RuleDetail to clone.RuleDetail (the base property).
         this.CloneBaseProperties(clone);
         // Now, specifically set the RuleDetail for the CustomFieldlessRule instance.
-        clone.RuleDetail = this.RuleDetail; 
+        clone.RuleDetail = this.RuleDetail;
         return clone;
     }
 

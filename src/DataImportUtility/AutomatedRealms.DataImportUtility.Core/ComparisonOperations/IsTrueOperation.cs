@@ -1,8 +1,8 @@
-using System.Globalization; // Added for CultureInfo.InvariantCulture
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and ITransformationContext
+
+using System.Globalization; // Added for CultureInfo.InvariantCulture
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -51,8 +51,7 @@ public class IsTrueOperation : ComparisonOperationBase
     /// <returns>True if the value is considered true, otherwise false.</returns>
     public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
-        ITransformationContext? context = contextResult as ITransformationContext;
-        if (context == null)
+        if (contextResult is not ITransformationContext context)
         {
             if (contextResult is ITransformationContext directContext)
             {
@@ -122,7 +121,7 @@ public class IsTrueOperation : ComparisonOperationBase
             catch (OverflowException)
             {
                 // If the number is too large/small for a double but is non-zero, it's true.
-                return true; 
+                return true;
             }
             catch (InvalidCastException)
             {

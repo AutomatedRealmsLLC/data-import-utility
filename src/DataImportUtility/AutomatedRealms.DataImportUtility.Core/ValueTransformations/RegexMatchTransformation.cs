@@ -1,10 +1,10 @@
+using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-
-using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Helpers; // Required for List<string> in TransformationResult
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -169,7 +169,7 @@ public class RegexMatchTransformation : ValueTransformationBase
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value,
             currentValueType: value?.GetType() ?? typeof(object),
-            appliedTransformations: new List<string>(), // Initialize with empty list
+            appliedTransformations: [], // Initialize with empty list
             record: null,
             tableDefinition: null,
             sourceRecordContext: null,

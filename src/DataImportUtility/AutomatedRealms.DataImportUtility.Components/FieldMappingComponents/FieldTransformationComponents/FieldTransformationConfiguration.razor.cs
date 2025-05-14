@@ -1,6 +1,8 @@
 ﻿using System.Collections.Immutable;
 
+using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Components.Abstractions;
 
 using Microsoft.AspNetCore.Components;
 
@@ -42,7 +44,7 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
     /// </summary>
     [Parameter, EditorRequired] public ImmutableArray<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = [];
 
-    private object[] AllValues => Field?.ValueSet.ToArray() ?? [];
+    private object[] AllValues => Field?.ValueSet?.ToArray() ?? [];
     private bool HasValues => AllValues.Length > 0;
     private uint _previewIndex = 0;
 
@@ -115,7 +117,7 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
         if (throughTransformIndex.Value >= 0 && AllValues.Length > valueIndex && _transformationResults.TryGetValue(AllValues[valueIndex.Value]?.ToString() ?? "<null>", out var results) && results.Count > throughTransformIndex.Value)
         {
             var forRet = results[throughTransformIndex.Value];
-            forRet = forRet with { OriginalValue = resetOriginal ? forRet.Value : forRet.OriginalValue, Value = forRet.Value };
+            forRet = forRet with { OriginalValue = resetOriginal ? forRet.CurrentValue : forRet.OriginalValue, CurrentValue = forRet.CurrentValue };
 
             return forRet;
         }
@@ -126,7 +128,7 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
             valueTransform = await _valueTransformations[i].Apply(valueTransform);
         }
 
-        return valueTransform with { OriginalValue = resetOriginal ? valueTransform.Value : valueTransform.OriginalValue, Value = valueTransform.Value };
+        return valueTransform with { OriginalValue = resetOriginal ? valueTransform.CurrentValue : valueTransform.OriginalValue, CurrentValue = valueTransform.CurrentValue };
     }
 
     private TransformationResult GetInitialValueTransform(uint? valueIndex = null)
@@ -142,7 +144,7 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
         return new()
         {
             OriginalValue = retVal?.ToString(),
-            Value = retVal?.ToString()
+            CurrentValue = retVal?.ToString()
         };
     }
 
@@ -171,7 +173,7 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
             var curTransform = new TransformationResult()
             {
                 OriginalValue = value?.ToString(),
-                Value = value?.ToString()
+                CurrentValue = value?.ToString()
             };
 
             if (_valueTransformations.Count == 0)

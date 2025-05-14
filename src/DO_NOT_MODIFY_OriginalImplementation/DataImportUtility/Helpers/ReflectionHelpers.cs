@@ -1,9 +1,9 @@
-﻿using System.Collections.Immutable;
+﻿using DataImportUtility.Abstractions;
+using DataImportUtility.Models;
+
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-
-using DataImportUtility.Abstractions;
-using DataImportUtility.Models;
 
 namespace DataImportUtility.Helpers;
 internal static class ReflectionHelpers
@@ -19,5 +19,5 @@ internal static class ReflectionHelpers
         };
 
     public static ImmutableArray<ValidationAttribute> GetValidationAttributes(this PropertyInfo prop)
-        => prop.GetCustomAttributes<ValidationAttribute>().ToImmutableArray();
+        => [.. prop.GetCustomAttributes<ValidationAttribute>()];
 }

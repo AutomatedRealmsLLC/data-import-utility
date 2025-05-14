@@ -1,8 +1,5 @@
 ﻿using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
-using System.Collections.Generic;
-using System.Linq;
-using System;
 
 namespace AutomatedRealms.DataImportUtility.Tests.SampleData;
 
@@ -37,15 +34,15 @@ internal static partial class ImportDataObjects
         {
             if (_valueTransformations is { Count: >0 }) { return; }
 
-            _valueTransformations = new List<ValueTransformationBase>
-            {
+            _valueTransformations =
+            [
                 new CalculateTransformation(),
                 new CombineFieldsTransformation(),
                 new InterpolateTransformation(),
                 new MapTransformation(),
                 new RegexMatchTransformation(),
                 new SubstringTransformation()
-            };
+            ];
 
             foreach (var transformation in _valueTransformations)
             {
@@ -60,9 +57,6 @@ internal static partial class ImportDataObjects
                         // Assuming CombineFieldsTransformation now uses a list of field names or similar simple config
                         // If it needs ConfiguredInputField, that would require Abstractions.Models
                         break;
-                    case InterpolateTransformation interpolationOperation:
-                        // Default setup if any
-                        break;
                     case MapTransformation mapOperation:
                         mapOperation.Mappings.Add("OriginalValueA", "MappedValueA"); // Mappings is Dictionary<string, string>
                         break;
@@ -72,6 +66,9 @@ internal static partial class ImportDataObjects
                     case SubstringTransformation substringOperation:
                         substringOperation.StartIndex = 0;
                         substringOperation.MaxLength = 4; // TransformationDetail is set internally
+                        break;
+                    case InterpolateTransformation interpolationOperation:
+                        // Default setup if any
                         break;
                 }
             }

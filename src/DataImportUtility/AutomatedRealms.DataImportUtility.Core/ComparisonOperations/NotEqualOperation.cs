@@ -1,8 +1,9 @@
-using System.Globalization; // For CultureInfo and NumberStyles
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and MappingRuleBase
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -39,11 +40,11 @@ public class NotEqualOperation : ComparisonOperationBase
     {
         base.ConfigureOperands(leftOperand, rightOperand, secondaryRightOperand); // Calls base to set LeftOperand and RightOperand
 
-        if (this.LeftOperand is null) // Validation after base call
+        if (LeftOperand is null) // Validation after base call
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
         }
-        if (this.RightOperand is null) // Validation after base call
+        if (RightOperand is null) // Validation after base call
         {
             throw new ArgumentNullException(nameof(rightOperand), $"Right operand must be provided for {TypeIdString}.");
         }
@@ -69,12 +70,9 @@ public class NotEqualOperation : ComparisonOperationBase
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult?.ErrorMessage ?? "Result was null."}");
         }
-        if (rightResult == null || rightResult.WasFailure)
-        {
-            throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightResult?.ErrorMessage ?? "Result was null."}");
-        }
-
-        return !AreValuesEqual(leftResult.CurrentValue, rightResult.CurrentValue, contextResult.TargetFieldType);
+        return rightResult == null || rightResult.WasFailure
+            ? throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightResult?.ErrorMessage ?? "Result was null."}")
+            : !AreValuesEqual(leftResult.CurrentValue, rightResult.CurrentValue, contextResult.TargetFieldType);
     }
 
     private static bool AreValuesEqual(object? leftValue, object? rightValue, Type? targetFieldType)
@@ -91,49 +89,26 @@ public class NotEqualOperation : ComparisonOperationBase
         // Attempt DateTime comparison first if applicable
         if (targetFieldType == typeof(DateTime) || leftValue is DateTime || rightValue is DateTime)
         {
-            if (TryParseDateTime(leftValue, out var leftDate) && TryParseDateTime(rightValue, out var rightDate))
-            {
-                return leftDate.Equals(rightDate);
-            }
-            return false;
+            return TryParseDateTime(leftValue, out var leftDate)
+                && TryParseDateTime(rightValue, out var rightDate)
+                && leftDate.Equals(rightDate);
         }
 
         // Attempt numeric comparison
-        if (IsNumericType(leftValue) && IsNumericType(rightValue))
+        if (leftValue.IsNumericType() && rightValue.IsNumericType())
         {
             if (TryParseDecimal(leftValue, out var leftDecimal) && TryParseDecimal(rightValue, out var rightDecimal))
             {
                 return leftDecimal == rightDecimal;
             }
-            if (TryParseDouble(leftValue, out var leftDouble) && TryParseDouble(rightValue, out var rightDouble))
-            {
-                return leftDouble.Equals(rightDouble);
-            }
-            return false;
+            return TryParseDouble(leftValue, out var leftDouble)
+                && TryParseDouble(rightValue, out var rightDouble)
+                && leftDouble.Equals(rightDouble);
         }
 
-        if ((IsNumericType(leftValue) && rightValue is string) || (leftValue is string && IsNumericType(rightValue)))
-        {
-            return false;
-        }
-
-        return string.Equals(leftValue.ToString(), rightValue.ToString(), StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsNumericType(object? value)
-    {
-        if (value == null) return false;
-        return value is sbyte
-            || value is byte
-            || value is short
-            || value is ushort
-            || value is int
-            || value is uint
-            || value is long
-            || value is ulong
-            || value is float
-            || value is double
-            || value is decimal;
+        return (!leftValue.IsNumericType() || rightValue is not string)
+            && (leftValue is not string || !rightValue.IsNumericType())
+            && string.Equals(leftValue.ToString(), rightValue.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool TryParseDateTime(object? obj, out DateTime result)
@@ -155,10 +130,14 @@ public class NotEqualOperation : ComparisonOperationBase
         if (obj is double d) { result = d; return true; }
         if (obj is IConvertible convertible)
         {
-            try { result = convertible.ToDouble(CultureInfo.InvariantCulture); return true; }
+            try
+            {
+                result = convertible.ToDouble(CultureInfo.InvariantCulture);
+                return true;
+            }
             catch { /* Fall through */ }
         }
-        return double.TryParse(obj.ToString(), System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture, out result);
+        return double.TryParse(obj.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out result);
     }
 
     private static bool TryParseDecimal(object? obj, out decimal result)
@@ -168,10 +147,14 @@ public class NotEqualOperation : ComparisonOperationBase
         if (obj is decimal dec) { result = dec; return true; }
         if (obj is IConvertible convertible)
         {
-            try { result = convertible.ToDecimal(CultureInfo.InvariantCulture); return true; }
+            try
+            {
+                result = convertible.ToDecimal(CultureInfo.InvariantCulture);
+                return true;
+            }
             catch { /* Fall through */ }
         }
-        return decimal.TryParse(obj.ToString(), System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture, out result);
+        return decimal.TryParse(obj.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out result);
     }
 
     /// <inheritdoc />

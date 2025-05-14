@@ -1,9 +1,9 @@
-// Filepath: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Core\Extensions\DataImportUtilityCoreServiceExtensions.cs
 using AutomatedRealms.DataImportUtility.Abstractions.Services;
-using AutomatedRealms.DataImportUtility.Core.Services;
-using AutomatedRealms.DataImportUtility.Core.Rules;
 using AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
+using AutomatedRealms.DataImportUtility.Core.Rules;
+using AutomatedRealms.DataImportUtility.Core.Services;
 using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -70,7 +70,7 @@ public static class DataImportUtilityCoreServiceExtensions
             registry.RegisterType<MapTransformation>("Core.Transform.MapTransformation");
             registry.RegisterType<RegexMatchTransformation>("Core.Transform.RegexMatchTransformation");
             registry.RegisterType<SubstringTransformation>("Core.Transform.SubstringTransformation");
-            
+
             return registry;
         });
 

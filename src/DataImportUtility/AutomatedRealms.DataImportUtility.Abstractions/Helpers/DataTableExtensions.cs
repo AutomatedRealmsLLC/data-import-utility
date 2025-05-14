@@ -1,6 +1,6 @@
 using System.Data;
 
-namespace AutomatedRealms.DataImportUtility.Core.Helpers;
+namespace AutomatedRealms.DataImportUtility.Abstractions.Helpers;
 
 /// <summary>
 /// Extension methods for <see cref="DataTable" />.

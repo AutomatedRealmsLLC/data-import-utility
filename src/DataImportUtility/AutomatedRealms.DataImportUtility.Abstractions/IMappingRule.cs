@@ -1,6 +1,6 @@
-using System.Data;
-
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Data;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions;
 

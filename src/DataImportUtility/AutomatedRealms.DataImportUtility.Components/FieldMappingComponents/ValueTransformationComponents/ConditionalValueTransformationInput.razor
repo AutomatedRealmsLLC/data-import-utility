@@ -1,7 +1,5 @@
-@using DataImportUtility.ValueTransformations
-@using DataImportUtility.Components.FieldMappingComponents.OperandComponents
-@using DataImportUtility.Abstractions
-@using DataImportUtility.Models
+@using AutomatedRealms.DataImportUtility.Components.FieldMappingComponents.OperandComponents
+@using AutomatedRealms.DataImportUtility.Abstractions
 
 @inherits ValueTransformationInputBase<ConditionalTransformation>
 
@@ -17,6 +15,7 @@
                         class="@DefaultCssClass"
                         @bind=_selectedLeftOperandType
                         @bind:after=HandleLeftOperandTypeChanged>
+                    @* TODO: Use the ITypeRegistryService and TypeId instead *@
                     @foreach (var ruleType in ApplicationConstants.MappingRuleTypes.Where(x => x != MappingRuleType.IgnoreRule))
                     {
                         <option value="@ruleType">@ruleType.GetDisplayText()</option>

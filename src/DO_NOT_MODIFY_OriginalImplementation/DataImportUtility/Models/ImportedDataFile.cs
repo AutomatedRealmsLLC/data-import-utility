@@ -365,8 +365,7 @@ public class ImportedDataFile
             .Where(p => !(ignoreFields?.Contains(p.Name) ?? false))
             .Select(p => p.AsFieldMapping(requiredFields?.Contains(p.Name) ?? false));
 
-        return retList
-            .ToImmutableList();
+        return [.. retList];
     }
 
     /// <summary>
@@ -485,7 +484,7 @@ public class ImportedDataFile
             }
         }
 
-        tableDef.FieldMappings = incomingFieldMappings.ToList();
+        tableDef.FieldMappings = [.. incomingFieldMappings];
         var foundDescriptors = TableDefinitions.TryGetFieldDescriptors(tableName, out var fieldDescriptors);
 
         foreach (var fieldMapping in tableDef.FieldMappings)

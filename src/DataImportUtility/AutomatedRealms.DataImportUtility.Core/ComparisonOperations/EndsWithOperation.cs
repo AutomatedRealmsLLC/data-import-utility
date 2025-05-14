@@ -1,7 +1,7 @@
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and ITransformationContext
+
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -49,8 +49,7 @@ public class EndsWithOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
-        ITransformationContext? context = contextResult as ITransformationContext;
-        if (context == null)
+        if (contextResult is not ITransformationContext context)
         {
             if (contextResult is ITransformationContext directContext)
             {
@@ -106,9 +105,11 @@ public class EndsWithOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override ComparisonOperationBase Clone()
     {
-        var clone = new EndsWithOperation();
-        clone.LeftOperand = LeftOperand?.Clone();
-        clone.RightOperand = RightOperand?.Clone();
+        var clone = new EndsWithOperation
+        {
+            LeftOperand = LeftOperand?.Clone(),
+            RightOperand = RightOperand?.Clone()
+        };
         return clone;
     }
 }

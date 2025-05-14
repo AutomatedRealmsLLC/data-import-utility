@@ -1,6 +1,9 @@
 ﻿using System.Collections.Immutable;
 
+using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Components.Abstractions;
+using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
 using Microsoft.AspNetCore.Components;
 
@@ -62,12 +65,9 @@ public partial class ValueTransformationRuleDetails : FileImportUtilityComponent
     /// <inheritdoc />
     protected override Task OnParametersSetAsync()
     {
-        if (_myTransformationResult.OriginalValue?.ToString() != CurrentTransformationResult.OriginalValue?.ToString())
-        {
-            return PerformValueUpdate();
-        }
-
-        return Task.CompletedTask;
+        return _myTransformationResult.OriginalValue?.ToString() != CurrentTransformationResult.OriginalValue?.ToString()
+            ? PerformValueUpdate()
+            : Task.CompletedTask;
     }
 
     private void HandleOperationDetailChanged()

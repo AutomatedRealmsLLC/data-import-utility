@@ -64,5 +64,5 @@ public interface IImportDataFileRequest
     /// <exception cref="IOException">
     /// Thrown if the file's length exceeds the maxAllowedSize value.
     /// </exception>
-    Stream? OpenReadStream(long maxAllowedSize = 512000L, CancellationToken cancellationToken = default(CancellationToken));
+    Stream? OpenReadStream(long maxAllowedSize = 512000L, CancellationToken cancellationToken = default);
 }

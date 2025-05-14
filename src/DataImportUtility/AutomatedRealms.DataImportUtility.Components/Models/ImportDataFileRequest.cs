@@ -1,8 +1,8 @@
-﻿using AutomatedRealms.DataImportUtility.Abstractions; // Corrected: For IImportDataFileRequest
+﻿using AutomatedRealms.DataImportUtility.Abstractions;
 
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace AutomatedRealms.DataImportUtility.Components.Models; // Updated namespace
+namespace AutomatedRealms.DataImportUtility.Components.Models;
 
 /// <summary>
 /// Represents a request to import a data file

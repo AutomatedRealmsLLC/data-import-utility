@@ -5,12 +5,11 @@ using AutomatedRealms.DataImportUtility.Tests.TestHelpers;
 namespace AutomatedRealms.DataImportUtility.Tests.MappingRuleTests;
 
 public class MappingRuleBaseTests : MappingRuleBaseTestContext
-{
-    /// <summary>
-    /// The main test method for the <see cref="MappingRuleBase.Apply(IEnumerable{TransformationResult})" />
+{    /// <summary>
+    /// The main test method for the <see cref="MappingRuleBase.Apply(ITransformationContext)" />
     /// </summary>
     /// <param name="rule">Expects the concrete implementation of the <see cref="MappingRuleBase"/> to test.</param>
-    /// <param name="input"></param>
+    /// <param name="input">The transformation context to apply the rule to.</param>
     /// <returns></returns>
     [Theory]
     [MemberData(nameof(MappingRuleTestData))]

@@ -1,9 +1,8 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Helpers; // Required for List<string> in TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -176,7 +175,7 @@ public class SubstringTransformation : ValueTransformationBase
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value,
             currentValueType: value?.GetType() ?? typeof(object),
-            appliedTransformations: new List<string>(),
+            appliedTransformations: [],
             record: null,
             tableDefinition: null,
             sourceRecordContext: null,
@@ -196,7 +195,7 @@ public class SubstringTransformation : ValueTransformationBase
         // This helps in serializing/deserializing or displaying the configuration.
         string syntax = $"start:{StartIndex}";
         if (MaxLength.HasValue)
-        { 
+        {
             syntax += $",length:{MaxLength.Value}";
         }
         this.TransformationDetail = syntax;

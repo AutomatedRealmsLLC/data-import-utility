@@ -1,9 +1,8 @@
-using System;
-using System.Globalization;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -106,7 +105,7 @@ public class LessThanOperation : ComparisonOperationBase
             }
             catch (FormatException ex)
             {
-                 throw new InvalidOperationException($"Numeric comparison in {DisplayName} failed due to a format error. Left: '{leftVal}', Right: '{rightVal}'.", ex);
+                throw new InvalidOperationException($"Numeric comparison in {DisplayName} failed due to a format error. Left: '{leftVal}', Right: '{rightVal}'.", ex);
             }
         }
 
@@ -129,9 +128,8 @@ public class LessThanOperation : ComparisonOperationBase
 
     private static bool IsNumeric(object? value)
     {
-        if (value == null) return false;
-        return value is sbyte || value is byte || value is short || value is ushort || value is int || value is uint ||
-               value is long || value is ulong || value is float || value is double || value is decimal;
+        return value != null && (value is sbyte || value is byte || value is short || value is ushort || value is int || value is uint ||
+               value is long || value is ulong || value is float || value is double || value is decimal);
     }
 
     private static bool CanConvertToDateTime(object? value, out DateTime result)

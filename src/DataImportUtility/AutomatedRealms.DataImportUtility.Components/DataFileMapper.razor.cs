@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Reflection;
 using System.Timers;
 
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
@@ -25,9 +24,9 @@ namespace AutomatedRealms.DataImportUtility.Components;
 public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBase, IDisposable
     where TTargetType : class, new()
 {
-    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
-    [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
-
+    [Inject, AllowNull] private IJSRuntime JsRuntime { get; set; }
+    [Inject, AllowNull] private ILoggerFactory LoggerFactory { get; set; }
+    [Inject, AllowNull] private IDataReaderService DataReaderService { get; set; }
     /// <summary>
     /// Whether to register this component to the <see cref="DataFileMapperState" />.
     /// </summary>
@@ -84,7 +83,7 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
     private FileMapperJsModule? _fileMapperJsModule;
     private FileMapperJsModule FileMapperJsModule => _fileMapperJsModule ??= new FileMapperJsModule(JsRuntime);
 
-    private System.Timers.Timer _setJsHandlersTimer = new()
+    private readonly System.Timers.Timer _setJsHandlersTimer = new()
     {
         Interval = 200,
         AutoReset = false
@@ -95,7 +94,7 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        DataFileMapperState ??= new DataFileMapperState(loggerFactory: LoggerFactory);
+        DataFileMapperState ??= new DataFileMapperState(DataReaderService, loggerFactory: LoggerFactory);
         _myDataFileMapperState = DataFileMapperState;
         if (RegisterSelfToState) { _myDataFileMapperState.RegisterDataFileMapper(this); }
 
@@ -112,11 +111,7 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
 
     private Task HandleStatePropertyChanged(string propName)
     {
-        if (propName == nameof(IDataFileMapperState.SelectedImportRows))
-        {
-            return InvokeAsync(StateHasChanged);
-        }
-        return Task.CompletedTask;
+        return propName == nameof(IDataFileMapperState.SelectedImportRows) ? InvokeAsync(StateHasChanged) : Task.CompletedTask;
     }
 
     private Task HandleShowTransformPreviewChanged()
@@ -170,67 +165,20 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
 
     private async Task UpdatePreview(DataTable dataTable)
     {
-        if (LoadedDataFile is null || !(LoadedDataFile.TableDefinitions.Any(td => td.TableName == dataTable.TableName))) // Changed == null to is null
+        if (!(LoadedDataFile?.TableDefinitions?.ContainsTable(dataTable.TableName) ?? false))
         {
-            _previewOutput = new DataTable();
-            _noPreviewAvailable = true;
-            await InvokeAsync(StateHasChanged);
             return;
         }
 
         if (_importedDataTableRef is not null)
         {
-            // Consider awaiting these if they are truly async and critical path
-            _ = FileMapperJsModule.RemoveScrollSynchronization(_importedDataTableRef.Id);
-            _ = FileMapperJsModule.RemoveScrollMouseEventsSynchronization(_importedDataTableRef.Id);
+            await FileMapperJsModule.RemoveScrollSynchronization(_importedDataTableRef.Id);
+            await FileMapperJsModule.RemoveScrollMouseEventsSynchronization(_importedDataTableRef.Id);
         }
+        _previewOutput = await LoadedDataFile.GenerateOutputDataTable(dataTable.TableName);
 
-        var tableDefinition = LoadedDataFile.TableDefinitions.FirstOrDefault(td => td.TableName == dataTable.TableName);
-        if (tableDefinition is null)
-        {
-            _previewOutput = new DataTable();
-            _noPreviewAvailable = true;
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
-        var transformedData = await LoadedDataFile.GetData<TTargetType>(tableDefinition);
-        _previewOutput = ConvertListToDataTable(transformedData, dataTable.TableName + "_Preview");
-
-        _noPreviewAvailable = _previewOutput is null || _previewOutput.Rows.Count == 0;
+        _noPreviewAvailable = _previewOutput is null;
         await InvokeAsync(StateHasChanged);
-    }
-
-    private DataTable ConvertListToDataTable<T>(IEnumerable<T> list, string tableName)
-    {
-        var table = new DataTable(tableName);
-        if (list == null || !list.Any()) return table;
-
-        var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                              .Where(p => p.CanRead)
-                              .ToArray();
-
-        foreach (var prop in props)
-        {
-            table.Columns.Add(prop.Name, Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType);
-        }
-
-        foreach (var item in list)
-        {
-            var row = table.NewRow();
-            foreach (var prop in props)
-            {
-                try
-                {
-                    row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
-                }
-                catch
-                {
-                    row[prop.Name] = DBNull.Value;
-                }
-            }
-            table.Rows.Add(row);
-        }
-        return table;
     }
 
     private Task HandleSelectedDataTableChanged(DataTableDisplay? dataTableRef)
@@ -333,5 +281,7 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
 
         _setJsHandlersTimer.Stop();
         _setJsHandlersTimer.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

@@ -159,7 +159,7 @@ public class FieldMapping
             var isValid = validationAttribute.IsValid(transformedResult.CurrentValue);
             if (!isValid)
             {
-                valResults.Add(new ValidationResult(validationAttribute.FormatErrorMessage(FieldName), new List<string> { FieldName }));
+                valResults.Add(new ValidationResult(validationAttribute.FormatErrorMessage(FieldName), [FieldName]));
             }
         }
 
@@ -187,7 +187,7 @@ public class FieldMapping
             {
                 if (!_valueValidationResults.ContainsKey("<null>"))
                 {
-                    _valueValidationResults.Add("<null>", [new ValidationResult("A value for this field is required.", new List<string> { FieldName })]);
+                    _valueValidationResults.Add("<null>", [new ValidationResult("A value for this field is required.", [FieldName])]);
                 }
             }
             else

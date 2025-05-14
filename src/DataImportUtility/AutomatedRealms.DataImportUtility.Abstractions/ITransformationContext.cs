@@ -1,6 +1,6 @@
-using System.Data; // Required for DataRow
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For ImportedRecordFieldDescriptor and ImportTableDefinition
+using System.Data;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions;
 

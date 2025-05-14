@@ -1,270 +1,299 @@
-﻿using System.Collections.Immutable;
-using System.Data;
+﻿using System.Data;
 
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 using AutomatedRealms.DataImportUtility.Components.Abstractions;
+using AutomatedRealms.DataImportUtility.Components.DataSetComponents;
 using AutomatedRealms.DataImportUtility.Components.FieldMappingComponents.Wrappers;
+using AutomatedRealms.DataImportUtility.Components.FilePickerComponent;
 using AutomatedRealms.DataImportUtility.Components.Models;
-using AutomatedRealms.DataImportUtility.DataReader.Abstractions; // For IDataReaderService
 
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 
 namespace AutomatedRealms.DataImportUtility.Components.State;
 
 /// <summary>
-/// Manages the state for the data file mapping component.
-/// Implements <see cref="IDataFileMapperState"/> and handles property change notifications
-/// through <see cref="BaseStateEventHandler"/>.
+/// The state for the data file mapper components.
 /// </summary>
-public class DataFileMapperState : BaseStateEventHandler, IDataFileMapperState, IDisposable
+/// <param name="dataReaderService">
+/// The data reader service to use.
+/// </param>
+/// <param name="loggerFactory">
+/// The logger factory to use.
+/// </param>
+public class DataFileMapperState(IDataReaderService dataReaderService, ILoggerFactory? loggerFactory = null) : BaseStateEventHandler, IDataFileMapperState, IDisposable
 {
-    private readonly ILogger<DataFileMapperState> _logger;
-    private readonly IDataReaderService _dataReaderService;
-    private Type? _targetType;
-    private bool _disposedValue;
+    private readonly IDataReaderService _dataReaderService = dataReaderService;
+    private readonly ImportDataFileRequest _fileReadRequest = new();
 
-    /// <summary>
-    /// Backing field for <see cref="DataFile"/> property.
-    /// </summary>
-    protected ImportedDataFile? _dataFileField;
-    private DataTable? _activeDataTableField;
-    private FileReadState _fileReadStateField = Models.FileReadState.NoFile;
-    private string? _errorMessageField;
-    private bool _showTransformPreviewField;
-    private FieldMapperDisplayMode _fieldMapperDisplayModeField = FieldMappingComponents.Wrappers.FieldMapperDisplayMode.Hide;
-    private ImmutableList<DataRow>? _selectedImportRowsField = [];
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DataFileMapperState"/> class.
-    /// </summary>
-    /// <param name="dataReaderService">The service for reading data files. Must not be null.</param>
-    /// <param name="loggerFactory">The logger factory. Must not be null.</param>
-    /// <exception cref="ArgumentNullException">If dataReaderService or loggerFactory is null.</exception>
-    public DataFileMapperState(IDataReaderService dataReaderService, ILoggerFactory loggerFactory)
-    {
-        _logger = loggerFactory?.CreateLogger<DataFileMapperState>() ?? throw new ArgumentNullException(nameof(loggerFactory));
-        _dataReaderService = dataReaderService ?? throw new ArgumentNullException(nameof(dataReaderService));
-    }
+    /// <inheritdoc />
+    public virtual string MapperStateId { get; } = Guid.NewGuid().ToString()[^5..];
 
     /// <inheritdoc />
     public virtual ImportedDataFile? DataFile
     {
-        get => _dataFileField;
+        get => _dataFile;
         protected set
         {
-            if (SetField(ref _dataFileField, value))
+            if (SetProperty(ref _dataFile, value))
             {
-                var task = OnDataFileChanged?.Invoke();
-                if (task is not null && !task.IsCompletedSuccessfully)
-                {
-                    HandleAsyncTaskError(task, nameof(OnDataFileChanged));
-                }
-                NotifyPropertyChanged(nameof(ActiveTableDefinition));
+                OnDataFileChanged?.Invoke();
+                ActiveDataTable = value?.DataSet?.Tables.Count > 0
+                    ? value.DataSet.Tables[0]
+                    : null;
             }
         }
     }
+    /// <summary>
+    /// The backing field for the <see cref="DataFile" /> property.
+    /// </summary>
+    protected ImportedDataFile? _dataFile;
 
     /// <inheritdoc />
-    public DataTable? ActiveDataTable
+    public virtual DataTable? ActiveDataTable
     {
-        get => _activeDataTableField;
+        get => _activeDataTable;
         set
         {
-            if (SetField(ref _activeDataTableField, value))
+            if (SetProperty(ref _activeDataTable, value))
             {
-                var task = OnActiveDataTableChanged?.Invoke();
-                if (task is not null && !task.IsCompletedSuccessfully)
-                {
-                    HandleAsyncTaskError(task, nameof(OnActiveDataTableChanged));
-                }
-                NotifyPropertyChanged(nameof(ActiveTableDefinition));
+                SelectedImportRows.Clear();
+                OnActiveDataTableChanged?.Invoke();
             }
         }
     }
+    /// <summary>
+    /// The backing field for the <see cref="ActiveDataTable" /> property.
+    /// </summary>
+    protected DataTable? _activeDataTable;
 
     /// <inheritdoc />
-    public FileReadState FileReadState
+    public virtual FileReadState FileReadState
     {
-        get => _fileReadStateField;
-        protected set => SetField(ref _fileReadStateField, value, nameof(FileReadState), async () => await InvokeAsync(OnFileReadStateChanged?.Invoke(_fileReadStateField)));
-    }
-
-    /// <inheritdoc />
-    public string? ErrorMessage
-    {
-        get => _errorMessageField;
-        protected set => SetField(ref _errorMessageField, value, nameof(ErrorMessage), async () => await InvokeAsync(OnFileReadError?.Invoke(string.IsNullOrEmpty(_errorMessageField) ? null : new Exception(_errorMessageField))));
-    }
-
-    /// <inheritdoc />
-    public bool ShowTransformPreview
-    {
-        get => _showTransformPreviewField;
-        set => SetField(ref _showTransformPreviewField, value, nameof(ShowTransformPreview), async () => await InvokeAsync(OnShowTransformPreviewChanged?.Invoke()));
-    }
-
-    /// <inheritdoc />
-    public FieldMapperDisplayMode FieldMapperDisplayMode
-    {
-        get => _fieldMapperDisplayModeField;
-        set => SetField(ref _fieldMapperDisplayModeField, value, nameof(FieldMapperDisplayMode), async () => await InvokeAsync(OnFieldMapperDisplayModeChanged?.Invoke()));
-    }
-
-    /// <inheritdoc />
-    public ImmutableList<DataRow>? SelectedImportRows
-    {
-        get => _selectedImportRowsField;
-        set => SetField(ref _selectedImportRowsField, value, nameof(SelectedImportRows));
-    }
-
-    /// <inheritdoc />
-    public ImportTableDefinition? ActiveTableDefinition => DataFile?.TableDefinitions?.FirstOrDefault(td => td.TableName == ActiveDataTable?.TableName);
-
-    /// <inheritdoc />
-    public event Func<Task>? OnActiveDataTableChanged;
-    /// <inheritdoc />
-    public event Func<Task>? OnDataFileChanged;
-    /// <inheritdoc />
-    public event Func<FileReadState, Task>? OnFileReadStateChanged;
-    /// <inheritdoc />
-    public event Func<Exception?, Task>? OnFileReadError;
-    /// <inheritdoc />
-    public event Func<Task>? OnFieldMapperDisplayModeChanged;
-    /// <inheritdoc />
-    public event Func<Task>? OnFieldMappingsChanged;
-    /// <inheritdoc />
-    public event Func<Task>? OnShowTransformPreviewChanged;
-
-    /// <inheritdoc />
-    public virtual async Task SetFileAsync(ImportDataFileRequest request, IProgressReporter? progressReporter = null)
-    {
-        if (request?.File is null)
+        get => _fileReadState;
+        protected set
         {
-            DataFile = null;
-            ActiveDataTable = null;
-            FileReadState = Models.FileReadState.NoFile;
-            ErrorMessage = "No file was selected.";
-            return;
-        }
-
-        FileReadState = Models.FileReadState.Reading;
-        ErrorMessage = null;
-
-        try
-        {
-            var importedFile = await _dataReaderService.ReadFileAsync(request, progressReporter);
-            DataFile = importedFile;
-
-            if (_targetType is not null && DataFile is not null)
+            if (SetProperty(ref _fileReadState, value))
             {
-                DataFile.SetTargetType(_targetType, autoMatchFields: true);
-            }
-
-            ActiveDataTable = DataFile?.DataSet?.Tables?.Count > 0 ? DataFile.DataSet.Tables[0] : null;
-            FileReadState = Models.FileReadState.Success; // Corrected
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error reading file {FileName}", request.Name);
-            DataFile = null;
-            ActiveDataTable = null;
-            ErrorMessage = ex.Message;
-            FileReadState = Models.FileReadState.Error; // Corrected
-        }
-    }
-
-    /// <inheritdoc />
-    public virtual void SetTargetType<T>(bool autoMatchFields = true) where T : class, new()
-    {
-        _targetType = typeof(T);
-        if (DataFile is not null)
-        {
-            DataFile.SetTargetType(_targetType, autoMatchFields);
-            var task = OnFieldMappingsChanged?.Invoke();
-            if (task is not null && !task.IsCompletedSuccessfully)
-            {
-                HandleAsyncTaskError(task, nameof(OnFieldMappingsChanged));
-            }
-            NotifyPropertyChanged(nameof(ActiveTableDefinition));
-        }
-    }
-
-    /// <inheritdoc />
-    public virtual void ReplaceFieldMappings(string tableName, IEnumerable<FieldMapping> incomingFieldMappings)
-    {
-        var tableDef = DataFile?.TableDefinitions?.FirstOrDefault(td => td.TableName == tableName);
-        if (tableDef is not null)
-        {
-            tableDef.ReplaceFieldMappings(incomingFieldMappings);
-            var task = OnFieldMappingsChanged?.Invoke();
-            if (task is not null && !task.IsCompletedSuccessfully)
-            {
-                HandleAsyncTaskError(task, nameof(OnFieldMappingsChanged));
+                OnFileReadStateChanged?.Invoke();
             }
         }
     }
+    /// <summary>
+    /// The backing field for the <see cref="FileReadState" /> property.
+    /// </summary>
+    protected FileReadState _fileReadState;
 
     /// <inheritdoc />
-    public virtual void RefreshFieldMappings(bool overwriteExisting = false, bool autoMatch = false)
+    public virtual FieldMapperDisplayMode FieldMapperDisplayMode
     {
-        if (DataFile is not null)
+        get => _fieldMapperDisplayMode;
+        set
         {
-            DataFile.RefreshFieldMappings(overwriteExisting, autoMatch);
-            var task = OnFieldMappingsChanged?.Invoke();
-            if (task is not null && !task.IsCompletedSuccessfully)
+            if (SetProperty(ref _fieldMapperDisplayMode, value))
             {
-                HandleAsyncTaskError(task, nameof(OnFieldMappingsChanged));
-            }
-            NotifyPropertyChanged(nameof(ActiveTableDefinition));
-        }
-    }
-
-    private async Task InvokeAsync(Task? taskToAwait)
-    {
-        if (taskToAwait is not null)
-        {
-            try
-            {
-                await taskToAwait;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error invoking event handler.");
+                OnFieldMapperDisplayModeChanged?.Invoke();
             }
         }
     }
+    /// <summary>
+    /// The backing field for the <see cref="FieldMapperDisplayMode" /> property.
+    /// </summary>
+    protected FieldMapperDisplayMode _fieldMapperDisplayMode;
 
-    private void HandleAsyncTaskError(Task task, string eventName)
+    /// <inheritdoc />
+    public virtual bool ShowTransformPreview
     {
-        task.ContinueWith(t =>
+        get => _showTransformPreview;
+        set
         {
-            if (t.IsFaulted && t.Exception is not null)
+            if (SetProperty(ref _showTransformPreview, value))
             {
-                _logger.LogError(t.Exception, "Error invoking event {EventName}", eventName);
+                OnShowTransformPreviewChanged?.Invoke();
             }
-        }, TaskScheduler.Default);
+        }
+    }
+    /// <summary>
+    /// The backing field for the <see cref="ShowTransformPreview" /> property.
+    /// </summary>
+    protected bool _showTransformPreview;
+
+    /// <inheritdoc />
+    public List<int> SelectedImportRows { get; } = [];
+
+    /// <summary>
+    /// The current target type.
+    /// </summary>
+    protected Type? _targetType;
+
+    #region Events
+    /// <inheritdoc />
+    public virtual event Func<Task>? OnActiveDataTableChanged;
+    /// <inheritdoc />
+    public virtual event Func<Task>? OnDataFileChanged;
+    /// <inheritdoc />
+    public virtual event Func<Task>? OnFieldMappingsChanged;
+    /// <inheritdoc />
+    public virtual event Func<Exception, Task>? OnFileReadError;
+    /// <inheritdoc />
+    public virtual event Func<Task>? OnFileReadStateChanged;
+    /// <inheritdoc />
+    public virtual event Func<Task>? OnFieldMapperDisplayModeChanged;
+    /// <inheritdoc />
+    public virtual event Func<Task>? OnShowTransformPreviewChanged;
+    #endregion Events
+
+    #region Public Methods
+    /// <inheritdoc />
+    public virtual async Task UpdateAndShowTransformPreview()
+    {
+        if (DataFile is null || string.IsNullOrWhiteSpace(ActiveDataTable?.TableName)) { return; }
+        await DataFile.GenerateOutputDataTable(ActiveDataTable.TableName);
+        ShowTransformPreview = true;
+    }
+    #endregion Public Methods
+
+    #region Component Callback Registrations
+    /// <inheritdoc />
+    public virtual void RegisterFilePicker(DataFilePicker dataFilePicker)
+    {
+        dataFilePicker.OnFileRequestChangedInternal = new EventCallbackFactory().Create<ImportDataFileRequest>(this, HandleFilePicked);
     }
 
     /// <summary>
-    /// Protected implementation of Dispose pattern.
+    /// Registers the data set display component.
     /// </summary>
-    /// <param name="disposing">True if disposing managed resources, false otherwise.</param>
-    protected virtual void Dispose(bool disposing)
+    /// <param name="importedDataFileDisplay">
+    /// The data set display component to register.
+    /// </param>
+    public virtual void RegisterDataFileMapper<TTargetType>(DataFileMapper<TTargetType> importedDataFileDisplay)
+        where TTargetType : class, new()
     {
-        if (!_disposedValue)
-        {
-            if (disposing)
-            {
-                // Dispose managed state (managed objects).
-            }
-            _disposedValue = true;
-        }
+        importedDataFileDisplay.OnSelectedDataTableChangedInternal = new EventCallbackFactory().Create<DataTable>(this, HandleSelectedDataTableChanged);
+        importedDataFileDisplay.OnShowFieldMapperClickedInternal = new EventCallbackFactory().Create<DataTable>(this, HandleShowFieldMapperDialog);
+        _targetType = typeof(TTargetType);
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    public virtual void RegisterDataSetDisplay(DataSetDisplay dataSetDisplay)
     {
-        Dispose(disposing: true);
+        dataSetDisplay.OnSelectedDataTableChangedInternal = new EventCallbackFactory().Create<DataTable?>(this, HandleSelectedDataTableChanged);
+        dataSetDisplay.OnShowFieldMapperClickedInternal = new EventCallbackFactory().Create<DataTable>(this, HandleShowFieldMapperDialog);
+    }
+    #endregion
+
+    #region File Reader Handlers and other related
+    /// <summary>
+    /// Handles the file picked event.
+    /// </summary>
+    /// <param name="request">The file picked request.</param>
+    protected virtual Task HandleFilePicked(ImportDataFileRequest request)
+    {
+        FileReadState = FileReadState.FileSelected;
+        _fileReadRequest.File = request.File;
+        _fileReadRequest.HasHeaderRow = request.HasHeaderRow;
+
+        return PerformFileReadRequest();
+    }
+
+    /// <inheritdoc />
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the <see cref="DataFile" /> or its <see cref="ImportedDataFile.DataSet"/> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">Thrown when the table does not exist in the data set.</exception>
+    public virtual void ReplaceFieldMappings(string tableName, IEnumerable<FieldMapping> incomingFieldMappings)
+    {
+        if (DataFile is null)
+        {
+            throw new InvalidOperationException("DataFile is null.");
+        }
+
+        DataFile.ReplaceFieldMappings(tableName, incomingFieldMappings);
+        OnFieldMappingsChanged?.Invoke();
+    }
+
+    /// <inheritdoc />
+    public virtual Task UpdateHeaderRowFlag(bool hasHeaderRow)
+    {
+        _fileReadRequest.HasHeaderRow = hasHeaderRow;
+
+        return PerformFileReadRequest();
+    }
+
+    /// <summary>
+    /// Performs the file read request.
+    /// </summary>
+    protected virtual async Task PerformFileReadRequest()
+    {
+        if (_fileReadRequest.File is null) { return; }
+        DataFile = null;
+
+        FileReadState = FileReadState.Reading;
+
+        try
+        {
+            DataFile = await _dataReaderService.ReadImportFile(_fileReadRequest);
+            // TODO: Use the IgnoreFields and RequiredFields properties here
+
+            // Refresh the ImportedRecordFieldDescriptors
+            DataFile.RefreshFieldDescriptors(false);
+            DataFile.RefreshFieldMappings(false);
+
+            // Update target type auto-mappings
+            if (_targetType is not null)
+            {
+                DataFile.SetTargetType(_targetType, autoMatch: true);
+            }
+
+            FileReadState = FileReadState.Success;
+        }
+        catch (Exception ex)
+        {
+            FileReadState = FileReadState.Error;
+            OnFileReadError?.Invoke(ex);
+            DataFile = null;
+
+            if (loggerFactory is null) { return; }
+
+            var logger = loggerFactory.CreateLogger<DataFileMapperState>();
+            logger.LogError(ex, "An error occurred while reading the file.");
+        }
+    }
+    #endregion File Reader Handlers and other related
+
+    #region Data Display Handlers and other related
+    /// <summary>
+    /// Handles the selected data table changed event.
+    /// </summary>
+    /// <param name="table">The selected data table.</param>
+    protected virtual void HandleSelectedDataTableChanged(DataTable? table)
+    {
+        ActiveDataTable = table;
+    }
+
+    /// <summary>
+    /// Handles the show field mapper dialog event.
+    /// </summary>
+    /// <param name="table">The table to show the field mapper dialog for.</param>
+    protected virtual void HandleShowFieldMapperDialog(DataTable table)
+    {
+        ActiveDataTable = table;
+        // TODO: Allow setting the FieldMapperDisplayMode in this method
+        FieldMapperDisplayMode = FieldMapperDisplayMode.Flyout;
+    }
+    #endregion Data Display Handlers and other related
+
+    /// <inheritdoc />
+    public virtual void Dispose()
+    {
+        OnDataFileChanged = null;
+        OnActiveDataTableChanged = null;
+        OnFileReadError = null;
+        OnFileReadStateChanged = null;
+        OnFieldMapperDisplayModeChanged = null;
+        OnFieldMappingsChanged = null;
+        OnShowTransformPreviewChanged = null;
+
         GC.SuppressFinalize(this);
     }
 }

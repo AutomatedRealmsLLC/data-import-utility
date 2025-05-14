@@ -1,10 +1,7 @@
-using System.Data;
-using System.Text.Json.Serialization;
-using System.Linq; // Added for Enumerable.Empty
-using System.Collections.Generic; // Added for List
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Data;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules
 {
@@ -64,10 +61,10 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
             if (string.IsNullOrEmpty(SourceField))
             {
                 return TransformationResult.Failure(
-                    originalValue: null, 
-                    targetType: context.TargetFieldType ?? typeof(object), 
-                    errorMessage: "Source field name is not configured for CopyRule.", 
-                    record: context.Record, 
+                    originalValue: null,
+                    targetType: context.TargetFieldType ?? typeof(object),
+                    errorMessage: "Source field name is not configured for CopyRule.",
+                    record: context.Record,
                     sourceRecordContext: context.SourceRecordContext,
                     explicitTargetFieldType: context.TargetFieldType ?? typeof(object));
             }
@@ -76,10 +73,10 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
             if (dataRow == null || !dataRow.Table.Columns.Contains(SourceField))
             {
                 return TransformationResult.Failure(
-                    originalValue: null, 
-                    targetType: context.TargetFieldType ?? typeof(object), 
-                    errorMessage: $"Source field '{SourceField}' not found in DataRow or DataRow is null.", 
-                    record: dataRow, 
+                    originalValue: null,
+                    targetType: context.TargetFieldType ?? typeof(object),
+                    errorMessage: $"Source field '{SourceField}' not found in DataRow or DataRow is null.",
+                    record: dataRow,
                     sourceRecordContext: context.SourceRecordContext,
                     explicitTargetFieldType: context.TargetFieldType ?? typeof(object));
             }
@@ -109,9 +106,11 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                     return currentProcessingResult; // Propagate failure
                 }
             }
-            
-            var finalLog = new List<string>(currentProcessingResult.AppliedTransformations ?? Enumerable.Empty<string>());
-            finalLog.Add($"CopyRule: Copied value from '{SourceField}' after all transformations. Final value: '{currentProcessingResult.CurrentValue ?? "null"}'.");
+
+            var finalLog = new List<string>(currentProcessingResult.AppliedTransformations ?? [])
+            {
+                $"CopyRule: Copied value from '{SourceField}' after all transformations. Final value: '{currentProcessingResult.CurrentValue ?? "null"}'."
+            };
 
             return currentProcessingResult with { AppliedTransformations = finalLog };
         }
@@ -122,8 +121,8 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         /// <returns>A new instance of <see cref="CopyRule"/> with copied values.</returns>
         public override MappingRuleBase Clone()
         {
-            var clone = new CopyRule(); 
-            this.CloneBaseProperties(clone); 
+            var clone = new CopyRule();
+            this.CloneBaseProperties(clone);
             return clone;
         }
 

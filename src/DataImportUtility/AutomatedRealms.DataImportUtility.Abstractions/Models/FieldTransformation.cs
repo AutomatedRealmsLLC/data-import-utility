@@ -1,8 +1,8 @@
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
+
 using System.Collections.Immutable;
 using System.Data;
 using System.Text.Json.Serialization;
-
-using AutomatedRealms.DataImportUtility.Core.Helpers;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Models;
 
@@ -214,9 +214,7 @@ public class FieldTransformation : IDisposable, IEquatable<FieldTransformation>
     public bool Equals(FieldTransformation? other)
     {
         if (other is null) return false;
-        if (ReferenceEquals(this, other)) return true;
-
-        return EqualityComparer<ImportedRecordFieldDescriptor?>.Default.Equals(Field, other.Field) &&
+        return ReferenceEquals(this, other) || EqualityComparer<ImportedRecordFieldDescriptor?>.Default.Equals(Field, other.Field) &&
                ValueTransformations.SequenceEqual(other.ValueTransformations);
     }
 

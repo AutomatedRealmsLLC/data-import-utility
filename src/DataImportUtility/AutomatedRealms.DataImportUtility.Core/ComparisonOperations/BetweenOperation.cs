@@ -1,7 +1,8 @@
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -43,25 +44,22 @@ public class BetweenOperation : ComparisonOperationBase
             throw new InvalidOperationException($"Base {nameof(LowLimit)} and base {nameof(HighLimit)} must be set for {nameof(BetweenOperation)}.");
         }
 
-        var leftOperandActualResult = await LeftOperand.Apply(contextResult); 
+        var leftOperandActualResult = await LeftOperand.Apply(contextResult);
         if (leftOperandActualResult == null || leftOperandActualResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOperandActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        var lowLimitActualResult = await base.LowLimit.Apply(contextResult); 
+        var lowLimitActualResult = await base.LowLimit.Apply(contextResult);
         if (lowLimitActualResult == null || lowLimitActualResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LowLimit)} for {DisplayName} operation: {lowLimitActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        var highLimitActualResult = await base.HighLimit.Apply(contextResult); 
-        if (highLimitActualResult == null || highLimitActualResult.WasFailure)
-        {
-            throw new InvalidOperationException($"Failed to evaluate {nameof(HighLimit)} for {DisplayName} operation: {highLimitActualResult?.ErrorMessage ?? "Result was null."}");
-        }
-
-        return BetweenOperationExtensions.Between(leftOperandActualResult, lowLimitActualResult, highLimitActualResult);
+        var highLimitActualResult = await base.HighLimit.Apply(contextResult);
+        return highLimitActualResult == null || highLimitActualResult.WasFailure
+            ? throw new InvalidOperationException($"Failed to evaluate {nameof(HighLimit)} for {DisplayName} operation: {highLimitActualResult?.ErrorMessage ?? "Result was null."}")
+            : BetweenOperationExtensions.Between(leftOperandActualResult, lowLimitActualResult, highLimitActualResult);
     }
 
     /// <inheritdoc />
@@ -77,13 +75,6 @@ public class BetweenOperation : ComparisonOperationBase
 /// </summary>
 public static class BetweenOperationExtensions
 {
-    private static bool IsNumericType(object? o)
-    {
-        if (o == null) return false;
-        return o is byte || o is sbyte || o is short || o is ushort || o is int || o is uint ||
-               o is long || o is ulong || o is float || o is double || o is decimal;
-    }
-
     /// <summary>
     /// Checks if the left result is between the low and high limits (inclusive).
     /// </summary>
@@ -102,7 +93,7 @@ public static class BetweenOperationExtensions
         if (lowCurrentValue is null || highCurrentValue is null) { return false; }
 
         // Attempt numeric comparison first
-        if (IsNumericType(leftCurrentValue) || IsNumericType(lowCurrentValue) || IsNumericType(highCurrentValue))
+        if (leftCurrentValue.IsNumericType() || lowCurrentValue.IsNumericType() || highCurrentValue.IsNumericType())
         {
             try
             {
@@ -132,9 +123,8 @@ public static class BetweenOperationExtensions
         string? lowStr = lowCurrentValue.ToString();
         string? highStr = highCurrentValue.ToString();
 
-        if (leftStr is null) return false;
-
-        return string.Compare(leftStr, lowStr, StringComparison.Ordinal) >= 0 &&
-               string.Compare(leftStr, highStr, StringComparison.Ordinal) <= 0;
+        return leftStr is not null
+            && string.Compare(leftStr, lowStr, StringComparison.Ordinal) >= 0
+            && string.Compare(leftStr, highStr, StringComparison.Ordinal) <= 0;
     }
 }

@@ -107,9 +107,7 @@ public class ConditionalRule : IDisposable, IEquatable<ConditionalRule>
     public bool Equals(ConditionalRule? other)
     {
         if (other is null) return false;
-        if (ReferenceEquals(this, other)) return true;
-
-        return EqualityComparer<ImportedRecordFieldDescriptor?>.Default.Equals(SourceField, other.SourceField) &&
+        return ReferenceEquals(this, other) || EqualityComparer<ImportedRecordFieldDescriptor?>.Default.Equals(SourceField, other.SourceField) &&
                OperationTypeId == other.OperationTypeId &&
                ComparisonValue == other.ComparisonValue &&
                SecondaryComparisonValue == other.SecondaryComparisonValue;

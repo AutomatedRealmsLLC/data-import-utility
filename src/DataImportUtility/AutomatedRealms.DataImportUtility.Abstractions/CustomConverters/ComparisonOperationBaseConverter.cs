@@ -1,7 +1,7 @@
-using System;
+using AutomatedRealms.DataImportUtility.Abstractions.Services;
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AutomatedRealms.DataImportUtility.Abstractions.Services;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.CustomConverters;
 
@@ -21,10 +21,6 @@ public class ComparisonOperationBaseConverter : JsonConverter<ComparisonOperatio
     /// <exception cref="ArgumentNullException">Thrown if typeRegistryService is null.</exception>
     public ComparisonOperationBaseConverter(ITypeRegistryService typeRegistryService)
     {
-        if (typeRegistryService == null)
-        {
-            throw new ArgumentNullException(nameof(typeRegistryService));
-        }
         _typeRegistryService = typeRegistryService;
     }
 

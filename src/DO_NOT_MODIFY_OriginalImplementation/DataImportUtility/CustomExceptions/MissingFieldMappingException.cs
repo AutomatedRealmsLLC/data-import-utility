@@ -16,7 +16,7 @@ public class MissingFieldMappingException(IEnumerable<FieldMapping> missingField
     /// <summary>
     /// The required field mappings that do not have a source.
     /// </summary>
-    public FieldMapping[] MissingFieldMappings { get; } = missingFieldMappings.Select(x => x.Clone()).ToArray();
+    public FieldMapping[] MissingFieldMappings { get; } = [.. missingFieldMappings.Select(x => x.Clone())];
 
     /// <inheritdoc />
     public override string Message => $"{message ?? _defaultMessage}{Environment.NewLine}Missing Field Mapping{(MissingFieldMappings.Length != 1 ? "s" : null)}:{Environment.NewLine}  - {string.Join($"{Environment.NewLine} - ", MissingFieldMappings.Select(x => x.FieldName))}";

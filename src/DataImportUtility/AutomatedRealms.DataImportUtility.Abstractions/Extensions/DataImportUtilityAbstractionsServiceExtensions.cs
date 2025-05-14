@@ -1,7 +1,6 @@
-// Filepath: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Abstractions\Extensions\DataImportUtilityAbstractionsServiceExtensions.cs
 using AutomatedRealms.DataImportUtility.Abstractions.Services;
+
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Extensions;
 
@@ -11,9 +10,9 @@ namespace AutomatedRealms.DataImportUtility.Abstractions.Extensions;
 /// </summary>
 public static class DataImportUtilityAbstractionsServiceExtensions
 {
-    private static void RegisterCustomType<TBase, TImplementation>(
-        IServiceCollection services, 
-        string typeId, 
+    private static IServiceCollection RegisterCustomType<TBase, TImplementation>(
+        this IServiceCollection services,
+        string typeId,
         string baseTypeNameForError)
         where TImplementation : TBase
     {
@@ -23,15 +22,11 @@ public static class DataImportUtilityAbstractionsServiceExtensions
         }
 
         var serviceProvider = services.BuildServiceProvider();
-        var typeRegistry = serviceProvider.GetService<ITypeRegistryService>();
-
-        if (typeRegistry == null)
-        {
-            throw new InvalidOperationException(
-                $"ITypeRegistryService is not registered. Ensure AddCoreImportUtilityTypes() or a similar method that registers ITypeRegistryService has been called.");
-        }
+        var typeRegistry = serviceProvider.GetRequiredService<ITypeRegistryService>();
 
         typeRegistry.RegisterType<TImplementation>(typeId);
+
+        return services;
     }
 
     /// <summary>
@@ -46,8 +41,7 @@ public static class DataImportUtilityAbstractionsServiceExtensions
     public static IServiceCollection AddMappingRule<TImplementation>(this IServiceCollection services, string typeId)
         where TImplementation : MappingRuleBase
     {
-        RegisterCustomType<MappingRuleBase, TImplementation>(services, typeId, "MappingRule");
-        return services;
+        return services.RegisterCustomType<MappingRuleBase, TImplementation>(typeId, nameof(MappingRuleBase));
     }
 
     /// <summary>
@@ -62,8 +56,7 @@ public static class DataImportUtilityAbstractionsServiceExtensions
     public static IServiceCollection AddValueTransformation<TImplementation>(this IServiceCollection services, string typeId)
         where TImplementation : ValueTransformationBase
     {
-        RegisterCustomType<ValueTransformationBase, TImplementation>(services, typeId, "ValueTransformation");
-        return services;
+        return services.RegisterCustomType<ValueTransformationBase, TImplementation>(typeId, nameof(ValueTransformationBase));
     }
 
     /// <summary>
@@ -78,7 +71,6 @@ public static class DataImportUtilityAbstractionsServiceExtensions
     public static IServiceCollection AddComparisonOperation<TImplementation>(this IServiceCollection services, string typeId)
         where TImplementation : ComparisonOperationBase
     {
-        RegisterCustomType<ComparisonOperationBase, TImplementation>(services, typeId, "ComparisonOperation");
-        return services;
+        return services.RegisterCustomType<ComparisonOperationBase, TImplementation>(typeId, nameof(ComparisonOperationBase));
     }
 }

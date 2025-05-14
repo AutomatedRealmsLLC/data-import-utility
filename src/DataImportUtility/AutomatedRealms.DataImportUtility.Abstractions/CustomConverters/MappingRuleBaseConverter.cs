@@ -1,7 +1,7 @@
+using AutomatedRealms.DataImportUtility.Abstractions.Services;
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AutomatedRealms.DataImportUtility.Abstractions.Services; // Added for ITypeRegistryService
-using System; // Added for ArgumentNullException
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.CustomConverters;
 
@@ -21,10 +21,6 @@ public class MappingRuleBaseConverter : JsonConverter<MappingRuleBase>
     /// <exception cref="ArgumentNullException">Thrown if typeRegistryService is null.</exception>
     public MappingRuleBaseConverter(ITypeRegistryService typeRegistryService)
     {
-        if (typeRegistryService == null)
-        {
-            throw new ArgumentNullException(nameof(typeRegistryService));
-        }
         _typeRegistryService = typeRegistryService;
     }
 
@@ -34,7 +30,7 @@ public class MappingRuleBaseConverter : JsonConverter<MappingRuleBase>
         using var doc = JsonDocument.ParseValue(ref reader);
         var root = doc.RootElement;
 
-        if (!root.TryGetProperty(TypeIdPropertyNameCamelCase, out JsonElement typeIdElement) && 
+        if (!root.TryGetProperty(TypeIdPropertyNameCamelCase, out JsonElement typeIdElement) &&
             !root.TryGetProperty(TypeIdPropertyNamePascalCase, out typeIdElement))
         {
             throw new JsonException($"Property '{TypeIdPropertyNameCamelCase}' or '{TypeIdPropertyNamePascalCase}' not found for deserializing {nameof(MappingRuleBase)}.");
@@ -56,7 +52,7 @@ public class MappingRuleBaseConverter : JsonConverter<MappingRuleBase>
         {
             throw new JsonException($"The resolved type '{concreteType.FullName}' for TypeId '{typeIdString}' does not inherit from {nameof(MappingRuleBase)}.");
         }
-        
+
         var deserializedObject = JsonSerializer.Deserialize(root.GetRawText(), concreteType, options);
 
         return deserializedObject as MappingRuleBase

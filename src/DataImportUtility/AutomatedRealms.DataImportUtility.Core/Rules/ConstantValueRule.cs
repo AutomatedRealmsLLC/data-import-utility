@@ -1,8 +1,8 @@
-using System.Data;
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Data;
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules;
 
@@ -77,11 +77,11 @@ public partial class ConstantValueRule : MappingRuleBase
         var context = TransformationResult.Success(
             originalValue: null,
             originalValueType: typeof(object),
-            currentValue: null, 
+            currentValue: null,
             currentValueType: typeof(object),
-            appliedTransformations: new List<string>(),
+            appliedTransformations: [],
             record: dataRow,
-            tableDefinition: ParentTableDefinition, 
+            tableDefinition: ParentTableDefinition,
             sourceRecordContext: null,
             targetFieldType: RuleDetail?.GetType() ?? typeof(string)
         );
@@ -93,7 +93,7 @@ public partial class ConstantValueRule : MappingRuleBase
     /// </summary>
     /// <param name="context">The transformation context.</param>
     /// <returns>A transformation result containing the constant value.</returns>
-    public override Task<TransformationResult?> Apply(ITransformationContext context) 
+    public override Task<TransformationResult?> Apply(ITransformationContext context)
     {
         if (context == null)
         {
@@ -113,24 +113,24 @@ public partial class ConstantValueRule : MappingRuleBase
             {
                 return Task.FromResult<TransformationResult?>(TransformationResult.Failure(
                     originalValue: RuleDetail,
-                    targetType: context.TargetFieldType, 
+                    targetType: context.TargetFieldType,
                     errorMessage: $"ConstantValueRule: Could not convert constant value '{RuleDetail}' to target type '{context.TargetFieldType.Name}'. Error: {ex.Message}",
-                    appliedTransformations: new List<string> { DisplayName },
+                    appliedTransformations: [DisplayName],
                     record: context.Record,
                     tableDefinition: context.TableDefinition,
                     sourceRecordContext: context.SourceRecordContext,
                     originalValueType: RuleDetail?.GetType() ?? typeof(string),
-                    explicitTargetFieldType: context.TargetFieldType 
+                    explicitTargetFieldType: context.TargetFieldType
                 ));
             }
         }
-        
+
         var result = TransformationResult.Success(
             originalValue: RuleDetail,
             originalValueType: RuleDetail?.GetType() ?? typeof(string),
             currentValue: typedValue,
             currentValueType: valueType,
-            appliedTransformations: new List<string> { DisplayName },
+            appliedTransformations: [DisplayName],
             record: context.Record,
             tableDefinition: context.TableDefinition,
             sourceRecordContext: context.SourceRecordContext,
@@ -146,7 +146,7 @@ public partial class ConstantValueRule : MappingRuleBase
     public override MappingRuleBase Clone()
     {
         var clone = new ConstantValueRule(this.RuleDetail);
-        CloneBaseProperties(clone); 
+        CloneBaseProperties(clone);
         return clone;
     }
 
@@ -159,11 +159,11 @@ public partial class ConstantValueRule : MappingRuleBase
     {
         // Create a minimal context for the constant value.
         var context = TransformationResult.Success(
-            originalValue: RuleDetail, 
+            originalValue: RuleDetail,
             originalValueType: RuleDetail?.GetType() ?? typeof(string),
-            currentValue: RuleDetail, 
+            currentValue: RuleDetail,
             currentValueType: RuleDetail?.GetType() ?? typeof(string),
-            appliedTransformations: new List<string> { DisplayName },
+            appliedTransformations: [DisplayName],
             targetFieldType: RuleDetail?.GetType() ?? typeof(string)
         );
         var singleResult = Apply(context).Result; // Await the task
@@ -184,7 +184,7 @@ public partial class ConstantValueRule : MappingRuleBase
         var results = new List<TransformationResult?>();
         foreach (DataRow row in data.Rows)
         {
-            results.Add(await Apply(row)); 
+            results.Add(await Apply(row));
         }
         return results.AsEnumerable();
     }
@@ -209,21 +209,21 @@ public partial class ConstantValueRule : MappingRuleBase
             }
             catch (Exception ex)
             {
-                 return TransformationResult.Failure(
-                    originalValue: RuleDetail,
-                    targetType: targetField.FieldType, // Use FieldType
-                    errorMessage: $"ConstantValueRule.GetValue: Could not convert constant value '{RuleDetail}' to target type '{targetField.FieldType.Name}'. Error: {ex.Message}",
-                    originalValueType: RuleDetail?.GetType() ?? typeof(string),
-                    sourceRecordContext: sourceRecord,
-                    explicitTargetFieldType: targetField.FieldType // Use FieldType
-                );
+                return TransformationResult.Failure(
+                   originalValue: RuleDetail,
+                   targetType: targetField.FieldType, // Use FieldType
+                   errorMessage: $"ConstantValueRule.GetValue: Could not convert constant value '{RuleDetail}' to target type '{targetField.FieldType.Name}'. Error: {ex.Message}",
+                   originalValueType: RuleDetail?.GetType() ?? typeof(string),
+                   sourceRecordContext: sourceRecord,
+                   explicitTargetFieldType: targetField.FieldType // Use FieldType
+               );
             }
         }
 
         return TransformationResult.Success(
-            originalValue: RuleDetail, 
+            originalValue: RuleDetail,
             originalValueType: RuleDetail?.GetType() ?? typeof(string),
-            currentValue: finalValue, 
+            currentValue: finalValue,
             currentValueType: finalValue?.GetType() ?? targetType,
             sourceRecordContext: sourceRecord,
             targetFieldType: targetField.FieldType // Use FieldType

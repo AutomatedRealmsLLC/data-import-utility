@@ -111,7 +111,7 @@ public abstract class FieldMapperWrapperBase : FileImportUtilityComponentBase
     /// </param>
     protected Task HandleFieldMappingChanged(IEnumerable<FieldMapping> updatedMappings)
     {
-        _editFieldMappings = updatedMappings.ToList();
+        _editFieldMappings = [.. updatedMappings];
         return OnDraftFieldMappingsChanged.InvokeAsync(_editFieldMappings);
     }
 

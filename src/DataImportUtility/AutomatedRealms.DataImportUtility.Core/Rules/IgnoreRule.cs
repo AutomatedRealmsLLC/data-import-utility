@@ -1,8 +1,8 @@
-using System.Data;
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Data;
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules;
 
@@ -45,7 +45,7 @@ public class IgnoreRule : MappingRuleBase
             originalValueType: null,
             currentValue: null,
             currentValueType: typeof(object), // Placeholder, will be nullified by IgnoreRule logic
-            appliedTransformations: new List<string>(),
+            appliedTransformations: [],
             record: dataRow,
             tableDefinition: null, // Or ParentTableDefinition
             sourceRecordContext: null,
@@ -80,14 +80,14 @@ public class IgnoreRule : MappingRuleBase
     /// <inheritdoc />
     public override async Task<IEnumerable<TransformationResult?>> Apply(DataTable data)
     {
-        if (data == null) return new List<TransformationResult?>();
+        if (data == null) return [];
         var results = new List<TransformationResult?>();
         foreach (DataRow row in data.Rows)
         {
             var rowContext = TransformationResult.Success(
                 originalValue: null, originalValueType: null,
                 currentValue: null, currentValueType: typeof(object),
-                appliedTransformations: new List<string>(),
+                appliedTransformations: [],
                 record: row,
                 tableDefinition: null, // Or ParentTableDefinition
                 sourceRecordContext: null,
@@ -105,7 +105,7 @@ public class IgnoreRule : MappingRuleBase
         var emptyContext = TransformationResult.Success(
             originalValue: null, originalValueType: null,
             currentValue: null, currentValueType: typeof(object),
-            appliedTransformations: new List<string>(),
+            appliedTransformations: [],
             record: null,
             tableDefinition: null,
             sourceRecordContext: null,
@@ -124,7 +124,7 @@ public class IgnoreRule : MappingRuleBase
             originalValueType: null,
             currentValue: null,
             currentValueType: effectiveTargetType,
-            appliedTransformations: new List<string>(),
+            appliedTransformations: [],
             record: null,
             tableDefinition: null,
             sourceRecordContext: sourceRecord,

@@ -1,4 +1,5 @@
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
 using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions;
@@ -75,7 +76,7 @@ public abstract class ComparisonOperationBase
         this.LeftOperand = leftOperand ?? throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {TypeId}.");
         // Basic operations will use RightOperand. Range operations (like Between) will override to use LowLimit and HighLimit.
         // Operations that don't need a right operand (e.g., IsNull) will override and might ignore it or validate it as null.
-        this.RightOperand = rightOperand; 
+        this.RightOperand = rightOperand;
         // Similarly, secondaryRightOperand is for specific cases like BetweenOperation's HighLimit.
         // Default behavior is to assign it to HighLimit, but most operations won't use it.
         // This can be refined in overrides.

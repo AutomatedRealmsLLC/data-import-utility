@@ -1,8 +1,8 @@
-using System.Globalization;
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -90,9 +90,8 @@ public static class GreaterThanOperationExtensions
 {
     private static bool IsNumeric(object? value)
     {
-        if (value == null) return false;
-        return value is sbyte || value is byte || value is short || value is ushort || value is int || value is uint ||
-               value is long || value is ulong || value is float || value is double || value is decimal;
+        return value != null && (value is sbyte || value is byte || value is short || value is ushort || value is int || value is uint ||
+               value is long || value is ulong || value is float || value is double || value is decimal);
     }
 
     private static bool CanConvertToDateTime(object? value, out DateTime result)
@@ -110,8 +109,7 @@ public static class GreaterThanOperationExtensions
             return true;
         }
         var stringValue = value.ToString();
-        if (string.IsNullOrEmpty(stringValue)) return false;
-        return DateTime.TryParse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out result);
+        return !string.IsNullOrEmpty(stringValue) && DateTime.TryParse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out result);
     }
 
     /// <summary>
@@ -155,7 +153,6 @@ public static class GreaterThanOperationExtensions
 
         var sLeft = leftVal.ToString();
         var sRight = rightVal.ToString();
-        if (sLeft == null || sRight == null) return false;
-        return string.Compare(sLeft, sRight, StringComparison.OrdinalIgnoreCase) > 0;
+        return sLeft != null && sRight != null && string.Compare(sLeft, sRight, StringComparison.OrdinalIgnoreCase) > 0;
     }
 }

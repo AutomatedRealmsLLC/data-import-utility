@@ -1,20 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>13.0</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>AutomatedRealms.DataImportUtility.Abstractions</RootNamespace>
-    <AssemblyName>AutomatedRealms.DataImportUtility.Abstractions</AssemblyName>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>13.0</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<RootNamespace>AutomatedRealms.DataImportUtility.Abstractions</RootNamespace>
+		<AssemblyName>AutomatedRealms.DataImportUtility.Abstractions</AssemblyName>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="9.0.4" /> <!-- Updated to 9.0.4 for latest features, netstandard2.0 compatibility, and security -->
-    <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" /> <!-- Added for DataAnnotations -->
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" /> <!-- Added for IServiceCollection -->
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" /> <!-- Added for BuildServiceProvider -->
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="System.Text.Json" Version="9.0.4" />
+		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
+		<PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="AutomatedRealms.DataImportUtility.Core" />
+		<InternalsVisibleTo Include="AutomatedRealms.DataImportUtility.Tests" />
+	</ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
-using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+namespace AutomatedRealms.DataImportUtility.Abstractions;
 
 /// <summary>
 /// A service for reading data from a data source.

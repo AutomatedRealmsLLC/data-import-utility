@@ -1,8 +1,8 @@
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 // No direct need for ITransformationContext here as Evaluate takes TransformationResult
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -147,16 +147,14 @@ public static class EqualsOperationExtensions
 
     private static bool IsNumeric(object? value)
     {
-        if (value == null) return false;
-        return value is byte || value is sbyte || value is short || value is ushort || value is int || value is uint ||
-               value is long || value is ulong || value is float || value is double || value is decimal;
+        return value != null && (value is byte || value is sbyte || value is short || value is ushort || value is int || value is uint ||
+               value is long || value is ulong || value is float || value is double || value is decimal);
     }
 
     private static bool CanConvertToDateTime(object? value)
     {
         if (value == null) return false;
-        if (value is DateTime) return true;
-        return DateTime.TryParse(value.ToString(), out _);
+        return value is DateTime || DateTime.TryParse(value.ToString(), out _);
     }
 
     private static bool TryConvertToBool(object? value, out bool result)

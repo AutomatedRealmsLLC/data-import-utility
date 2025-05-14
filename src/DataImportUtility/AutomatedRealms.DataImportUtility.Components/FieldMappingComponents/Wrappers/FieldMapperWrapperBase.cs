@@ -1,5 +1,7 @@
 ﻿using System.Collections.Immutable;
 
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Components.Abstractions;
 using AutomatedRealms.DataImportUtility.Components.Extensions;
 
 using Microsoft.AspNetCore.Components;
@@ -96,7 +98,7 @@ public abstract class FieldMapperWrapperBase : FileImportUtilityComponentBase
         // Set the parameters
         builder.AddAttribute(curElem++, nameof(FieldMapperEditorBase.FieldMappings), FieldMappings);
         builder.AddAttribute(curElem++, nameof(FieldMapperEditorBase.FieldDescriptors), FieldDescriptors);
-        builder.AddAttribute(curElem++, nameof(FieldMapperEditorBase.ApplyDefaultCss), ApplyDefaultCss);
+        builder.AddAttribute(curElem++, nameof(ApplyDefaultCss), ApplyDefaultCss);
         builder.AddAttribute(curElem++, nameof(FieldMapperEditorBase.OnDraftFieldMappingsChanged), EventCallback.Factory.Create<IEnumerable<FieldMapping>>(this, HandleFieldMappingChanged));
         builder.CloseComponent();
     };

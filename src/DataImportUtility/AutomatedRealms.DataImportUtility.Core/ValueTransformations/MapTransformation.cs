@@ -1,8 +1,8 @@
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Helpers;   // For ValueMap
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -19,7 +19,7 @@ public class MapTransformation : ValueTransformationBase
     /// <summary>
     /// Gets or sets the dictionary of value mappings.
     /// </summary>
-    public Dictionary<string, string> Mappings { get; set; } = new();
+    public Dictionary<string, string> Mappings { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the default value to use if no mapping is found.
@@ -118,7 +118,7 @@ public class MapTransformation : ValueTransformationBase
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value,
             currentValueType: value?.GetType() ?? typeof(object),
-            appliedTransformations: new List<string>(),
+            appliedTransformations: [],
             record: null,
             tableDefinition: null,
             sourceRecordContext: null,

@@ -27,6 +27,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Additional Libraries", "Add
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomatedRealms.DataImportUtility.DataReader", "AutomatedRealms.DataImportUtility.DataReader\AutomatedRealms.DataImportUtility.DataReader.csproj", "{F40C9685-B22F-909B-FC16-40A2C981920B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{53E2C711-909C-41AA-8B55-6EF7421CA78B}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\Docs\CustomTypeImplementationRegistration.md = ..\..\Docs\CustomTypeImplementationRegistration.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +112,7 @@ Global
 		{1B66A05A-8E9A-4CF5-8F87-6B2ED30125DA} = {1C9936ED-5DEB-4D0B-BF9C-FEE5F389E30B}
 		{D3802CB9-CD53-48E5-8D24-F3B7F8D8B036} = {1C9936ED-5DEB-4D0B-BF9C-FEE5F389E30B}
 		{F40C9685-B22F-909B-FC16-40A2C981920B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{53E2C711-909C-41AA-8B55-6EF7421CA78B} = {25F29BAB-ABFB-4CD6-ABB3-221358EB403B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9CE3595B-7FDB-43D8-87CA-F9283C01C2E0}

@@ -1,12 +1,8 @@
-// Filepath: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Core\Rules\StaticValueRule.cs
+using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
 using System.Data;
 using System.Text.Json.Serialization;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using AutomatedRealms.DataImportUtility.Abstractions; // For ITransformationContext
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules
@@ -145,7 +141,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         public override async Task<IEnumerable<TransformationResult?>> Apply()
         {
             var result = await Apply((ITransformationContext)null!).ConfigureAwait(false);
-            return new List<TransformationResult?> { result };
+            return [result];
         }
 
         /// <summary>
@@ -153,7 +149,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
         /// </summary>
         public override async Task<IEnumerable<TransformationResult?>> Apply(DataTable data)
         {
-            if (data == null) return Enumerable.Empty<TransformationResult?>();
+            if (data == null) { return []; }
             var results = new List<TransformationResult?>();
             foreach (DataRow row in data.Rows)
             {

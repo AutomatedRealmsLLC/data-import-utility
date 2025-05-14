@@ -1,4 +1,4 @@
-﻿using AutomatedRealms.DataImportUtility.Abstractions.Models;
+﻿using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
 namespace AutomatedRealms.DataImportUtility.Components.FieldMappingComponents.ValueTransformationComponents;
 

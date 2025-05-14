@@ -1,8 +1,8 @@
-using System.Collections;
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Collections;
+using System.Text.Json.Serialization;
 // Alias for Abstractions.Models to avoid ambiguity with any potential Core.Models.TransformationResult
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
@@ -85,7 +85,7 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
             {
                 valuesToInterpolate = [.. stringEnumerable];
             }
-            else if (previousResult.CurrentValue is IEnumerable enumerableValue && !(previousResult.CurrentValue is string))
+            else if (previousResult.CurrentValue is IEnumerable enumerableValue && previousResult.CurrentValue is not string)
             {
                 valuesToInterpolate = [.. enumerableValue.Cast<object>().Select(o => o?.ToString() ?? string.Empty)];
             }
@@ -140,7 +140,7 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value, // This is the collection of values to be combined
             currentValueType: value?.GetType() ?? typeof(object),
-            appliedTransformations: new List<string>(),
+            appliedTransformations: [],
             record: null,
             tableDefinition: null,
             sourceRecordContext: null,
@@ -156,7 +156,7 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
         var clone = new CombineFieldsTransformation
         {
             // Deep copy SourceFieldTransforms if it's not null, assuming FieldTransformation has a Clone method.
-            SourceFieldTransforms = this.SourceFieldTransforms?.Select(t => t.Clone()).ToList() ?? new List<FieldTransformation>()
+            SourceFieldTransforms = this.SourceFieldTransforms?.Select(t => t.Clone()).ToList() ?? []
         };
         // Clones TransformationDetail, TypeId
         this.CloneBaseProperties(clone);

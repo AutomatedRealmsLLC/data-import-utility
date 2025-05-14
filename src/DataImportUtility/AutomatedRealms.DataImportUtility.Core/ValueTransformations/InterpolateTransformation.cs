@@ -1,8 +1,8 @@
-using System.Collections; // Added for IEnumerable
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Collections; // Added for IEnumerable
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -86,7 +86,7 @@ public class InterpolateTransformation : ValueTransformationBase
             {
                 valuesToUse = [.. stringEnumerable];
             }
-            else if (previousResult.CurrentValue is IEnumerable enumerableValue && !(previousResult.CurrentValue is string))
+            else if (previousResult.CurrentValue is IEnumerable enumerableValue && previousResult.CurrentValue is not string)
             {
                 valuesToUse = [.. enumerableValue.Cast<object>().Select(o => o?.ToString())];
             }
@@ -142,7 +142,7 @@ public class InterpolateTransformation : ValueTransformationBase
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value,
             currentValueType: value?.GetType() ?? typeof(object),
-            appliedTransformations: new List<string>(),
+            appliedTransformations: [],
             record: null,
             tableDefinition: null,
             sourceRecordContext: null,

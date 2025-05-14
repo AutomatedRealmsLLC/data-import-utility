@@ -1,7 +1,7 @@
-// Original file path: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Abstractions\MappingRuleBase.cs
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
 using System.Data;
 using System.Text.Json.Serialization;
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions;
 

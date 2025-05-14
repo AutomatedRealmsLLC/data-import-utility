@@ -36,7 +36,7 @@ internal static partial class ImportDataObjects
         {
             if (_mappingRules is { Count: >0 }) { return; }
 
-            _mappingRules = ApplicationConstants.MappingRuleTypes.Select(x => x.CreateNewInstance()!).ToList();
+            _mappingRules = [.. ApplicationConstants.MappingRuleTypes.Select(x => x.CreateNewInstance()!)];
 
             foreach (var ruleType in ApplicationConstants.MappingRuleTypes)
             {

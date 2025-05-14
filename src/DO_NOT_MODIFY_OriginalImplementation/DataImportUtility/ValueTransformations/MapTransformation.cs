@@ -62,13 +62,13 @@ public class MapTransformation : ValueTransformationBase
     public override ValueTransformationBase Clone()
     {
         var clone = (MapTransformation)MemberwiseClone();
-        clone.ValueMappings = ValueMappings
+        clone.ValueMappings = [.. ValueMappings
             .Select(x => new ValueMap()
             {
                 ImportedFieldName = x.ImportedFieldName,
                 FromValue = x.FromValue,
                 ToValue = x.ToValue
-            }).ToList();
+            })];
         return clone;
     }
 }

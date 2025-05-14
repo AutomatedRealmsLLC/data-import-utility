@@ -1,4 +1,4 @@
-namespace AutomatedRealms.DataImportUtility.Abstractions.Models; // Updated
+namespace AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 /// <summary>
 /// The mapping of values from one field to another.

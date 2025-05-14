@@ -51,7 +51,7 @@ internal static partial class ImportDataObjects
         {
             if (_valueTransformations is { Count: >0 }) { return; }
 
-            _valueTransformations = ApplicationConstants.ValueTransformationTypes.Select(x => x.CreateNewInstance()!).ToList();
+            _valueTransformations = [.. ApplicationConstants.ValueTransformationTypes.Select(x => x.CreateNewInstance()!)];
 
             foreach (var ruleType in ApplicationConstants.ValueTransformationTypes)
             {

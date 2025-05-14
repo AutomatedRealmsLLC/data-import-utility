@@ -1,8 +1,8 @@
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Helpers;
 

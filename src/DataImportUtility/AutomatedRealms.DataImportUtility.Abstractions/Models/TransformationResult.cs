@@ -1,4 +1,4 @@
-using System.Data; // Added for DataRow
+using System.Data;
 using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Models;
@@ -93,7 +93,7 @@ public partial record TransformationResult : ITransformationContext // Implement
             OriginalValueType = originalValueType,
             CurrentValue = currentValue,
             CurrentValueType = currentValueType,
-            AppliedTransformations = appliedTransformations ?? new List<string>(),
+            AppliedTransformations = appliedTransformations ?? [],
             Record = record,
             TableDefinition = tableDefinition,
             SourceRecordContext = sourceRecordContext, // Added
@@ -123,7 +123,7 @@ public partial record TransformationResult : ITransformationContext // Implement
             CurrentValue = null,
             CurrentValueType = currentValueType, // Or perhaps targetType if it represents the intended conversion type
             ErrorMessage = errorMessage,
-            AppliedTransformations = appliedTransformations ?? new List<string>(),
+            AppliedTransformations = appliedTransformations ?? [],
             Record = record,
             TableDefinition = tableDefinition,
             SourceRecordContext = sourceRecordContext, // Added

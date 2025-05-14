@@ -441,7 +441,7 @@ public abstract partial class MappingRuleBase : IDisposable
     {
         var forRet = (MappingRuleBase)MemberwiseClone();
         forRet.OnDefinitionChanged = null;
-        forRet.SourceFieldTransformations = SourceFieldTransformations.Select(x => x.Clone()).ToImmutableList();
+        forRet.SourceFieldTransformations = [.. SourceFieldTransformations.Select(x => x.Clone())];
         return forRet;
     }
 

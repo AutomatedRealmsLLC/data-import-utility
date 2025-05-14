@@ -1,4 +1,4 @@
-@using DataImportUtility.Components.FieldMappingComponents.FieldTransformationComponents
+@using AutomatedRealms.DataImportUtility.Components.FieldMappingComponents.FieldTransformationComponents
 
 @inherits FileImportUtilityComponentBase
 
@@ -15,6 +15,8 @@
         <select class="@DefaultCssClass"
                 @bind=_selectedTransformationType
                 @bind:after=HandleTransformationChanged>
+
+            @* TODO: Use the ITypeRegistryService and TypeId instead *@
             @foreach (var transformType in ApplicationConstants.ValueTransformationTypes)
             {
                 <option value="@transformType">@transformType.GetDisplayText()</option>

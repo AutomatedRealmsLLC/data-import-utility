@@ -1,7 +1,7 @@
+using AutomatedRealms.DataImportUtility.Abstractions.Services;
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AutomatedRealms.DataImportUtility.Abstractions.Services; // Added for ITypeRegistryService
-using System; // Added for ArgumentNullException
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.CustomConverters;
 
@@ -21,10 +21,6 @@ public class ValueTransformationBaseConverter : JsonConverter<ValueTransformatio
     /// <exception cref="ArgumentNullException">Thrown if typeRegistryService is null.</exception>
     public ValueTransformationBaseConverter(ITypeRegistryService typeRegistryService)
     {
-        if (typeRegistryService == null)
-        {
-            throw new ArgumentNullException(nameof(typeRegistryService));
-        }
         _typeRegistryService = typeRegistryService;
     }
 

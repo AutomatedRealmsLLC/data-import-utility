@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 
-using AutomatedRealms.DataImportUtility.Abstractions.Enums;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Components.Abstractions;
 using AutomatedRealms.DataImportUtility.Core.Rules;
 
 using Microsoft.AspNetCore.Components;
@@ -46,9 +46,7 @@ public abstract partial class FieldMapperEditorBase : FileImportUtilityComponent
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _editFieldMappings = FieldMappings
-            .Select(fm => fm.Clone())
-            .ToList();
+        _editFieldMappings = [.. FieldMappings.Select(fm => fm.Clone())];
 
         foreach (var fieldMapping in _editFieldMappings.Where(x => !x.IgnoreMapping))
         {

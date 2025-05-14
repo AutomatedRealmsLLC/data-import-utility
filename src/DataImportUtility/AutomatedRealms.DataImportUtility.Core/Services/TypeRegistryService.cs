@@ -1,10 +1,7 @@
-// Original file path: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Core\Services\TypeRegistryService.cs
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Services;
+
+using System.Collections.Concurrent;
 
 namespace AutomatedRealms.DataImportUtility.Core.Services;
 
@@ -55,23 +52,19 @@ public class TypeRegistryService : ITypeRegistryService
     public bool TryResolveType(string typeId, out Type? type)
     {
         type = null;
-        if (string.IsNullOrWhiteSpace(typeId))
-        {
-            return false;
-        }
-        return _typeMap.TryGetValue(typeId, out type);
+        return !string.IsNullOrWhiteSpace(typeId) && _typeMap.TryGetValue(typeId, out type);
     }
 
     /// <inheritdoc />
     public IEnumerable<KeyValuePair<string, Type>> GetAllRegisteredTypes()
     {
-        return _typeMap.ToArray(); // Return a copy to prevent modification of the internal collection
+        return [.. _typeMap]; // Return a copy to prevent modification of the internal collection
     }
 
     /// <inheritdoc />
     public IEnumerable<string> GetAllTypeIds()
     {
-        return _typeMap.Keys.ToArray(); // Return a copy
+        return [.. _typeMap.Keys]; // Return a copy
     }
 
     /// <inheritdoc />

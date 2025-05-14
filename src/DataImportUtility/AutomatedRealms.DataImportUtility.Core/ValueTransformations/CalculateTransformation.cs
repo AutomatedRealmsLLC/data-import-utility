@@ -1,14 +1,14 @@
-using System.Collections; // Added for IEnumerable
-using System.Globalization;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Helpers; // Added for CultureInfo
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
 using AutomatedRealms.DataImportUtility.Core.Compatibility; // For MathCompatibility
 
 using Jace;
+
+using System.Collections; // Added for IEnumerable
+using System.Globalization;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -80,26 +80,41 @@ public class CalculateTransformation : ValueTransformationBase
                 ));
             }
 
-            string[] valuesToUse;
-            if (previousResult.CurrentValue == null)
+            string[] valuesToUse = previousResult.CurrentValue switch
             {
-                valuesToUse = [];
-            }
-            else if (previousResult.CurrentValue is IEnumerable<string> stringEnumerable)
-            {
-                valuesToUse = [.. stringEnumerable];
-            }
-            else if (previousResult.CurrentValue is IEnumerable enumerableValue && !(previousResult.CurrentValue is string))
-            {
-                valuesToUse = [.. enumerableValue.Cast<object>().Select(o => o?.ToString() ?? "0")];
-            }
-            else // Single object (including string if not caught by IEnumerable<string>)
-            {
-                valuesToUse = [previousResult.CurrentValue.ToString() ?? "0"];
-            }
+                null => [],
+                IEnumerable<string> stringEnumerable => [.. stringEnumerable],
+                IEnumerable enumerableValue when previousResult.CurrentValue is not string => [.. enumerableValue.Cast<object>().Select(o => o?.ToString() ?? "0")],
+                _ => [previousResult.CurrentValue.ToString() ?? "0"] // Single object (including string if not caught by IEnumerable<string>)
+            };
 
             // resultValueText is guaranteed non-null here due to the earlier IsNullOrWhiteSpace check.
+            // Let's try to get rid of the null forging operator (!) used here.
             string currentFormula = resultValueText!;
+            // We also might look at replace this with the 'variables' logic 
+            // use the documentation to learn more: https://github.com/pieterderycke/Jace/wiki
+            // Maybe provide the documentation to the user so they can see the syntax.
+            // Better yet, though, create a UI that allows them to select the fields and create the formula for them.
+            /*
+            // Define the variable and its value
+            Dictionary<string, double> variables = new Dictionary<string, double>
+            {
+                { "number", inputNumber }
+            };
+
+            // Formula for the normalized number (Mantissa)
+            string mantissaFormula = "number / pow(10, floor(log10(number)))";
+
+            // Formula for the exponent
+            string exponentFormula = "floor(log10(number))";
+
+            // Calculate the normalized number
+            double normalizedNumber = engine.Calculate(mantissaFormula, variables);
+
+            // Calculate the exponent
+            double exponent = engine.Calculate(exponentFormula, variables); // Note: Jace returns double, you might cast to int
+
+             */
             if (valuesToUse.Any())
             {
                 for (int i = 0; i < valuesToUse.Length; i++)
@@ -123,6 +138,7 @@ public class CalculateTransformation : ValueTransformationBase
 #else
             clampedDecimalPlaces = Math.Clamp(clampedDecimalPlaces, -1, 15);
 #endif
+
 
             double calculatedVal = _calculationEngine.Calculate(currentFormula);
             if (clampedDecimalPlaces >= 0)
@@ -176,7 +192,7 @@ public class CalculateTransformation : ValueTransformationBase
             originalValueType: value?.GetType() ?? typeof(object),
             currentValue: value,
             currentValueType: value?.GetType() ?? typeof(object),
-            appliedTransformations: new List<string>(),
+            appliedTransformations: [],
             record: null, // No DataRow context for an isolated Transform call
             tableDefinition: null, // No TableDefinition context
             sourceRecordContext: null, // No SourceRecordContext

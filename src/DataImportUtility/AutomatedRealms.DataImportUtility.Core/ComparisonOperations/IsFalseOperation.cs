@@ -1,7 +1,7 @@
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and ITransformationContext
+
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -52,8 +52,7 @@ public class IsFalseOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
-        ITransformationContext? context = contextResult as ITransformationContext;
-        if (context == null)
+        if (contextResult is not ITransformationContext context)
         {
             if (contextResult is ITransformationContext directContext)
             {
@@ -88,7 +87,7 @@ public class IsFalseOperation : ComparisonOperationBase
         if (string.IsNullOrEmpty(stringVal)) return true;
         if (string.Equals(stringVal, "false", StringComparison.OrdinalIgnoreCase)) return true;
         if (stringVal == "0") return true;
-        
+
         // Attempt to convert to double for numeric zero check, only if it's IConvertible
         if (leftResult.CurrentValue is IConvertible convertible)
         {
@@ -117,8 +116,10 @@ public class IsFalseOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override ComparisonOperationBase Clone()
     {
-        var clone = new IsFalseOperation();
-        clone.LeftOperand = LeftOperand?.Clone();
+        var clone = new IsFalseOperation
+        {
+            LeftOperand = LeftOperand?.Clone()
+        };
         // RightOperand is not used, so no need to clone it.
         return clone;
     }

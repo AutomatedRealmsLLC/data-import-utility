@@ -29,5 +29,9 @@ public abstract class JsModuleBase(IJSRuntime jsRuntime, string moduleUrl) : IAs
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
-        => await (await ModuleTask).DisposeAsync();
+    {
+        await (await ModuleTask).DisposeAsync();
+
+        GC.SuppressFinalize(this);
+    }
 }

@@ -1,7 +1,7 @@
-﻿using System.Data;
-
-using DataImportUtility.Abstractions;
+﻿using DataImportUtility.Abstractions;
 using DataImportUtility.Models;
+
+using System.Data;
 
 namespace DataImportUtility.Helpers;
 
@@ -21,12 +21,11 @@ public static partial class ValueTransformationHelper
     /// </returns>
     public static object[] GetColumnValues(this DataTable sourceTable, string forField)
     {
-        return sourceTable.Rows
+        return [.. sourceTable.Rows
             .OfType<DataRow>()
             .Select((r, i) => (Index: i, Value: r[forField]))
             .OrderBy(x => x.Index)
-            .Select(x => x.Value)
-            .ToArray();
+            .Select(x => x.Value)];
     }
 
     /// <summary>
@@ -134,11 +133,10 @@ public static partial class ValueTransformationHelper
     /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
     /// </remarks>
     public static List<TTargetType> ToObject<TTargetType>(this DataTable table, List<int>? selectedRecords = null) where TTargetType : new()
-        => table.Rows
+        => [.. table.Rows
             .OfType<DataRow>()
             .Where((x, i) => selectedRecords is null || selectedRecords.Contains(i))
-            .Select(x => x.ToObject<TTargetType>())
-            .ToList();
+            .Select(x => x.ToObject<TTargetType>())];
 
     /// <summary>
     /// Converts a DataRow to an object of the specified type.
@@ -182,9 +180,7 @@ public static partial class ValueTransformationHelper
     /// filtered to remove any that do not have a matching field name.
     /// </remarks>
     private static List<FieldMapping> MappedFieldsOnly(this List<FieldMapping> fieldMapping)
-        => fieldMapping
-            .Where(x => x.MappingRuleType != MappingRuleType.IgnoreRule)
-            .ToList();
+        => [.. fieldMapping.Where(x => x.MappingRuleType != MappingRuleType.IgnoreRule)];
 
     /// <summary>
     /// Checks for missing fields in the data tables used in field mappings.

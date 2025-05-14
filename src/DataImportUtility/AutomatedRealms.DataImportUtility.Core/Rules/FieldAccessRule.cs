@@ -1,10 +1,9 @@
 // Filepath: d:\git\AutomatedRealms\data-import-utility\src\DataImportUtility\AutomatedRealms.DataImportUtility.Core\Rules\FieldAccessRule.cs
-using System.Data;
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-using AutomatedRealms.DataImportUtility.Abstractions.Extensions;
+
+using System.Data;
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules
 {
@@ -80,7 +79,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                 originalValueType: null,
                 currentValue: null,
                 currentValueType: null,
-                appliedTransformations: new List<string>(),
+                appliedTransformations: [],
                 record: dataRow,
                 tableDefinition: ParentTableDefinition,
                 sourceRecordContext: null,
@@ -187,7 +186,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                     originalValueType: valueType,
                     currentValue: value,
                     currentValueType: valueType,
-                    appliedTransformations: new List<string> { $"Accessed field '{actualSourceFieldName}'." },
+                    appliedTransformations: [$"Accessed field '{actualSourceFieldName}'."],
                     record: context.Record,
                     tableDefinition: context.TableDefinition,
                     sourceRecordContext: context.SourceRecordContext,
@@ -232,7 +231,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                 var rowContext = TransformationResult.Success(
                     originalValue: null, originalValueType: null,
                     currentValue: null, currentValueType: null,
-                    appliedTransformations: new List<string>(),
+                    appliedTransformations: [],
                     record: row,
                     tableDefinition: ParentTableDefinition,
                     sourceRecordContext: null,
@@ -274,7 +273,7 @@ namespace AutomatedRealms.DataImportUtility.Core.Rules
                 originalValueType: null,
                 currentValue: null,
                 currentValueType: null,
-                appliedTransformations: new List<string>(),
+                appliedTransformations: [],
                 record: null,
                 tableDefinition: null,
                 sourceRecordContext: sourceRecordContextList,

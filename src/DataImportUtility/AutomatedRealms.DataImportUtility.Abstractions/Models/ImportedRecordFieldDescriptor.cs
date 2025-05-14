@@ -16,7 +16,7 @@ public class ImportedRecordFieldDescriptor
     /// <summary>
     /// The imported field name.
     /// </summary>
-    public string FieldName { get; set; /*init;*/ } = string.Empty; // Removed 'required', added initializer
+    public required string FieldName { get; init; }
 
     private Type _fieldType = typeof(object);
     /// <summary>
@@ -95,15 +95,11 @@ public class ImportedRecordFieldDescriptor
     /// </summary>
     public override bool Equals(object? obj)
     {
-        if (obj is ImportedRecordFieldDescriptor other)
-        {
-            return FieldName == other.FieldName &&
+        return obj is ImportedRecordFieldDescriptor other && FieldName == other.FieldName &&
                    ForTableName == other.ForTableName &&
                    FieldTypeString == other.FieldTypeString &&
                    ((_valueSet == null && other._valueSet == null) ||
                     (_valueSet != null && other._valueSet != null && _valueSet.SequenceEqual(other._valueSet)));
-        }
-        return false;
     }
 
     /// <summary>

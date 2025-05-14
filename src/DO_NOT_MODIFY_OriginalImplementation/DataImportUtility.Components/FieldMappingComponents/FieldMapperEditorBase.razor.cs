@@ -47,9 +47,7 @@ public abstract partial class FieldMapperEditorBase : FileImportUtilityComponent
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _editFieldMappings = FieldMappings
-            .Select(fm => fm.Clone())
-            .ToList();
+        _editFieldMappings = [.. FieldMappings.Select(fm => fm.Clone())];
 
         foreach (var fieldMapping in _editFieldMappings.Where(x => !x.IgnoreMapping))
         {

@@ -25,7 +25,7 @@ public class CombineFieldsOperationTests
         var operation = new CombineFieldsTransformation()
         {
             TransformationDetail = operationDetail,
-            SourceFieldTransforms = new List<FieldTransformation> { new FieldTransformation(new ImportedRecordFieldDescriptor { FieldName = "Field 1" }) }
+            SourceFieldTransforms = [new FieldTransformation(new ImportedRecordFieldDescriptor { FieldName = "Field 1" })]
         };
 
         // Act
@@ -49,7 +49,7 @@ public class CombineFieldsOperationTests
         // Arrange
         var prevTransformResult = TransformationResult.Success(prevResult, prevResult?.GetType(), prevResult, prevResult?.GetType());
 
-        var values = JsonSerializer.Deserialize<string[]>(prevResult ?? "[]") ?? Array.Empty<string>();
+        var values = JsonSerializer.Deserialize<string[]>(prevResult ?? "[]") ?? [];
 
         var importFields = values
             .Select((_, index) => new ImportedRecordFieldDescriptor()

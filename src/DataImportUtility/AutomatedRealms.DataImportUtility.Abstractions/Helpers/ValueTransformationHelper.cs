@@ -1,7 +1,7 @@
-using System.ComponentModel.DataAnnotations; // Added for ValidationResult and Validator
-using System.Data;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // Using Abstractions models
+using System.ComponentModel.DataAnnotations;
+using System.Data;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Helpers;
 
@@ -218,10 +218,10 @@ public static partial class ValueTransformationHelper
     /// Thrown when there are missing fields used in the Field Mappings that don't exist for the given data tables.
     /// </exception>
     /// <remarks>
-    /// This method checks the source data table for the <see cref="Models.MappingRuleBase.SourceField"/> 
-    /// (when <see cref="Models.MappingRuleBase.SourceField"/> is not null or empty on the <see cref="Models.FieldMapping.MappingRule"/>)
-    /// and the destination data table for <see cref="Models.FieldMapping.FieldName"/>.
-    /// It currently does not deeply inspect individual transformations in <see cref="Models.MappingRuleBase.SourceFieldTransformations"/> for other field dependencies.
+    /// This method checks the source data table for the <see cref="MappingRuleBase.SourceField"/> 
+    /// (when <see cref="MappingRuleBase.SourceField"/> is not null or empty on the <see cref="FieldMapping.MappingRule"/>)
+    /// and the destination data table for <see cref="FieldMapping.FieldName"/>.
+    /// It currently does not deeply inspect individual transformations in <see cref="MappingRuleBase.SourceFieldTransformations"/> for other field dependencies.
     /// </remarks>
     /// <exception cref="CustomExceptions.MissingFieldMappingException">
     /// Thrown when there are missing fields in only one of the two provided tables.
@@ -263,7 +263,7 @@ public static partial class ValueTransformationHelper
 
         if (missingTargetFields.Any())
         {
-            missingFieldExceptions.Add(new CustomExceptions.MissingFieldMappingException(Array.Empty<FieldMapping>(), $"The destination table does not contain the following mapped target fields: {string.Join(", ", missingTargetFields)}"));
+            missingFieldExceptions.Add(new CustomExceptions.MissingFieldMappingException([], $"The destination table does not contain the following mapped target fields: {string.Join(", ", missingTargetFields)}"));
         }
 
         if (missingFieldExceptions.Count == 1)

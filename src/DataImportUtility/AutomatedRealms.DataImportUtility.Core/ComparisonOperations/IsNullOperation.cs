@@ -1,7 +1,7 @@
-using System.Text.Json.Serialization;
-using System.Threading.Tasks; // Required for Task
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -40,7 +40,7 @@ public class IsNullOperation : ComparisonOperationBase
     {
         // Call base to set LeftOperand. RightOperand and HighLimit will be set to null or the provided values,
         // but IsNullOperation only uses LeftOperand.
-        base.ConfigureOperands(leftOperand, null, null); 
+        base.ConfigureOperands(leftOperand, null, null);
 
         if (this.LeftOperand is null) // Validation after base call
         {
@@ -66,7 +66,7 @@ public class IsNullOperation : ComparisonOperationBase
 
         // It's possible for Apply to return a null TransformationResult if the rule itself is fundamentally broken
         // or if the context passed in is such that it cannot operate.
-        if (leftResult == null) 
+        if (leftResult == null)
         {
             // This indicates a problem with the LeftOperand rule execution itself, not necessarily that its *value* is null.
             // For IsNullOperation, if the rule execution fails to produce a result, we might consider it as not being a determinable value,

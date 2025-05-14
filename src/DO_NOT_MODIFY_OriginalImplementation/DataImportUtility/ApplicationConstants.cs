@@ -22,7 +22,7 @@ internal static class ApplicationConstants
     /// <summary>
     /// The mapping rule types that are implemented.
     /// </summary>
-    public static MappingRuleType[] MappingRuleTypes { get; } = Enum.GetValues(typeof(MappingRuleType)).OfType<MappingRuleType>().Where(x => !UnimplementedMappingRules.Contains(x)).ToArray();
+    public static MappingRuleType[] MappingRuleTypes { get; } = [.. Enum.GetValues(typeof(MappingRuleType)).OfType<MappingRuleType>().Where(x => !UnimplementedMappingRules.Contains(x))];
 
     /// <summary>
     /// The unimplemented Value transformation types.
@@ -40,5 +40,5 @@ internal static class ApplicationConstants
     /// <summary>
     /// The value transformation types that are implemented.
     /// </summary>
-    public static ValueTransformationType[] ValueTransformationTypes { get; } = Enum.GetValues(typeof(ValueTransformationType)).OfType<ValueTransformationType>().Where(x => !UnimplementedValueTransformations.Contains(x)).ToArray();
+    public static ValueTransformationType[] ValueTransformationTypes { get; } = [.. Enum.GetValues(typeof(ValueTransformationType)).OfType<ValueTransformationType>().Where(x => !UnimplementedValueTransformations.Contains(x))];
 }

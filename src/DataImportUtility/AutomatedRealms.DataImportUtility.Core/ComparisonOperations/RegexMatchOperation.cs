@@ -1,8 +1,8 @@
-using System.Text.RegularExpressions;
-using System.Text.Json.Serialization;
-
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
+
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -54,8 +54,7 @@ public class RegexMatchOperation : ComparisonOperationBase
     /// <returns>True if the input string matches the pattern, otherwise false.</returns>
     public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
-        ITransformationContext? context = contextResult as ITransformationContext;
-        if (context == null)
+        if (contextResult is not ITransformationContext context)
         {
             if (contextResult is ITransformationContext directContext)
             {
@@ -81,7 +80,7 @@ public class RegexMatchOperation : ComparisonOperationBase
         {
             // If input evaluation fails, cannot perform regex match.
             // Consider logging: Console.WriteLine($"Warning: LeftOperand evaluation failed for RegexMatch: {leftValueResult?.ErrorMessage}");
-            return false; 
+            return false;
         }
 
         var rightValueResult = await RightOperand.Apply(context);
@@ -89,9 +88,9 @@ public class RegexMatchOperation : ComparisonOperationBase
         {
             // If pattern evaluation fails, cannot perform regex match.
             // Consider logging: Console.WriteLine($"Warning: RightOperand (pattern) evaluation failed for RegexMatch: {rightValueResult?.ErrorMessage}");
-            return false; 
+            return false;
         }
-        
+
         object? leftValue = leftValueResult.CurrentValue;
         object? rightValue = rightValueResult.CurrentValue;
 
@@ -100,7 +99,7 @@ public class RegexMatchOperation : ComparisonOperationBase
             return false;
         }
 
-        if (rightValue == null || !(rightValue is string patternString) || string.IsNullOrEmpty(patternString))
+        if (rightValue == null || rightValue is not string patternString || string.IsNullOrEmpty(patternString))
         {
             // Pattern must be a non-empty string.
             // Consider logging: Console.WriteLine("Warning: Regex pattern is null, not a string, or empty.");
