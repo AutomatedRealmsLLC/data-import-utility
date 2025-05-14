@@ -43,7 +43,7 @@ public class MappingRuleBaseConverter : JsonConverter<MappingRuleBase>
         }
 
         // typeIdString is guaranteed not to be null here due to the IsNullOrWhiteSpace check above.
-        if (!_typeRegistryService.TryResolveType(typeIdString!, out Type? concreteType) || concreteType == null)
+        if (!_typeRegistryService.TryResolveType(typeIdString!, out Type? concreteType) || concreteType is null)
         {
             throw new JsonException($"Unable to resolve TypeId '{typeIdString}' to a registered type for {nameof(MappingRuleBase)}. Ensure the type is registered with ITypeRegistryService.");
         }

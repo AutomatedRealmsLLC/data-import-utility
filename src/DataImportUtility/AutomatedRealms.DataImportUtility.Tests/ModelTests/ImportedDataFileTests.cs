@@ -1,13 +1,10 @@
-﻿using System.Data;
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
+﻿using AutomatedRealms.DataImportUtility.Abstractions.Helpers; // For ApplyTransformation
 using AutomatedRealms.DataImportUtility.Core.Rules;
-using Microsoft.Extensions.Logging.Abstractions;
-using System.Linq;
-using AutomatedRealms.DataImportUtility.Abstractions.Helpers; // For ApplyTransformation
 using AutomatedRealms.DataImportUtility.Tests.SampleData; // For ImportDataObjects and FakeTargetType
-using System; // For Guid
-using System.Threading.Tasks; // For Task
-using Xunit; // For Fact and Assert
+
+using Microsoft.Extensions.Logging.Abstractions;
+
+using System.Data;
 
 namespace AutomatedRealms.DataImportUtility.Tests.ModelTests;
 
@@ -43,7 +40,7 @@ public class ImportedDataFileTests
         newDataSet.Tables.Add(inputDataTable);
 
         // Add the DataTable to the global ImportDataFile
-        dataFile.SetTargetType(typeof(FakeTargetType)); 
+        dataFile.SetTargetType<FakeTargetType>();
         dataFile.SetData(newDataSet, false);
 
         // To be moved to a data file test
@@ -53,7 +50,7 @@ public class ImportedDataFileTests
         Assert.True(dataFile.DataSet.Tables.Contains(randomTableName));
 
         // To be moved to a table definitions test
-        var tableDefinition = dataFile.TableDefinitions.FirstOrDefault(td => td.TableName == randomTableName); 
+        var tableDefinition = dataFile.TableDefinitions.FirstOrDefault(td => td.TableName == randomTableName);
         Assert.NotNull(tableDefinition);
 
         // Get the field descriptors
@@ -68,15 +65,15 @@ public class ImportedDataFileTests
         var targetTypeFieldNames = typeof(FakeTargetType).GetProperties().Select(x => x.Name).ToArray();
 
         // To be moved to a field mappings test -- tests that all of the target type properties are mapped
-        Assert.Equal(targetTypeFieldNames, [.. fieldMappings.Select(x => x.FieldName)]);
+        Assert.Equal(targetTypeFieldNames, fieldMappings.Select(x => x.FieldName));
 
         var labAnalysisFieldMapping = fieldMappings.First();
-        var combineRule = new CombineFieldsRule(NullLogger<CombineFieldsRule>.Instance) 
+        var combineRule = new CombineFieldsRule(NullLogger<CombineFieldsRule>.Instance)
         {
-            CombinationFormat = "${0}-----${1}" 
+            CombinationFormat = "${0}-----${1}"
         };
-        
-        if (fieldDescriptors.Any())
+
+        if (fieldDescriptors.Count > 0)
         {
             combineRule.InputFields.Add(new ConfiguredInputField { FieldName = fieldDescriptors.First().FieldName });
             combineRule.InputFields.Add(new ConfiguredInputField { FieldName = fieldDescriptors.Last().FieldName });
@@ -95,16 +92,16 @@ public class ImportedDataFileTests
         var expectedValues = new[] { "Test Input-----Test Input 2", "Test Input 3-----Test Input 4" };
 
         // Act
-        var sourceDataTable = dataFile.DataSet!.Tables[randomTableName]; 
-        Assert.NotNull(sourceDataTable); 
-        
-        var outputDataTable = await sourceDataTable.ApplyTransformation(fieldMappings, null); 
+        var sourceDataTable = dataFile.DataSet!.Tables[randomTableName];
+        Assert.NotNull(sourceDataTable);
+
+        var outputDataTable = await sourceDataTable.ApplyTransformation(fieldMappings, null);
 
         // Assert
         Assert.NotNull(outputDataTable);
         Assert.Equal(expectedRowCount, outputDataTable.Rows.Count);
         Assert.Equal(expectedColumnCount, outputDataTable.Columns.Count);
-        Assert.Equal(expectedColumnNames, [.. outputDataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)]);
+        Assert.Equal(expectedColumnNames, outputDataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName));
 
         var result = outputDataTable.Rows.Cast<DataRow>().Select(x => x[labAnalysisFieldMapping.FieldName]).ToArray();
         Assert.Equal(expectedValues, result);

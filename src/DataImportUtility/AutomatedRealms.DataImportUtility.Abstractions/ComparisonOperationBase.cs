@@ -73,15 +73,15 @@ public abstract class ComparisonOperationBase
         MappingRuleBase? rightOperand,
         MappingRuleBase? secondaryRightOperand)
     {
-        this.LeftOperand = leftOperand ?? throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {TypeId}.");
+        LeftOperand = leftOperand ?? throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {TypeId}.");
         // Basic operations will use RightOperand. Range operations (like Between) will override to use LowLimit and HighLimit.
         // Operations that don't need a right operand (e.g., IsNull) will override and might ignore it or validate it as null.
-        this.RightOperand = rightOperand;
+        RightOperand = rightOperand;
         // Similarly, secondaryRightOperand is for specific cases like BetweenOperation's HighLimit.
         // Default behavior is to assign it to HighLimit, but most operations won't use it.
         // This can be refined in overrides.
-        this.LowLimit = rightOperand; // Default for operations that might use LowLimit (e.g. GreaterThan, Between)
-        this.HighLimit = secondaryRightOperand; // Default for operations that might use HighLimit (e.g. Between)
+        LowLimit = rightOperand; // Default for operations that might use LowLimit (e.g. GreaterThan, Between)
+        HighLimit = secondaryRightOperand; // Default for operations that might use HighLimit (e.g. Between)
     }
 
     /// <summary>
@@ -99,21 +99,21 @@ public abstract class ComparisonOperationBase
     public virtual ComparisonOperationBase Clone()
     {
         var clone = (ComparisonOperationBase)MemberwiseClone();
-        if (LeftOperand != null)
+        if (LeftOperand is not null)
         {
-            clone.LeftOperand = (MappingRuleBase)LeftOperand.Clone();
+            clone.LeftOperand = LeftOperand.Clone();
         }
-        if (RightOperand != null)
+        if (RightOperand is not null)
         {
-            clone.RightOperand = (MappingRuleBase)RightOperand.Clone();
+            clone.RightOperand = RightOperand.Clone();
         }
-        if (LowLimit != null)
+        if (LowLimit is not null)
         {
-            clone.LowLimit = (MappingRuleBase)LowLimit.Clone();
+            clone.LowLimit = LowLimit.Clone();
         }
-        if (HighLimit != null)
+        if (HighLimit is not null)
         {
-            clone.HighLimit = (MappingRuleBase)HighLimit.Clone();
+            clone.HighLimit = HighLimit.Clone();
         }
         return clone;
     }

@@ -1,5 +1,5 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and ITransformationContext
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 using System.Text.Json.Serialization;
 
@@ -33,11 +33,11 @@ public class EndsWithOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override void ConfigureOperands(MappingRuleBase? leftOperand, MappingRuleBase? rightOperand, MappingRuleBase? secondaryRightOperand = null)
     {
-        if (leftOperand == null)
+        if (leftOperand is null)
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
         }
-        if (rightOperand == null)
+        if (rightOperand is null)
         {
             throw new ArgumentNullException(nameof(rightOperand), $"Right operand cannot be null for {DisplayName}.");
         }
@@ -71,26 +71,26 @@ public class EndsWithOperation : ComparisonOperationBase
         }
 
         var leftResult = await LeftOperand.Apply(context);
-        if (leftResult == null || leftResult.WasFailure)
+        if (leftResult is null || leftResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult?.ErrorMessage ?? "Result was null."}");
         }
 
         var rightResult = await RightOperand.Apply(context);
-        if (rightResult == null || rightResult.WasFailure)
+        if (rightResult is null || rightResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        object? leftValue = leftResult.CurrentValue;
-        object? rightValue = rightResult.CurrentValue;
+        var leftValue = leftResult.CurrentValue;
+        var rightValue = rightResult.CurrentValue;
 
-        if (leftValue == null || rightValue == null)
+        if (leftValue is null || rightValue is null)
         {
             // If right is null or empty, any string (including null represented as empty) "ends with" it.
-            if (rightValue == null || (rightValue is string rs && string.IsNullOrEmpty(rs))) return true;
+            if (rightValue is null || (rightValue is string rs && string.IsNullOrEmpty(rs))) return true;
             // If left is null and right is not null/empty, then it's false.
-            if (leftValue == null) return false;
+            if (leftValue is null) return false;
         }
 
         if (leftValue is string leftString && rightValue is string rightString)

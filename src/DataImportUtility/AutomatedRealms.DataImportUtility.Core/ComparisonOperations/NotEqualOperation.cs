@@ -66,22 +66,22 @@ public class NotEqualOperation : ComparisonOperationBase
         var leftResult = await LeftOperand.Apply(contextResult);
         var rightResult = await RightOperand.Apply(contextResult);
 
-        if (leftResult == null || leftResult.WasFailure)
+        if (leftResult is null || leftResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult?.ErrorMessage ?? "Result was null."}");
         }
-        return rightResult == null || rightResult.WasFailure
+        return rightResult is null || rightResult.WasFailure
             ? throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightResult?.ErrorMessage ?? "Result was null."}")
             : !AreValuesEqual(leftResult.CurrentValue, rightResult.CurrentValue, contextResult.TargetFieldType);
     }
 
     private static bool AreValuesEqual(object? leftValue, object? rightValue, Type? targetFieldType)
     {
-        if (leftValue == null && rightValue == null)
+        if (leftValue is null && rightValue is null)
         {
             return true;
         }
-        if (leftValue == null || rightValue == null)
+        if (leftValue is null || rightValue is null)
         {
             return false;
         }
@@ -114,7 +114,7 @@ public class NotEqualOperation : ComparisonOperationBase
     private static bool TryParseDateTime(object? obj, out DateTime result)
     {
         result = default;
-        if (obj == null) return false;
+        if (obj is null) return false;
         if (obj is DateTime dt)
         {
             result = dt;
@@ -126,7 +126,7 @@ public class NotEqualOperation : ComparisonOperationBase
     private static bool TryParseDouble(object? obj, out double result)
     {
         result = default;
-        if (obj == null) return false;
+        if (obj is null) return false;
         if (obj is double d) { result = d; return true; }
         if (obj is IConvertible convertible)
         {
@@ -143,7 +143,7 @@ public class NotEqualOperation : ComparisonOperationBase
     private static bool TryParseDecimal(object? obj, out decimal result)
     {
         result = default;
-        if (obj == null) return false;
+        if (obj is null) return false;
         if (obj is decimal dec) { result = dec; return true; }
         if (obj is IConvertible convertible)
         {

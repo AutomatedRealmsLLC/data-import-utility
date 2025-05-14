@@ -1,5 +1,5 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and ITransformationContext
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 using System.Text.Json.Serialization;
 
@@ -33,17 +33,17 @@ public class IsFalseOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override void ConfigureOperands(MappingRuleBase? leftOperand, MappingRuleBase? rightOperand = null, MappingRuleBase? secondaryRightOperand = null)
     {
-        if (leftOperand == null)
+        if (leftOperand is null)
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
         }
         LeftOperand = leftOperand;
         // RightOperand and SecondaryRightOperand are not used by this operation.
-        if (rightOperand != null)
+        if (rightOperand is not null)
         {
             // Or log a warning: Console.WriteLine($"Warning: RightOperand is provided but not used by {DisplayName}.");
         }
-        if (secondaryRightOperand != null)
+        if (secondaryRightOperand is not null)
         {
             // Or log a warning
         }
@@ -71,7 +71,7 @@ public class IsFalseOperation : ComparisonOperationBase
 
         var leftResult = await LeftOperand.Apply(context);
 
-        if (leftResult == null || leftResult.WasFailure)
+        if (leftResult is null || leftResult.WasFailure)
         {
             // If evaluation of the operand fails, it cannot be determined if it's false.
             // Depending on desired behavior, this could return false or throw.
@@ -80,7 +80,7 @@ public class IsFalseOperation : ComparisonOperationBase
         }
 
         // Inlined logic from former IsFalseOperationExtensions.IsFalse
-        if (leftResult.CurrentValue == null) return true;
+        if (leftResult.CurrentValue is null) return true;
         if (leftResult.CurrentValue is bool boolVal) return !boolVal;
 
         var stringVal = leftResult.CurrentValue.ToString();

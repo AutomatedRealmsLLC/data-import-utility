@@ -17,7 +17,7 @@ public class IsNullOrEmptyOperation : ComparisonOperationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override string DisplayName { get; } = "Is Null Or Empty";
+    public override string DisplayName { get; } = "is null Or Empty";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -33,7 +33,7 @@ public class IsNullOrEmptyOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override void ConfigureOperands(MappingRuleBase? leftOperand, MappingRuleBase? rightOperand = null, MappingRuleBase? secondaryRightOperand = null)
     {
-        if (leftOperand == null)
+        if (leftOperand is null)
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
         }
@@ -60,18 +60,12 @@ public class IsNullOrEmptyOperation : ComparisonOperationBase
             }
         }
 
-        if (LeftOperand == null)
+        if (LeftOperand is null)
         {
             throw new InvalidOperationException($"{nameof(LeftOperand)} must be configured for {DisplayName} operation.");
         }
 
-        var leftOperandValueResult = await LeftOperand.Apply(context);
-
-        if (leftOperandValueResult == null)
-        {
-            throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
-        }
-
+        var leftOperandValueResult = await LeftOperand.Apply(context) ?? throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
         if (leftOperandValueResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOperandValueResult.ErrorMessage}");
@@ -79,7 +73,7 @@ public class IsNullOrEmptyOperation : ComparisonOperationBase
 
         object? valueToCheck = leftOperandValueResult.CurrentValue;
 
-        if (valueToCheck == null)
+        if (valueToCheck is null)
         {
             return true; // Null is considered "null or empty"
         }
@@ -97,7 +91,7 @@ public class IsNullOrEmptyOperation : ComparisonOperationBase
     public override ComparisonOperationBase Clone()
     {
         var clone = new IsNullOrEmptyOperation();
-        if (LeftOperand != null)
+        if (LeftOperand is not null)
         {
             clone.LeftOperand = LeftOperand.Clone();
         }

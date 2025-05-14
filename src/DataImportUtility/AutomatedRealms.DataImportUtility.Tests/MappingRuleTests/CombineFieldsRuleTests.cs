@@ -80,7 +80,7 @@ public class CombineFieldsRuleTests : MappingRuleBaseTestContext
         // This involves creating an ImportTableDefinition and adding it to dataFile.TableDefinitions.
         // The ImportTableDefinition needs FieldDescriptors.
         ImportTableDefinition? tableDef = dataFile.TableDefinitions.FirstOrDefault(td => td.TableName == randomTableName);
-        if (tableDef == null)
+        if (tableDef is null)
         {
             tableDef = new ImportTableDefinition
             {
@@ -115,7 +115,7 @@ public class CombineFieldsRuleTests : MappingRuleBaseTestContext
         var results = await combineRule.Apply(dataTable); // Use Apply(DataTable)
         
         Assert.NotNull(results);
-        var actualValues = results.Where(r => r != null && !r.WasFailure).Select(x => x!.CurrentValue).ToArray();
+        var actualValues = results.Where(r => r is not null && !r.WasFailure).Select(x => x!.CurrentValue).ToArray();
 
         // Assert
         Assert.Equal(expected.Length, actualValues.Length);

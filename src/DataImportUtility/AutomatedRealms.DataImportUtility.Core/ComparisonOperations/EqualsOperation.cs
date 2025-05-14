@@ -1,5 +1,5 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-// No direct need for ITransformationContext here as Evaluate takes TransformationResult
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 using System.Text.Json.Serialization;
@@ -15,9 +15,6 @@ public class EqualsOperation : ComparisonOperationBase
     /// The unique type identifier for this comparison operation.
     /// </summary>
     public static readonly string TypeIdString = "Core.Equals";
-
-    // EnumMemberOrder removed
-    // EnumMemberName removed
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -48,14 +45,14 @@ public class EqualsOperation : ComparisonOperationBase
         // So it can be passed to Apply methods that expect ITransformationContext.
 
         var leftOperandActualResult = await LeftOperand.Apply(contextResult); // Pass contextResult (as ITransformationContext)
-        if (leftOperandActualResult == null || leftOperandActualResult.WasFailure)
+        if (leftOperandActualResult is null || leftOperandActualResult.WasFailure)
         {
             // Consider logging
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOperandActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
         var rightOperandActualResult = await RightOperand.Apply(contextResult); // Pass contextResult (as ITransformationContext)
-        if (rightOperandActualResult == null || rightOperandActualResult.WasFailure)
+        if (rightOperandActualResult is null || rightOperandActualResult.WasFailure)
         {
             // Consider logging
             throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOperandActualResult?.ErrorMessage ?? "Result was null."}");
@@ -85,16 +82,16 @@ public static class EqualsOperationExtensions
     /// <returns>True if the values are considered equal; otherwise, false.</returns>
     public static bool IsEqualTo(this TransformationResult leftResult, TransformationResult rightResult)
     {
-        object? leftValue = leftResult.CurrentValue;
-        object? rightValue = rightResult.CurrentValue;
+        var leftValue = leftResult.CurrentValue;
+        var rightValue = rightResult.CurrentValue;
 
         // If both are null, they are equal.
-        if (leftValue == null && rightValue == null)
+        if (leftValue is null && rightValue is null)
         {
             return true;
         }
         // If one is null and the other isn't, they are not equal.
-        if (leftValue == null || rightValue == null)
+        if (leftValue is null || rightValue is null)
         {
             return false;
         }
@@ -102,32 +99,29 @@ public static class EqualsOperationExtensions
         // Direct type equality and object.Equals check first
         if (leftValue.GetType() == rightValue.GetType())
         {
-            return object.Equals(leftValue, rightValue);
+            return Equals(leftValue, rightValue);
         }
 
         // Attempt to convert and compare common types
         try
         {
             // Numeric comparison (decimal is a good common ground)
-            if (IsNumeric(leftValue) && IsNumeric(rightValue))
+            if (leftValue.IsNumericType() && rightValue.IsNumericType())
             {
                 return Convert.ToDecimal(leftValue) == Convert.ToDecimal(rightValue);
             }
 
             // DateTime comparison
-            if (leftValue is DateTime || rightValue is DateTime || (CanConvertToDateTime(leftValue) && CanConvertToDateTime(rightValue)))
+            if ((leftValue is DateTime ld || leftValue.CanConvertToDateTime(out ld))
+                && (rightValue is DateTime rd || rightValue.CanConvertToDateTime(out rd)))
             {
-                // Ensure both can be converted before attempting
-                if (CanConvertToDateTime(leftValue) && CanConvertToDateTime(rightValue))
-                {
-                    return Convert.ToDateTime(leftValue) == Convert.ToDateTime(rightValue);
-                }
+                return ld == rd;
                 // If one is DateTime and the other isn't convertible, they aren't equal in this typed sense.
             }
 
             // Boolean comparison
-            bool leftIsBoolConvertible = TryConvertToBool(leftValue, out bool leftBoolValue);
-            bool rightIsBoolConvertible = TryConvertToBool(rightValue, out bool rightBoolValue);
+            var leftIsBoolConvertible = TryConvertToBool(leftValue, out bool leftBoolValue);
+            var rightIsBoolConvertible = TryConvertToBool(rightValue, out bool rightBoolValue);
 
             if (leftIsBoolConvertible && rightIsBoolConvertible)
             {
@@ -145,29 +139,17 @@ public static class EqualsOperationExtensions
         return string.Equals(leftValue.ToString(), rightValue.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool IsNumeric(object? value)
-    {
-        return value != null && (value is byte || value is sbyte || value is short || value is ushort || value is int || value is uint ||
-               value is long || value is ulong || value is float || value is double || value is decimal);
-    }
-
-    private static bool CanConvertToDateTime(object? value)
-    {
-        if (value == null) return false;
-        return value is DateTime || DateTime.TryParse(value.ToString(), out _);
-    }
-
     private static bool TryConvertToBool(object? value, out bool result)
     {
         result = false;
-        if (value == null) return false;
+        if (value is null) return false;
 
         if (value is bool boolVal)
         {
             result = boolVal;
             return true;
         }
-        if (IsNumeric(value))
+        if (value.IsNumericType())
         {
             try
             {

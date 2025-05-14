@@ -43,7 +43,7 @@ public class ValueTransformationBaseConverter : JsonConverter<ValueTransformatio
         }
 
         // typeIdString is guaranteed not to be null here due to the IsNullOrWhiteSpace check above.
-        if (!_typeRegistryService.TryResolveType(typeIdString!, out Type? concreteType) || concreteType == null)
+        if (!_typeRegistryService.TryResolveType(typeIdString!, out Type? concreteType) || concreteType is null)
         {
             throw new JsonException($"Unable to resolve TypeId '{typeIdString}' to a registered type for {nameof(ValueTransformationBase)}. Ensure the type is registered with ITypeRegistryService.");
         }

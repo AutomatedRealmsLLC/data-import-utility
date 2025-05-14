@@ -15,11 +15,9 @@ public class IsNullOperation : ComparisonOperationBase
     /// </summary>
     public static readonly string TypeIdString = "Core.IsNull";
 
-    // EnumMemberName and EnumMemberOrder removed
-
     /// <inheritdoc />
     [JsonIgnore]
-    public override string DisplayName { get; } = "Is null";
+    public override string DisplayName { get; } = "is null";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -42,7 +40,7 @@ public class IsNullOperation : ComparisonOperationBase
         // but IsNullOperation only uses LeftOperand.
         base.ConfigureOperands(leftOperand, null, null);
 
-        if (this.LeftOperand is null) // Validation after base call
+        if (LeftOperand is null) // Validation after base call
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
         }
@@ -62,19 +60,7 @@ public class IsNullOperation : ComparisonOperationBase
             throw new InvalidOperationException($"LeftOperand must be set for {DisplayName} operation. Ensure ConfigureOperands was called.");
         }
 
-        var leftResult = await LeftOperand.Apply(contextResult);
-
-        // It's possible for Apply to return a null TransformationResult if the rule itself is fundamentally broken
-        // or if the context passed in is such that it cannot operate.
-        if (leftResult == null)
-        {
-            // This indicates a problem with the LeftOperand rule execution itself, not necessarily that its *value* is null.
-            // For IsNullOperation, if the rule execution fails to produce a result, we might consider it as not being a determinable value,
-            // which is distinct from the value *being* null. Depending on strictness, this could be an error or false.
-            // Let's treat a failure to evaluate the operand as an error.
-            throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned a null TransformationResult, indicating an issue with the operand rule itself.");
-        }
-
+        var leftResult = await LeftOperand.Apply(contextResult) ?? throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned a null TransformationResult, indicating an issue with the operand rule itself.");
         if (leftResult.WasFailure)
         {
             // The operand rule executed but reported a failure (e.g., type conversion error, etc.)

@@ -114,7 +114,7 @@ public class FieldTransformation : IDisposable, IEquatable<FieldTransformation>
     /// <param name="transformation">The transformation to add.</param>
     public virtual void AddTransformation(ValueTransformationBase transformation) // Made virtual
     {
-        if (transformation == null) throw new ArgumentNullException(nameof(transformation));
+        if (transformation is null) throw new ArgumentNullException(nameof(transformation));
         ValueTransformations = ValueTransformations.Add(transformation);
     }
 
@@ -124,7 +124,7 @@ public class FieldTransformation : IDisposable, IEquatable<FieldTransformation>
     /// <param name="transformation">The transformation to remove.</param>
     public virtual void RemoveTransformation(ValueTransformationBase transformation) // Made virtual
     {
-        if (transformation == null) throw new ArgumentNullException(nameof(transformation));
+        if (transformation is null) throw new ArgumentNullException(nameof(transformation));
         ValueTransformations = ValueTransformations.Remove(transformation);
     }
 
@@ -144,8 +144,8 @@ public class FieldTransformation : IDisposable, IEquatable<FieldTransformation>
     /// <param name="newTransformation">The new transformation.</param>
     public virtual void ReplaceTransformation(ValueTransformationBase oldTransformation, ValueTransformationBase newTransformation) // Made virtual
     {
-        if (oldTransformation == null) throw new ArgumentNullException(nameof(oldTransformation));
-        if (newTransformation == null) throw new ArgumentNullException(nameof(newTransformation));
+        if (oldTransformation is null) throw new ArgumentNullException(nameof(oldTransformation));
+        if (newTransformation is null) throw new ArgumentNullException(nameof(newTransformation));
         ValueTransformations = ValueTransformations.Replace(oldTransformation, newTransformation);
     }
 
@@ -156,7 +156,7 @@ public class FieldTransformation : IDisposable, IEquatable<FieldTransformation>
     /// <param name="newTransformation">The new transformation.</param>
     public virtual void ReplaceTransformationAt(int index, ValueTransformationBase newTransformation) // Made virtual
     {
-        if (newTransformation == null) throw new ArgumentNullException(nameof(newTransformation));
+        if (newTransformation is null) throw new ArgumentNullException(nameof(newTransformation));
         ValueTransformations = ValueTransformations.SetItem(index, newTransformation);
     }
 

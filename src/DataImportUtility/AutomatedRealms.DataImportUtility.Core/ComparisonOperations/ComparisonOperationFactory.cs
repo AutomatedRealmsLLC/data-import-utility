@@ -1,9 +1,9 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For ConditionalRule, ImportTableDefinition
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 using AutomatedRealms.DataImportUtility.Abstractions.Services;
 using AutomatedRealms.DataImportUtility.Core.Rules;
 
-using System.Data; // Required for DataRow
+using System.Data;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
 
@@ -35,27 +35,27 @@ public static class ComparisonOperationFactory
         }
 
         // After the above check, conditionalRule.OperationTypeId is guaranteed not to be null or whitespace.
-        string operationTypeId = conditionalRule.OperationTypeId!;
+        var operationTypeId = conditionalRule.OperationTypeId!;
 
-        if (conditionalRule.SourceField == null || string.IsNullOrEmpty(conditionalRule.SourceField.FieldName))
+        if (conditionalRule.SourceField is null || string.IsNullOrEmpty(conditionalRule.SourceField.FieldName))
         {
             Console.WriteLine($"Warning: ConditionalRule SourceField or SourceField.FieldName is null for OperationTypeId: {operationTypeId} in context: {ruleContextIdentifier}.");
             return Task.FromResult<ComparisonOperationBase?>(null);
         }
 
         // Left operand is always based on the conditionalRule's SourceField
-        MappingRuleBase leftOperandAccessRule = new FieldAccessRule(conditionalRule.SourceField.FieldName, $"Conditional_Source_{conditionalRule.SourceField.FieldName}_for_{ruleContextIdentifier}");
-        if (tableDefinition != null)
+        var leftOperandAccessRule = new FieldAccessRule(conditionalRule.SourceField.FieldName, $"Conditional_Source_{conditionalRule.SourceField.FieldName}_for_{ruleContextIdentifier}");
+        if (tableDefinition is not null)
         {
             leftOperandAccessRule.ParentTableDefinition = tableDefinition;
         }
 
         // Right operand (primary) - typically a static value
         MappingRuleBase? rightOperandRule = null;
-        if (conditionalRule.ComparisonValue != null)
+        if (conditionalRule.ComparisonValue is not null)
         {
             rightOperandRule = new StaticValueRule(conditionalRule.ComparisonValue, $"Conditional_ComparisonValue_for_{ruleContextIdentifier}");
-            if (tableDefinition != null && rightOperandRule != null)
+            if (tableDefinition is not null && rightOperandRule is not null)
             {
                 rightOperandRule.ParentTableDefinition = tableDefinition;
             }
@@ -63,17 +63,17 @@ public static class ComparisonOperationFactory
 
         // Secondary right operand - for operations like 'Between'
         MappingRuleBase? secondaryRightOperandRule = null;
-        if (conditionalRule.SecondaryComparisonValue != null)
+        if (conditionalRule.SecondaryComparisonValue is not null)
         {
             secondaryRightOperandRule = new StaticValueRule(conditionalRule.SecondaryComparisonValue, $"Conditional_SecondaryComparisonValue_for_{ruleContextIdentifier}");
-            if (tableDefinition != null && secondaryRightOperandRule != null)
+            if (tableDefinition is not null && secondaryRightOperandRule is not null)
             {
                 secondaryRightOperandRule.ParentTableDefinition = tableDefinition;
             }
         }
 
         var operation = typeRegistry.ResolveComparisonOperation(operationTypeId);
-        if (operation == null)
+        if (operation is null)
         {
             Console.WriteLine($"Error: OperationTypeId '{operationTypeId}' could not be resolved by the TypeRegistryService in context: {ruleContextIdentifier}.");
             return Task.FromResult<ComparisonOperationBase?>(null);

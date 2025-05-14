@@ -1,7 +1,7 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and ITransformationContext
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
-using System.Globalization; // Added for CultureInfo.InvariantCulture
+using System.Globalization;
 using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
@@ -34,7 +34,7 @@ public class IsTrueOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override void ConfigureOperands(MappingRuleBase? leftOperand, MappingRuleBase? rightOperand = null, MappingRuleBase? secondaryRightOperand = null)
     {
-        if (leftOperand == null)
+        if (leftOperand is null)
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
         }
@@ -68,19 +68,13 @@ public class IsTrueOperation : ComparisonOperationBase
             throw new InvalidOperationException($"{nameof(LeftOperand)} must be configured for {DisplayName} operation.");
         }
 
-        var leftResult = await LeftOperand.Apply(context);
-
-        if (leftResult == null)
-        {
-            throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
-        }
-
+        var leftResult = await LeftOperand.Apply(context) ?? throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
         if (leftResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
         }
 
-        object? value = leftResult.CurrentValue;
+        var value = leftResult.CurrentValue;
 
         if (value is null)
         {
@@ -137,7 +131,7 @@ public class IsTrueOperation : ComparisonOperationBase
     public override ComparisonOperationBase Clone()
     {
         var clone = new IsTrueOperation();
-        if (LeftOperand != null)
+        if (LeftOperand is not null)
         {
             clone.LeftOperand = LeftOperand.Clone();
         }

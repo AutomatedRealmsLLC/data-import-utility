@@ -76,19 +76,19 @@ public class NotInOperation : ComparisonOperationBase
 
         var leftResult = await LeftOperand.Apply(context);
 
-        if (leftResult == null || leftResult.WasFailure)
+        if (leftResult is null || leftResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        object? leftValue = leftResult.CurrentValue;
+        var leftValue = leftResult.CurrentValue;
 
         foreach (var valueRule in Values)
         {
-            if (valueRule == null) continue;
+            if (valueRule is null) continue;
 
             var valueRuleResult = await valueRule.Apply(context);
-            if (valueRuleResult == null || valueRuleResult.WasFailure)
+            if (valueRuleResult is null || valueRuleResult.WasFailure)
             {
                 throw new InvalidOperationException($"Failed to evaluate a value in {nameof(Values)} for {DisplayName} operation: {valueRuleResult?.ErrorMessage ?? "Result was null."}");
             }
@@ -109,25 +109,25 @@ public class NotInOperation : ComparisonOperationBase
 
     private static bool AreValuesEqual(object? leftValue, object? rightValue, Type? targetFieldType)
     {
-        if (leftValue == null && rightValue == null)
+        if (leftValue is null && rightValue is null)
         {
             return true;
         }
-        if (leftValue == null || rightValue == null)
+        if (leftValue is null || rightValue is null)
         {
             // If one is null and the other is an empty string, consider them equal for "In" checks.
-            return (leftValue == null && rightValue is string rs && string.IsNullOrEmpty(rs)) ||
-                (rightValue == null && leftValue is string ls && string.IsNullOrEmpty(ls));
+            return (leftValue is null && rightValue is string rs && string.IsNullOrEmpty(rs)) ||
+                (rightValue is null && leftValue is string ls && string.IsNullOrEmpty(ls));
         }
 
         // Attempt type-aware comparison first
-        if (targetFieldType != null)
+        if (targetFieldType is not null)
         {
             try
             {
                 var convertedLeft = ConvertToType(leftValue, targetFieldType);
                 var convertedRight = ConvertToType(rightValue, targetFieldType);
-                if (convertedLeft != null && convertedRight != null && convertedLeft.Equals(convertedRight)) return true;
+                if (convertedLeft is not null && convertedRight is not null && convertedLeft.Equals(convertedRight)) return true;
                 // Fallback if conversion fails or types are tricky
             }
             catch { /* Conversion failed, fallback to string or other comparisons */ }
@@ -190,8 +190,8 @@ public class NotInOperation : ComparisonOperationBase
 
     private static object? ConvertToType(object? value, Type targetType)
     {
-        if (value == null) return null;
-        if (targetType == null) return value;
+        if (value is null) return null;
+        if (targetType is null) return value;
 
         if (value.GetType() == targetType) return value;
 
@@ -224,7 +224,7 @@ public class NotInOperation : ComparisonOperationBase
     private static bool TryParseDateTime(object? obj, out DateTime result)
     {
         result = default;
-        if (obj == null) return false;
+        if (obj is null) return false;
         if (obj is DateTime dt) { result = dt; return true; }
         if (obj is DateTimeOffset dto) { result = dto.DateTime; return true; }
         return DateTime.TryParse(obj.ToString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowWhiteSpaces, out result);
@@ -233,7 +233,7 @@ public class NotInOperation : ComparisonOperationBase
     private static bool TryParseDouble(object? obj, out double result)
     {
         result = default;
-        if (obj == null) return false;
+        if (obj is null) return false;
         if (obj is double d) { result = d; return true; }
         if (obj is IConvertible convertible) { try { result = convertible.ToDouble(CultureInfo.InvariantCulture); return true; } catch { /* Fall through */ } }
         return double.TryParse(obj.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out result);
@@ -242,7 +242,7 @@ public class NotInOperation : ComparisonOperationBase
     private static bool TryParseDecimal(object? obj, out decimal result)
     {
         result = default;
-        if (obj == null) return false;
+        if (obj is null) return false;
         if (obj is decimal dec) { result = dec; return true; }
         if (obj is IConvertible convertible) { try { result = convertible.ToDecimal(CultureInfo.InvariantCulture); return true; } catch { /* Fall through */ } }
         return decimal.TryParse(obj.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out result);
@@ -252,14 +252,14 @@ public class NotInOperation : ComparisonOperationBase
     public override ComparisonOperationBase Clone()
     {
         var clone = new NotInOperation();
-        if (LeftOperand != null)
+        if (LeftOperand is not null)
         {
-            clone.LeftOperand = (MappingRuleBase)LeftOperand.Clone();
+            clone.LeftOperand = LeftOperand.Clone();
         }
         // RightOperand from base is not used by NotInOperation.
-        if (Values != null)
+        if (Values is not null)
         {
-            clone.Values = [.. Values.Select(v => (MappingRuleBase)v.Clone())];
+            clone.Values = [.. Values.Select(v => v.Clone())];
         }
         return clone;
     }

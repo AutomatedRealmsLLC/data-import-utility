@@ -7,7 +7,6 @@ namespace AutomatedRealms.DataImportUtility.Core.Services;
 
 /// <summary>
 /// Provides a central registry for mapping TypeId strings to System.Type objects.
-/// This service is thread-safe.
 /// </summary>
 public class TypeRegistryService : ITypeRegistryService
 {
@@ -19,10 +18,6 @@ public class TypeRegistryService : ITypeRegistryService
         if (string.IsNullOrWhiteSpace(typeId))
         {
             throw new ArgumentException("TypeId cannot be null or whitespace.", nameof(typeId));
-        }
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
         }
 
         if (!_typeMap.TryAdd(typeId, type))
@@ -70,7 +65,7 @@ public class TypeRegistryService : ITypeRegistryService
     /// <inheritdoc />
     public ComparisonOperationBase? ResolveComparisonOperation(string typeId)
     {
-        if (TryResolveType(typeId, out Type? type) && type != null)
+        if (TryResolveType(typeId, out Type? type) && type is not null)
         {
             if (typeof(ComparisonOperationBase).IsAssignableFrom(type))
             {
@@ -80,7 +75,7 @@ public class TypeRegistryService : ITypeRegistryService
                     // This assumes the type has a parameterless constructor.
                     // If constructors with parameters are needed, a more sophisticated activation (e.g., using IServiceProvider) would be required.
                     var instance = Activator.CreateInstance(type) as ComparisonOperationBase;
-                    if (instance == null)
+                    if (instance is null)
                     {
                         // Log or handle the case where Activator.CreateInstance returns null (e.g., abstract type without concrete registration for that specific TypeId)
                         Console.WriteLine($"Warning: Activator.CreateInstance returned null for type '{type.FullName}' with TypeId '{typeId}'. The type might be abstract or have no parameterless constructor.");
@@ -101,6 +96,6 @@ public class TypeRegistryService : ITypeRegistryService
                 return null;
             }
         }
-        return null; // TypeId not found or type is null
+        return null;
     }
 }

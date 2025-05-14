@@ -110,7 +110,7 @@ public class MyService
         ComparisonOperationBase? comparisonOperation = 
             _typeRegistry.ResolveComparisonOperation("Custom.ComparisonOperation");
         
-        if (comparisonOperation != null)
+        if (comparisonOperation is not null)
         {
             // Use the operation
         }

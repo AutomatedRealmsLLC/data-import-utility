@@ -138,7 +138,7 @@ public static partial class ValueTransformationHelper
         foreach (var attribute in fieldMap.ValidationAttributes)
         {
             var result = attribute.GetValidationResult(valueToValidate, validationContext);
-            if (result != ValidationResult.Success && result != null)
+            if (result != ValidationResult.Success && result is not null)
             {
                 isValid = false;
                 validationResults.Add(result);
@@ -232,7 +232,7 @@ public static partial class ValueTransformationHelper
     private static void CheckForMissingFields(this List<FieldMapping> fieldMappings, DataTable sourceDataTable, DataTable destDataTable)
     {
         var missingSourceFields = fieldMappings
-            .Where(fm => fm.MappingRule != null &&
+            .Where(fm => fm.MappingRule is not null &&
                          !fm.IgnoreMapping &&
                          !string.IsNullOrEmpty(fm.MappingRule.SourceField) &&
                          !sourceDataTable.Columns.Contains(fm.MappingRule.SourceField!))
@@ -249,7 +249,7 @@ public static partial class ValueTransformationHelper
         var missingFieldExceptions = new List<Exception>(); if (missingSourceFields.Any())
         {
             var missingFields = fieldMappings
-                .Where(fm => fm.MappingRule != null &&
+                .Where(fm => fm.MappingRule is not null &&
                             !fm.IgnoreMapping &&
                             !string.IsNullOrEmpty(fm.MappingRule.SourceField) &&
                             !sourceDataTable.Columns.Contains(fm.MappingRule.SourceField!))

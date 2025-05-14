@@ -1,4 +1,5 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 using System.Globalization;
@@ -15,8 +16,6 @@ public class NotBetweenOperation : ComparisonOperationBase
     /// The unique type identifier for this comparison operation.
     /// </summary>
     public static readonly string TypeIdString = "Core.NotBetween";
-
-    // EnumMemberName and EnumMemberOrder removed
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -41,15 +40,15 @@ public class NotBetweenOperation : ComparisonOperationBase
     {
         base.ConfigureOperands(leftOperand, rightOperand, secondaryRightOperand);
 
-        if (this.LeftOperand is null)
+        if (LeftOperand is null)
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand (value to check) must be provided for {TypeIdString}.");
         }
-        if (this.RightOperand is null) // This is base.RightOperand, used as LowLimit
+        if (RightOperand is null) // This is base.RightOperand, used as LowLimit
         {
             throw new ArgumentNullException(nameof(rightOperand), $"Right operand (low limit) must be provided for {TypeIdString}.");
         }
-        if (this.HighLimit is null) // Changed from this.SecondaryRightOperand
+        if (HighLimit is null) // Changed from SecondaryRightOperand
         {
             throw new ArgumentNullException(nameof(secondaryRightOperand), $"Secondary right operand (high limit) must be provided for {TypeIdString}.");
         }
@@ -59,40 +58,40 @@ public class NotBetweenOperation : ComparisonOperationBase
     public override async Task<bool> Evaluate(TransformationResult contextResult)
     {
         // Properties are inherited from ComparisonOperationBase
-        if (this.LeftOperand is null || this.RightOperand is null || this.HighLimit is null) // Changed from this.SecondaryRightOperand
+        if (LeftOperand is null || RightOperand is null || HighLimit is null) // Changed from SecondaryRightOperand
         {
             throw new InvalidOperationException($"All operands (value, low limit, high limit) must be set for {DisplayName} operation. Ensure ConfigureOperands was called.");
         }
 
-        var leftResult = await this.LeftOperand.Apply(contextResult);
-        var lowLimitResult = await this.RightOperand.Apply(contextResult); // RightOperand is LowLimit
-        var highLimitResult = await this.HighLimit.Apply(contextResult); // Changed from this.SecondaryRightOperand
+        var leftResult = await LeftOperand.Apply(contextResult);
+        var lowLimitResult = await RightOperand.Apply(contextResult); // RightOperand is LowLimit
+        var highLimitResult = await HighLimit.Apply(contextResult); // Changed from SecondaryRightOperand
 
-        if (leftResult == null)
+        if (leftResult is null)
         {
-            throw new InvalidOperationException($"Applying {nameof(this.LeftOperand)} for {DisplayName} operation returned a null TransformationResult.");
+            throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned a null TransformationResult.");
         }
         if (leftResult.WasFailure)
         {
-            throw new InvalidOperationException($"Failed to evaluate {nameof(this.LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
         }
 
-        if (lowLimitResult == null)
+        if (lowLimitResult is null)
         {
-            throw new InvalidOperationException($"Applying low limit operand ({nameof(this.RightOperand)}) for {DisplayName} operation returned a null TransformationResult.");
+            throw new InvalidOperationException($"Applying low limit operand ({nameof(RightOperand)}) for {DisplayName} operation returned a null TransformationResult.");
         }
         if (lowLimitResult.WasFailure)
         {
-            throw new InvalidOperationException($"Failed to evaluate low limit operand ({nameof(this.RightOperand)}) for {DisplayName} operation: {lowLimitResult.ErrorMessage}");
+            throw new InvalidOperationException($"Failed to evaluate low limit operand ({nameof(RightOperand)}) for {DisplayName} operation: {lowLimitResult.ErrorMessage}");
         }
 
-        if (highLimitResult == null)
+        if (highLimitResult is null)
         {
-            throw new InvalidOperationException($"Applying high limit operand ({nameof(this.HighLimit)}) for {DisplayName} operation returned a null TransformationResult."); // Changed from SecondaryRightOperand
+            throw new InvalidOperationException($"Applying high limit operand ({nameof(HighLimit)}) for {DisplayName} operation returned a null TransformationResult."); // Changed from SecondaryRightOperand
         }
         if (highLimitResult.WasFailure)
         {
-            throw new InvalidOperationException($"Failed to evaluate high limit operand ({nameof(this.HighLimit)}) for {DisplayName} operation: {highLimitResult.ErrorMessage}"); // Changed from SecondaryRightOperand
+            throw new InvalidOperationException($"Failed to evaluate high limit operand ({nameof(HighLimit)}) for {DisplayName} operation: {highLimitResult.ErrorMessage}"); // Changed from SecondaryRightOperand
         }
 
         return !IsBetweenInternal(leftResult.CurrentValue, lowLimitResult.CurrentValue, highLimitResult.CurrentValue);
@@ -100,20 +99,23 @@ public class NotBetweenOperation : ComparisonOperationBase
 
     private static bool IsBetweenInternal(object? value, object? lowLimit, object? highLimit)
     {
-        if (value == null || lowLimit == null || highLimit == null)
+        if (value is null || lowLimit is null || highLimit is null)
         {
             return false;
         }
 
         // Try numeric comparison
-        if (IsNumeric(value) && IsNumeric(lowLimit) && IsNumeric(highLimit))
+        if (value.IsNumericType() && lowLimit.IsNumericType() && highLimit.IsNumericType())
         {
             try
             {
-                decimal valDecimal = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
-                decimal lowDecimal = Convert.ToDecimal(lowLimit, CultureInfo.InvariantCulture);
-                decimal highDecimal = Convert.ToDecimal(highLimit, CultureInfo.InvariantCulture);
-                if (lowDecimal > highDecimal) { decimal temp = lowDecimal; lowDecimal = highDecimal; highDecimal = temp; }
+                var valDecimal = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+                var lowDecimal = Convert.ToDecimal(lowLimit, CultureInfo.InvariantCulture);
+                var highDecimal = Convert.ToDecimal(highLimit, CultureInfo.InvariantCulture);
+                if (lowDecimal > highDecimal)
+                {
+                    (highDecimal, lowDecimal) = (lowDecimal, highDecimal);
+                }
                 return valDecimal >= lowDecimal && valDecimal <= highDecimal;
             }
             catch (Exception ex) when (ex is FormatException || ex is OverflowException)
@@ -123,11 +125,14 @@ public class NotBetweenOperation : ComparisonOperationBase
         }
 
         // Try DateTime comparison
-        if (CanConvertToDateTime(value, out DateTime valDt) &&
-            CanConvertToDateTime(lowLimit, out DateTime lowDt) &&
-            CanConvertToDateTime(highLimit, out DateTime highDt))
+        if (value.CanConvertToDateTime(out DateTime valDt) &&
+            lowLimit.CanConvertToDateTime(out DateTime lowDt) &&
+            highLimit.CanConvertToDateTime(out DateTime highDt))
         {
-            if (lowDt > highDt) { DateTime temp = lowDt; lowDt = highDt; highDt = temp; }
+            if (lowDt > highDt)
+            {
+                (highDt, lowDt) = (lowDt, highDt);
+            }
             return valDt >= lowDt && valDt <= highDt;
         }
 
@@ -142,30 +147,6 @@ public class NotBetweenOperation : ComparisonOperationBase
         }
         return string.Compare(valStr, lowStr, StringComparison.Ordinal) >= 0 &&
                string.Compare(valStr, highStr, StringComparison.Ordinal) <= 0;
-    }
-
-    private static bool IsNumeric(object? value)
-    {
-        return value != null && (value is sbyte || value is byte || value is short || value is ushort || value is int || value is uint ||
-               value is long || value is ulong || value is float || value is double || value is decimal);
-    }
-
-    private static bool CanConvertToDateTime(object? obj, out DateTime result)
-    {
-        result = default;
-        if (obj == null) return false;
-        if (obj is DateTime dt)
-        {
-            result = dt;
-            return true;
-        }
-        if (obj is DateTimeOffset dto)
-        {
-            result = dto.UtcDateTime;
-            return true;
-        }
-        var stringValue = obj.ToString();
-        return !string.IsNullOrEmpty(stringValue) && DateTime.TryParse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out result);
     }
 
     /// <inheritdoc />

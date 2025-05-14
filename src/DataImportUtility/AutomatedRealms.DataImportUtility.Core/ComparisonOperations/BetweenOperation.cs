@@ -84,9 +84,9 @@ public static class BetweenOperationExtensions
     /// <returns>True if the left result is between the low and high limits (inclusive); otherwise, false.</returns>
     public static bool Between(this TransformationResult leftResult, TransformationResult lowLimitInclusive, TransformationResult highLimitInclusive)
     {
-        object? leftCurrentValue = leftResult.CurrentValue;
-        object? lowCurrentValue = lowLimitInclusive.CurrentValue;
-        object? highCurrentValue = highLimitInclusive.CurrentValue;
+        var leftCurrentValue = leftResult.CurrentValue;
+        var lowCurrentValue = lowLimitInclusive.CurrentValue;
+        var highCurrentValue = highLimitInclusive.CurrentValue;
 
         if (leftCurrentValue is null) { return false; }
 
@@ -119,9 +119,9 @@ public static class BetweenOperationExtensions
         }
 
         // Fallback to string comparison
-        string? leftStr = leftCurrentValue.ToString();
-        string? lowStr = lowCurrentValue.ToString();
-        string? highStr = highCurrentValue.ToString();
+        var leftStr = leftCurrentValue.ToString();
+        var lowStr = lowCurrentValue.ToString();
+        var highStr = highCurrentValue.ToString();
 
         return leftStr is not null
             && string.Compare(leftStr, lowStr, StringComparison.Ordinal) >= 0

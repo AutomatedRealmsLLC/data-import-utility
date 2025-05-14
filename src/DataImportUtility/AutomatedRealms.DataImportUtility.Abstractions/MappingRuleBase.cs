@@ -152,7 +152,7 @@ public abstract class MappingRuleBase : IMappingRule
     /// <returns>A transformation result.</returns>
     public virtual async Task<TransformationResult> GetValue(DataRow row, Type targetType)
     {
-        if (row == null)
+        if (row is null)
         {
             throw new ArgumentNullException(nameof(row));
         }

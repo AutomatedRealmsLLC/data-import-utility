@@ -130,7 +130,7 @@ public class FieldMapping
         if (transformedResult?.CurrentValue is null)
         {
             validationResults = this.Required ? [new ValidationResult("The field is required.", new List<string> { FieldName })] : null;
-            if (validationResults != null && validationResults.Count > 0)
+            if (validationResults is not null && validationResults.Count > 0)
             {
                 if (!_valueValidationResults.ContainsKey("<null>"))
                 {

@@ -17,7 +17,7 @@ public class IsNullOrWhiteSpaceOperation : ComparisonOperationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override string DisplayName { get; } = "Is Null or WhiteSpace";
+    public override string DisplayName { get; } = "is null or WhiteSpace";
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -33,7 +33,7 @@ public class IsNullOrWhiteSpaceOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override void ConfigureOperands(MappingRuleBase? leftOperand, MappingRuleBase? rightOperand = null, MappingRuleBase? secondaryRightOperand = null)
     {
-        if (leftOperand == null)
+        if (leftOperand is null)
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
         }
@@ -60,26 +60,20 @@ public class IsNullOrWhiteSpaceOperation : ComparisonOperationBase
             }
         }
 
-        if (LeftOperand == null)
+        if (LeftOperand is null)
         {
             throw new InvalidOperationException($"{nameof(LeftOperand)} must be configured for {DisplayName} operation.");
         }
 
-        var leftValueResult = await LeftOperand.Apply(context);
-
-        if (leftValueResult == null)
-        {
-            throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
-        }
-
+        var leftValueResult = await LeftOperand.Apply(context) ?? throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned null unexpectedly.");
         if (leftValueResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftValueResult.ErrorMessage}");
         }
 
-        object? leftValue = leftValueResult.CurrentValue;
+        var leftValue = leftValueResult.CurrentValue;
 
-        if (leftValue == null)
+        if (leftValue is null)
         {
             return true; // Null is considered whitespace for this operation
         }
@@ -97,7 +91,7 @@ public class IsNullOrWhiteSpaceOperation : ComparisonOperationBase
     public override ComparisonOperationBase Clone()
     {
         var clone = new IsNullOrWhiteSpaceOperation();
-        if (LeftOperand != null)
+        if (LeftOperand is not null)
         {
             clone.LeftOperand = LeftOperand.Clone();
         }

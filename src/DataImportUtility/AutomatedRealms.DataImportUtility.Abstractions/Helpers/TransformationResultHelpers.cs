@@ -22,7 +22,7 @@ public static class TransformationResultHelpers
     /// </summary>
     public static bool IsJsonArray(this TransformationResult? result)
     {
-        if (result.IsNullOrNullValue() || result!.CurrentValue == null || !result.CurrentValue.ToString().Trim().StartsWith("[")) { return false; }
+        if (result.IsNullOrNullValue() || result!.CurrentValue is null || !result.CurrentValue.ToString().Trim().StartsWith("[")) { return false; }
         try
         {
             using var jsonDoc = JsonDocument.Parse(result.CurrentValue.ToString());

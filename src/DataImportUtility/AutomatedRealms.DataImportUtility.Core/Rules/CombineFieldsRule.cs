@@ -1,5 +1,5 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // Added for TransformationContext
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
 using Microsoft.Extensions.Logging;
@@ -38,9 +38,9 @@ public class ConfiguredInputField
     {
         var clone = new ConfiguredInputField
         {
-            FieldName = this.FieldName,
-            ConstantValue = this.ConstantValue,
-            ValueTransformations = [.. this.ValueTransformations.Select(t => t.Clone())]
+            FieldName = FieldName,
+            ConstantValue = ConstantValue,
+            ValueTransformations = [.. ValueTransformations.Select(t => t.Clone())]
         };
         return clone;
     }
@@ -130,7 +130,7 @@ public class CombineFieldsRule : MappingRuleBase
         }
 
         DataRow? dataRow = context.Record;
-        if (dataRow == null && InputFields.Any(cf => string.IsNullOrEmpty(cf.ConstantValue) && !string.IsNullOrEmpty(cf.FieldName)))
+        if (dataRow is null && InputFields.Any(cf => string.IsNullOrEmpty(cf.ConstantValue) && !string.IsNullOrEmpty(cf.FieldName)))
         {
             _logger?.LogWarning("CombineFieldsRule for target '{TargetField}' requires a DataRow when FieldNames are specified and no ConstantValue is provided.", TargetField);
             return TransformationResult.Failure(
@@ -163,7 +163,7 @@ public class CombineFieldsRule : MappingRuleBase
             else if (!string.IsNullOrEmpty(configuredField.FieldName))
             {
                 fieldIdentifier = $"field '{configuredField.FieldName}'";
-                if (dataRow != null && dataRow.Table.Columns.Contains(configuredField.FieldName))
+                if (dataRow is not null && dataRow.Table.Columns.Contains(configuredField.FieldName))
                 {
                     initialValue = dataRow[configuredField.FieldName];
                     if (initialValue == DBNull.Value) initialValue = null;
@@ -228,7 +228,7 @@ public class CombineFieldsRule : MappingRuleBase
 
         var combineTransformation = new CombineFieldsTransformation
         {
-            TransformationDetail = this.CombinationFormat
+            TransformationDetail = CombinationFormat
         };
         _logger?.LogTrace("Preparing to combine {NumValues} values for target '{TargetField}' using format '{CombinationFormat}'.", collectedValuesForCombination.Count, TargetField, CombinationFormat);
 
@@ -246,7 +246,7 @@ public class CombineFieldsRule : MappingRuleBase
         TransformationResult finalResult = await combineTransformation.ApplyTransformationAsync(inputForCombine);
 
         List<string> combinedLogs = appliedTransformationsLog;
-        if (finalResult.AppliedTransformations != null)
+        if (finalResult.AppliedTransformations is not null)
         {
             combinedLogs.AddRange(finalResult.AppliedTransformations.Except(inputForCombine.AppliedTransformations ?? []));
         }
@@ -345,7 +345,7 @@ public class CombineFieldsRule : MappingRuleBase
             _logger?.LogTrace("Successfully processed {FieldIdentifier} for target '{TargetField}' (no context). Value: '{CurrentValue}'.", fieldIdentifier, TargetField, currentStepResult.CurrentValue ?? "null");
         }
 
-        var combineTransformation = new CombineFieldsTransformation { TransformationDetail = this.CombinationFormat };
+        var combineTransformation = new CombineFieldsTransformation { TransformationDetail = CombinationFormat };
         _logger?.LogTrace("Preparing to combine {NumValues} constant values for target '{TargetField}' using format '{CombinationFormat}' (no context).", collectedValuesForCombination.Count, TargetField, CombinationFormat);
 
         TransformationResult inputForCombine = TransformationResult.Success(
@@ -360,7 +360,7 @@ public class CombineFieldsRule : MappingRuleBase
         TransformationResult finalResult = await combineTransformation.ApplyTransformationAsync(inputForCombine);
 
         List<string> combinedLogs = appliedTransformationsLog;
-        if (finalResult.AppliedTransformations != null)
+        if (finalResult.AppliedTransformations is not null)
         {
             combinedLogs.AddRange(finalResult.AppliedTransformations.Except(inputForCombine.AppliedTransformations ?? []));
         }
@@ -380,10 +380,10 @@ public class CombineFieldsRule : MappingRuleBase
         _logger?.LogDebug("CombineFieldsRule.Apply(DataRow) for target '{TargetField}' started.", TargetField);
 
         Type resolvedTargetFieldType = typeof(string); // Default
-        if (this.ParentTableDefinition != null && !string.IsNullOrEmpty(this.TargetField))
+        if (ParentTableDefinition is not null && !string.IsNullOrEmpty(TargetField))
         {
-            var descriptor = this.ParentTableDefinition.FieldDescriptors?.FirstOrDefault(fd => fd.FieldName == this.TargetField);
-            if (descriptor?.FieldType != null)
+            var descriptor = ParentTableDefinition.FieldDescriptors?.FirstOrDefault(fd => fd.FieldName == TargetField);
+            if (descriptor?.FieldType is not null)
             {
                 resolvedTargetFieldType = descriptor.FieldType;
             }
@@ -405,15 +405,15 @@ public class CombineFieldsRule : MappingRuleBase
             currentValue: null,
             currentValueType: resolvedTargetFieldType, // Use resolved type
             record: dataRow,
-            tableDefinition: this.ParentTableDefinition,
+            tableDefinition: ParentTableDefinition,
             sourceRecordContext: sourceRecordContext,
             targetFieldType: resolvedTargetFieldType, // Use resolved type
-            appliedTransformations: [$"Initial context for DataRow processing of target '{this.TargetField}'."]
+            appliedTransformations: [$"Initial context for DataRow processing of target '{TargetField}'."]
         );
 
         var result = await Apply(initialContext); // Call the ITransformationContext overload
 
-        if (result == null)
+        if (result is null)
         {
             _logger?.LogWarning("CombineFieldsRule.Apply(DataRow) for target '{TargetField}' resulted in a null TransformationResult. Returning a failure.", TargetField);
             return TransformationResult.Failure(
@@ -439,16 +439,16 @@ public class CombineFieldsRule : MappingRuleBase
         _logger?.LogDebug("CombineFieldsRule.Apply(DataTable) for target '{TargetField}' started for {RowCount} rows.", TargetField, data?.Rows?.Count ?? 0);
 
         Type resolvedTargetFieldType = typeof(string); // Default
-        if (this.ParentTableDefinition != null && !string.IsNullOrEmpty(this.TargetField))
+        if (ParentTableDefinition is not null && !string.IsNullOrEmpty(TargetField))
         {
-            var descriptor = this.ParentTableDefinition.FieldDescriptors?.FirstOrDefault(fd => fd.FieldName == this.TargetField);
-            if (descriptor?.FieldType != null)
+            var descriptor = ParentTableDefinition.FieldDescriptors?.FirstOrDefault(fd => fd.FieldName == TargetField);
+            if (descriptor?.FieldType is not null)
             {
                 resolvedTargetFieldType = descriptor.FieldType;
             }
         }
 
-        if (data == null)
+        if (data is null)
         {
             _logger?.LogWarning("CombineFieldsRule.Apply(DataTable) for target '{TargetField}' received a null DataTable.", TargetField);
             return [
@@ -474,7 +474,7 @@ public class CombineFieldsRule : MappingRuleBase
     /// <returns>The transformation result containing the combined value and details of the operation.</returns>
     public override TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecord, ImportedRecordFieldDescriptor targetField)
     {
-        string targetFieldNameForLog = targetField?.FieldName ?? this.TargetField ?? "UnknownTarget";
+        string targetFieldNameForLog = targetField?.FieldName ?? TargetField ?? "UnknownTarget";
         _logger?.LogDebug("CombineFieldsRule.GetValue for target '{TargetFieldNameForLog}' started.", targetFieldNameForLog);
         Type targetType = targetField?.FieldType ?? typeof(string);
         if (IsEmpty)
@@ -505,7 +505,7 @@ public class CombineFieldsRule : MappingRuleBase
             {
                 fieldIdentifier = $"field '{configuredField.FieldName}'";
                 var fieldDesc = sourceRecord?.FirstOrDefault(f => f.FieldName == configuredField.FieldName);
-                if (fieldDesc == null)
+                if (fieldDesc is null)
                 {
                     fieldLog.Add($"Source {fieldIdentifier} not found in sourceRecord and no ConstantValue. Using null for this input.");
                     _logger?.LogDebug("Source {FieldIdentifier} not found in sourceRecord for target '{TargetFieldNameForLog}'. Using null.", fieldIdentifier, targetFieldNameForLog);
@@ -581,7 +581,7 @@ public class CombineFieldsRule : MappingRuleBase
         nextField:;
         }
 
-        var combineTransformation = new CombineFieldsTransformation { TransformationDetail = this.CombinationFormat };
+        var combineTransformation = new CombineFieldsTransformation { TransformationDetail = CombinationFormat };
         _logger?.LogTrace("Preparing to combine {NumValues} values for target '{TargetFieldNameForLog}' using format '{CombinationFormat}' (GetValue).", collectedValuesForCombination.Count, targetFieldNameForLog, CombinationFormat);
 
         TransformationResult inputForCombine = TransformationResult.Success(
@@ -598,7 +598,7 @@ public class CombineFieldsRule : MappingRuleBase
         {
             TransformationResult finalResult = Task.Run(async () => await combineTransformation.ApplyTransformationAsync(inputForCombine)).GetAwaiter().GetResult();
             List<string> combinedLogs = appliedTransformationsLog;
-            if (finalResult.AppliedTransformations != null)
+            if (finalResult.AppliedTransformations is not null)
             {
                 combinedLogs.AddRange(finalResult.AppliedTransformations.Except(inputForCombine.AppliedTransformations ?? []));
             }
@@ -633,10 +633,10 @@ public class CombineFieldsRule : MappingRuleBase
         _logger?.LogTrace("Cloning CombineFieldsRule for target '{TargetField}'.", TargetField);
         var clone = new CombineFieldsRule
         {
-            InputFields = [.. this.InputFields.Select(f => f.Clone())],
-            CombinationFormat = this.CombinationFormat
+            InputFields = [.. InputFields.Select(f => f.Clone())],
+            CombinationFormat = CombinationFormat
         };
-        this.CloneBaseProperties(clone);
+        CloneBaseProperties(clone);
         _logger?.LogDebug("Successfully cloned CombineFieldsRule for target '{TargetField}'.", clone.TargetField);
         return clone;
     }

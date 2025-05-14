@@ -364,7 +364,7 @@ public class ImportedDataFile
     /// <returns>A list of objects of the specified type.</returns>
     /// <remarks>
     /// Uses the helper/extension method to apply the transformation, which also applies validation
-    /// to the data.  They can be found in the <see cref="ImportedDataFile.TableDefinitions"/>.<see cref="ImportTableDefinition.FieldMappings"/>
+    /// to the data.  They can be found in the <see cref="TableDefinitions"/>.<see cref="ImportTableDefinition.FieldMappings"/>
     /// objects.
     /// 
     /// If the <paramref name="selectedRecords"/> parameter is not provided, all records in the table will be selected.
@@ -423,10 +423,11 @@ public class ImportedDataFile
         foreach (var fieldMapping in tableDef.FieldMappings)
         {
             fieldMapping.ValidationAttributes = _targetTypeFieldMappings!.First(x => x.FieldName == fieldMapping.FieldName).ValidationAttributes;
-            foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTransformations ?? []).Where(sfd => sfd?.Field is not null))
-            {
-                sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
-            }
+            // TODO: Determine if we are going to use fields in ValueTransformation or not
+            //foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTransformations ?? []).Where(sfd => sfd?.Field is not null))
+            //{
+            //    sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
+            //}
         }
     }
 

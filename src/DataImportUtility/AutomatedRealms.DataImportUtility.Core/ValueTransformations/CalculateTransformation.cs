@@ -1,11 +1,11 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Helpers; // Added for CultureInfo
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult
-using AutomatedRealms.DataImportUtility.Core.Compatibility; // For MathCompatibility
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
+using AutomatedRealms.DataImportUtility.Core.Compatibility;
 
 using Jace;
 
-using System.Collections; // Added for IEnumerable
+using System.Collections;
 using System.Globalization;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -64,8 +64,7 @@ public class CalculateTransformation : ValueTransformationBase
     {
         try
         {
-            string? resultValueText = TransformationDetail;
-            if (string.IsNullOrWhiteSpace(resultValueText))
+            if (string.IsNullOrWhiteSpace(TransformationDetail))
             {
                 return Task.FromResult(TransformationResult.Success(
                     originalValue: previousResult.OriginalValue,
@@ -90,7 +89,7 @@ public class CalculateTransformation : ValueTransformationBase
 
             // resultValueText is guaranteed non-null here due to the earlier IsNullOrWhiteSpace check.
             // Let's try to get rid of the null forging operator (!) used here.
-            string currentFormula = resultValueText!;
+            var currentFormula = TransformationDetail!;
             // We also might look at replace this with the 'variables' logic 
             // use the documentation to learn more: https://github.com/pieterderycke/Jace/wiki
             // Maybe provide the documentation to the user so they can see the syntax.
@@ -113,8 +112,8 @@ public class CalculateTransformation : ValueTransformationBase
 
             // Calculate the exponent
             double exponent = engine.Calculate(exponentFormula, variables); // Note: Jace returns double, you might cast to int
-
              */
+
             if (valuesToUse.Any())
             {
                 for (int i = 0; i < valuesToUse.Length; i++)
@@ -206,10 +205,10 @@ public class CalculateTransformation : ValueTransformationBase
     {
         var clone = new CalculateTransformation
         {
-            DecimalPlaces = this.DecimalPlaces
+            DecimalPlaces = DecimalPlaces
         };
         // Clones TransformationDetail, TypeId
-        this.CloneBaseProperties(clone);
+        CloneBaseProperties(clone);
         return clone;
     }
 }

@@ -1,7 +1,7 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // Updated for TransformationResult and MappingRuleBase
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
-using System.Collections; // For IEnumerable
+using System.Collections;
 using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
@@ -17,8 +17,6 @@ public class ContainsOperation : ComparisonOperationBase
     /// The unique type identifier for this comparison operation.
     /// </summary>
     public static readonly string TypeIdString = "Core.Contains";
-
-    // EnumMemberName and EnumMemberOrder removed
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -44,11 +42,11 @@ public class ContainsOperation : ComparisonOperationBase
     {
         base.ConfigureOperands(leftOperand, rightOperand, secondaryRightOperand); // Calls base to set LeftOperand and RightOperand
 
-        if (this.LeftOperand is null) // Validation after base call
+        if (LeftOperand is null) // Validation after base call
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
         }
-        if (this.RightOperand is null) // Validation after base call
+        if (RightOperand is null) // Validation after base call
         {
             throw new ArgumentNullException(nameof(rightOperand), $"Right operand must be provided for {TypeIdString}.");
         }
@@ -64,13 +62,13 @@ public class ContainsOperation : ComparisonOperationBase
         }
 
         var leftOperandActualResult = await LeftOperand.Apply(contextResult);
-        if (leftOperandActualResult == null || leftOperandActualResult.WasFailure)
+        if (leftOperandActualResult is null || leftOperandActualResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOperandActualResult?.ErrorMessage ?? "Result was null."}");
         }
 
         var rightOperandActualResult = await RightOperand.Apply(contextResult);
-        return rightOperandActualResult == null || rightOperandActualResult.WasFailure
+        return rightOperandActualResult is null || rightOperandActualResult.WasFailure
             ? throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOperandActualResult?.ErrorMessage ?? "Result was null."}")
             : ContainsOperationExtensions.Contains(leftOperandActualResult, rightOperandActualResult);
     }
@@ -98,10 +96,10 @@ public static class ContainsOperationExtensions
     /// <returns>True if the main value contains the sub-value; otherwise, false.</returns>
     public static bool Contains(this TransformationResult leftResult, TransformationResult valueToFind)
     {
-        object? mainValue = leftResult.CurrentValue;
-        object? subValue = valueToFind.CurrentValue;
+        var mainValue = leftResult.CurrentValue;
+        var subValue = valueToFind.CurrentValue;
 
-        if (mainValue == null || subValue == null)
+        if (mainValue is null || subValue is null)
         {
             return false; // Cannot perform 'contains' if either value is null.
         }
@@ -111,7 +109,7 @@ public static class ContainsOperationExtensions
         {
             foreach (var item in enumerableMainValue)
             {
-                if (object.Equals(item, subValue)) // Use object.Equals for type-aware comparison
+                if (Equals(item, subValue)) // Use object.Equals for type-aware comparison
                 {
                     return true;
                 }
@@ -120,11 +118,11 @@ public static class ContainsOperationExtensions
         }
 
         // Case 2: Treat as strings (covers string mainValue and other types converted to string)
-        string? mainString = mainValue.ToString();
-        string? subString = subValue.ToString();
+        var mainString = mainValue.ToString();
+        var subString = subValue.ToString();
 
         // After ToString(), check for null again (though unlikely if original objects were not null)
-        if (mainString == null || subString == null)
+        if (mainString is null || subString is null)
         {
             return false;
         }

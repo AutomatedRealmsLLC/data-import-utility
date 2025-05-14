@@ -29,47 +29,47 @@ public static class DataImportUtilityCoreServiceExtensions
             var registry = new TypeRegistryService();
 
             // Register Mapping Rules
-            registry.RegisterType<CombineFieldsRule>("Core.Rule.CombineFieldsRule");
-            registry.RegisterType<ConstantValueRule>("Core.Rule.ConstantValueRule");
-            registry.RegisterType<CopyRule>("Core.Rule.CopyRule");
-            registry.RegisterType<CustomFieldlessRule>("Core.Rule.CustomFieldlessRule");
-            registry.RegisterType<FieldAccessRule>("Core.Rule.FieldAccessRule");
-            registry.RegisterType<IgnoreRule>("Core.Rule.IgnoreRule");
-            registry.RegisterType<StaticValueRule>("Core.Rule.StaticValueRule");
+            registry.RegisterType<CombineFieldsRule>(CombineFieldsRule.TypeIdString);
+            registry.RegisterType<ConstantValueRule>(ConstantValueRule.TypeIdString);
+            registry.RegisterType<CopyRule>(CopyRule.TypeIdString);
+            registry.RegisterType<CustomFieldlessRule>(CustomFieldlessRule.TypeIdString);
+            registry.RegisterType<FieldAccessRule>(FieldAccessRule.TypeIdString);
+            registry.RegisterType<IgnoreRule>(IgnoreRule.TypeIdString);
+            registry.RegisterType<StaticValueRule>(StaticValueRule.TypeIdString);
 
             // Register Comparison Operations
-            registry.RegisterType<BetweenOperation>("Core.Operation.BetweenOperation");
-            registry.RegisterType<ContainsOperation>("Core.Operation.ContainsOperation");
-            registry.RegisterType<EndsWithOperation>("Core.Operation.EndsWithOperation");
-            registry.RegisterType<EqualsOperation>("Core.Operation.EqualsOperation");
-            registry.RegisterType<GreaterThanOperation>("Core.Operation.GreaterThanOperation");
-            registry.RegisterType<GreaterThanOrEqualOperation>("Core.Operation.GreaterThanOrEqualOperation");
-            registry.RegisterType<InOperation>("Core.Operation.InOperation");
-            registry.RegisterType<IsFalseOperation>("Core.Operation.IsFalseOperation");
-            registry.RegisterType<IsNotNullOperation>("Core.Operation.IsNotNullOperation");
-            registry.RegisterType<IsNotNullOrEmptyOperation>("Core.Operation.IsNotNullOrEmptyOperation");
-            registry.RegisterType<IsNotNullOrWhiteSpaceOperation>("Core.Operation.IsNotNullOrWhiteSpaceOperation");
-            registry.RegisterType<IsNullOperation>("Core.Operation.IsNullOperation");
-            registry.RegisterType<IsNullOrEmptyOperation>("Core.Operation.IsNullOrEmptyOperation");
-            registry.RegisterType<IsNullOrWhiteSpaceOperation>("Core.Operation.IsNullOrWhiteSpaceOperation");
-            registry.RegisterType<IsTrueOperation>("Core.Operation.IsTrueOperation");
-            registry.RegisterType<LessThanOperation>("Core.Operation.LessThanOperation");
-            registry.RegisterType<LessThanOrEqualOperation>("Core.Operation.LessThanOrEqualOperation");
-            registry.RegisterType<NotBetweenOperation>("Core.Operation.NotBetweenOperation");
-            registry.RegisterType<NotContainsOperation>("Core.Operation.NotContainsOperation");
-            registry.RegisterType<NotEqualOperation>("Core.Operation.NotEqualOperation");
-            registry.RegisterType<NotInOperation>("Core.Operation.NotInOperation");
-            registry.RegisterType<RegexMatchOperation>("Core.Operation.RegexMatchOperation");
-            registry.RegisterType<StartsWithOperation>("Core.Operation.StartsWithOperation");
+            registry.RegisterType<BetweenOperation>(BetweenOperation.TypeIdString);
+            registry.RegisterType<ContainsOperation>(ContainsOperation.TypeIdString);
+            registry.RegisterType<EndsWithOperation>(EndsWithOperation.TypeIdString);
+            registry.RegisterType<EqualsOperation>(EqualsOperation.TypeIdString);
+            registry.RegisterType<GreaterThanOperation>(GreaterThanOperation.TypeIdString);
+            registry.RegisterType<GreaterThanOrEqualOperation>(GreaterThanOrEqualOperation.TypeIdString);
+            registry.RegisterType<InOperation>(InOperation.TypeIdString);
+            registry.RegisterType<IsFalseOperation>(IsFalseOperation.TypeIdString);
+            registry.RegisterType<IsNotNullOperation>(IsNotNullOperation.TypeIdString);
+            registry.RegisterType<IsNotNullOrEmptyOperation>(IsNotNullOrEmptyOperation.TypeIdString);
+            registry.RegisterType<IsNotNullOrWhiteSpaceOperation>(IsNotNullOrWhiteSpaceOperation.TypeIdString);
+            registry.RegisterType<IsNullOperation>(IsNullOperation.TypeIdString);
+            registry.RegisterType<IsNullOrEmptyOperation>(IsNullOrEmptyOperation.TypeIdString);
+            registry.RegisterType<IsNullOrWhiteSpaceOperation>(IsNullOrWhiteSpaceOperation.TypeIdString);
+            registry.RegisterType<IsTrueOperation>(IsTrueOperation.TypeIdString);
+            registry.RegisterType<LessThanOperation>(LessThanOperation.TypeIdString);
+            registry.RegisterType<LessThanOrEqualOperation>(LessThanOrEqualOperation.TypeIdString);
+            registry.RegisterType<NotBetweenOperation>(NotBetweenOperation.TypeIdString);
+            registry.RegisterType<NotContainsOperation>(NotContainsOperation.TypeIdString);
+            registry.RegisterType<NotEqualOperation>(NotEqualOperation.TypeIdString);
+            registry.RegisterType<NotInOperation>(NotInOperation.TypeIdString);
+            registry.RegisterType<RegexMatchOperation>(RegexMatchOperation.TypeIdString);
+            registry.RegisterType<StartsWithOperation>(StartsWithOperation.TypeIdString);
 
             // Register Value Transformations
-            registry.RegisterType<CalculateTransformation>("Core.Transform.CalculateTransformation");
-            registry.RegisterType<CombineFieldsTransformation>("Core.Transform.CombineFieldsTransformation");
-            registry.RegisterType<ConditionalTransformation>("Core.Transform.ConditionalTransformation");
-            registry.RegisterType<InterpolateTransformation>("Core.Transform.InterpolateTransformation");
-            registry.RegisterType<MapTransformation>("Core.Transform.MapTransformation");
-            registry.RegisterType<RegexMatchTransformation>("Core.Transform.RegexMatchTransformation");
-            registry.RegisterType<SubstringTransformation>("Core.Transform.SubstringTransformation");
+            registry.RegisterType<CalculateTransformation>(CalculateTransformation.TypeIdString);
+            registry.RegisterType<CombineFieldsTransformation>(CombineFieldsTransformation.TypeIdString);
+            registry.RegisterType<ConditionalTransformation>(ConditionalTransformation.TypeIdString);
+            registry.RegisterType<InterpolateTransformation>(InterpolateTransformation.TypeIdString);
+            registry.RegisterType<MapTransformation>(MapTransformation.TypeIdString);
+            registry.RegisterType<RegexMatchTransformation>(RegexMatchTransformation.TypeIdString);
+            registry.RegisterType<SubstringTransformation>(SubstringTransformation.TypeIdString);
 
             return registry;
         });

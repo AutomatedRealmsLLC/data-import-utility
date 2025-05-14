@@ -69,7 +69,7 @@ public class SubstringTransformation : ValueTransformationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override bool IsEmpty => this.StartIndex == 0 && (this.MaxLength == null || this.MaxLength == int.MaxValue);
+    public override bool IsEmpty => StartIndex == 0 && (MaxLength is null || MaxLength == int.MaxValue);
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -90,7 +90,7 @@ public class SubstringTransformation : ValueTransformationBase
                 return Task.FromResult(previousResult);
             }
 
-            TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(previousResult, ValueTransformationBase.OperationInvalidForCollectionsMessage);
+            TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(previousResult, OperationInvalidForCollectionsMessage);
             if (checkedResult.WasFailure)
             {
                 return Task.FromResult(checkedResult);
@@ -115,8 +115,8 @@ public class SubstringTransformation : ValueTransformationBase
 
             // If IsNullOrWhiteSpace is false, currentInputValue is not null.
             string originalValueString = currentInputValue!;
-            int localStartIndex = this.StartIndex;
-            int localMaxLength = this.MaxLength ?? int.MaxValue;
+            int localStartIndex = StartIndex;
+            int localMaxLength = MaxLength ?? int.MaxValue;
 
             int actualStartIndex = localStartIndex;
             if (actualStartIndex < 0)
@@ -198,7 +198,7 @@ public class SubstringTransformation : ValueTransformationBase
         {
             syntax += $",length:{MaxLength.Value}";
         }
-        this.TransformationDetail = syntax;
+        TransformationDetail = syntax;
     }
 
     /// <inheritdoc />
@@ -206,10 +206,10 @@ public class SubstringTransformation : ValueTransformationBase
     {
         var clone = new SubstringTransformation
         {
-            StartIndex = this.StartIndex,
-            MaxLength = this.MaxLength
+            StartIndex = StartIndex,
+            MaxLength = MaxLength
         };
-        this.CloneBaseProperties(clone); // Clones TransformationDetail, TypeId
+        CloneBaseProperties(clone); // Clones TransformationDetail, TypeId
         return clone;
     }
 }

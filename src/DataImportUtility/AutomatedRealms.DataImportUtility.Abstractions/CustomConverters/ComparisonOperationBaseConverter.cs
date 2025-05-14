@@ -42,7 +42,7 @@ public class ComparisonOperationBaseConverter : JsonConverter<ComparisonOperatio
             throw new JsonException($"TypeId value is null or empty for {nameof(ComparisonOperationBase)}.");
         }
 
-        if (!_typeRegistryService.TryResolveType(typeIdString!, out Type? concreteType) || concreteType == null)
+        if (!_typeRegistryService.TryResolveType(typeIdString!, out Type? concreteType) || concreteType is null)
         {
             throw new JsonException($"Unable to resolve TypeId '{typeIdString}' to a registered type for {nameof(ComparisonOperationBase)}. Ensure the type is registered with ITypeRegistryService.");
         }

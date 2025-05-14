@@ -124,28 +124,28 @@ public class CustomFieldlessRule : MappingRuleBase
     /// <remarks>This method is obsolete. Use <see cref="Apply(ITransformationContext)"/> instead.</remarks>
     public override Task<TransformationResult?> Apply(DataRow dataRow)
     {
-        throw new System.NotImplementedException("This method is obsolete. Use Apply(ITransformationContext) instead. A TransformationContext can be created manually if needed, but this method should not be called directly.");
+        throw new NotImplementedException("This method is obsolete. Use Apply(ITransformationContext) instead. A TransformationContext can be created manually if needed, but this method should not be called directly.");
     }
 
     /// <inheritdoc/>
     /// <remarks>This method is obsolete. Use <see cref="Apply(ITransformationContext)"/> instead.</remarks>
     public override Task<IEnumerable<TransformationResult?>> Apply(DataTable dataTable)
     {
-        throw new System.NotImplementedException("This method is obsolete. Iterate through rows and use Apply(ITransformationContext) for each DataRow instead.");
+        throw new NotImplementedException("This method is obsolete. Iterate through rows and use Apply(ITransformationContext) for each DataRow instead.");
     }
 
     /// <inheritdoc/>
     /// <remarks>This method is obsolete. Use <see cref="Apply(ITransformationContext)"/> instead.</remarks>
     public override Task<IEnumerable<TransformationResult?>> Apply()
     {
-        throw new System.NotImplementedException("This method is obsolete. Use Apply(ITransformationContext) instead, providing a context.");
+        throw new NotImplementedException("This method is obsolete. Use Apply(ITransformationContext) instead, providing a context.");
     }
 
     /// <inheritdoc/>
     /// <remarks>This method is obsolete or its usage is unclear in this context. The primary rule application logic is in <see cref="Apply(ITransformationContext)"/>.</remarks>
     public override TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecord, ImportedRecordFieldDescriptor targetField)
     {
-        throw new System.NotImplementedException("This method is obsolete or its usage is unclear in this context. Consider using Apply(ITransformationContext) and accessing TransformationResult.CurrentValue.");
+        throw new NotImplementedException("This method is obsolete or its usage is unclear in this context. Consider using Apply(ITransformationContext) and accessing TransformationResult.CurrentValue.");
     }
     #endregion
 }

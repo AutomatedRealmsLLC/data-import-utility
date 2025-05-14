@@ -98,8 +98,8 @@ public class ImportedRecordFieldDescriptor
         return obj is ImportedRecordFieldDescriptor other && FieldName == other.FieldName &&
                    ForTableName == other.ForTableName &&
                    FieldTypeString == other.FieldTypeString &&
-                   ((_valueSet == null && other._valueSet == null) ||
-                    (_valueSet != null && other._valueSet != null && _valueSet.SequenceEqual(other._valueSet)));
+                   ((_valueSet is null && other._valueSet is null) ||
+                    (_valueSet is not null && other._valueSet is not null && _valueSet.SequenceEqual(other._valueSet)));
     }
 
     /// <summary>

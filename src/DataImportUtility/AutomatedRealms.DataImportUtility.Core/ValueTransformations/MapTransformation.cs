@@ -1,5 +1,5 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Helpers;   // For ValueMap
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 using System.Text.Json.Serialization;
@@ -47,7 +47,7 @@ public class MapTransformation : ValueTransformationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override bool IsEmpty => Mappings == null || !Mappings.Any();
+    public override bool IsEmpty => Mappings is null || !Mappings.Any();
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -63,20 +63,20 @@ public class MapTransformation : ValueTransformationBase
                 return Task.FromResult(previousResult);
             }
 
-            TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(previousResult, ValueTransformationBase.OperationInvalidForCollectionsMessage);
+            TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(previousResult, OperationInvalidForCollectionsMessage);
             if (checkedResult.WasFailure)
             {
                 return Task.FromResult(checkedResult);
             }
 
-            if (Mappings == null || !Mappings.Any())
+            if (Mappings is null || !Mappings.Any())
             {
                 return Task.FromResult(checkedResult); // No mappings provided, return original (potentially error-checked) result
             }
 
             var currentInputValueString = checkedResult.CurrentValue?.ToString();
 
-            if (currentInputValueString != null && Mappings.TryGetValue(currentInputValueString, out var mappedValue))
+            if (currentInputValueString is not null && Mappings.TryGetValue(currentInputValueString, out var mappedValue))
             {
                 return Task.FromResult(TransformationResult.Success(
                     originalValue: checkedResult.OriginalValue,

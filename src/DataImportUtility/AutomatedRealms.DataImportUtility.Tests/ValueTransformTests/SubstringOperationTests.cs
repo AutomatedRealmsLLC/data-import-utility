@@ -1,10 +1,8 @@
-﻿using System.Text.Json;
-
-using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models;
+﻿using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Core.ValueTransformations;
-
 using AutomatedRealms.DataImportUtility.Tests.SampleData;
+
+using System.Text.Json;
 
 namespace AutomatedRealms.DataImportUtility.Tests.ValueTransformTests;
 
@@ -72,6 +70,6 @@ public class SubstringOperationTests
 
         // Assert
         Assert.True(result.WasFailure);
-        Assert.Equal(AutomatedRealms.DataImportUtility.Abstractions.ValueTransformationBase.OperationInvalidForCollectionsMessage, result.ErrorMessage);
+        Assert.Equal(ValueTransformationBase.OperationInvalidForCollectionsMessage, result.ErrorMessage);
     }
 }

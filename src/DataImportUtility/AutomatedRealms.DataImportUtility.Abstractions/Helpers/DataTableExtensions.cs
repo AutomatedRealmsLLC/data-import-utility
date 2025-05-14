@@ -18,7 +18,7 @@ public static class DataTableExtensions
     /// </returns>
     public static object[] GetColumnValues(this DataTable sourceTable, string forField)
     {
-        if (sourceTable == null)
+        if (sourceTable is null)
         {
             throw new ArgumentNullException(nameof(sourceTable));
         }

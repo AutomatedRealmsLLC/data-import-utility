@@ -3,7 +3,6 @@ using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 using System.Collections;
 using System.Text.Json.Serialization;
-// Alias for Abstractions.Models to avoid ambiguity with any potential Core.Models.TransformationResult
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
 
@@ -42,7 +41,7 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
     public override Type OutputType => typeof(string);
 
     /// <inheritdoc />
-    public override bool IsEmpty => (SourceFieldTransforms == null || !SourceFieldTransforms.Any()) && string.IsNullOrWhiteSpace(TransformationDetail);
+    public override bool IsEmpty => (SourceFieldTransforms is null || !SourceFieldTransforms.Any()) && string.IsNullOrWhiteSpace(TransformationDetail);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CombineFieldsTransformation"/> class.
@@ -57,7 +56,7 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
             return Task.FromResult(previousResult);
         }
 
-        string? pattern = this.TransformationDetail;
+        string? pattern = TransformationDetail;
 
         if (string.IsNullOrWhiteSpace(pattern))
         {
@@ -77,7 +76,7 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
         try
         {
             string?[] valuesToInterpolate;
-            if (previousResult.CurrentValue == null)
+            if (previousResult.CurrentValue is null)
             {
                 valuesToInterpolate = [];
             }
@@ -156,10 +155,10 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
         var clone = new CombineFieldsTransformation
         {
             // Deep copy SourceFieldTransforms if it's not null, assuming FieldTransformation has a Clone method.
-            SourceFieldTransforms = this.SourceFieldTransforms?.Select(t => t.Clone()).ToList() ?? []
+            SourceFieldTransforms = SourceFieldTransforms?.Select(t => t.Clone()).ToList() ?? []
         };
         // Clones TransformationDetail, TypeId
-        this.CloneBaseProperties(clone);
+        CloneBaseProperties(clone);
         return clone;
     }
 }

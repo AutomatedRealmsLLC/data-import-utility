@@ -30,11 +30,7 @@ public class DataReaderService : IDataReaderService
             throw new ArgumentException("The file must be a CSV or Excel file.");
         }
 
-        using var fileStreamNullable = dataRequest.OpenReadStream(cancellationToken: ct);
-        if (fileStreamNullable is null)
-        {
-            throw new InvalidOperationException("The stream from OpenReadStream cannot be null.");
-        }
+        using var fileStreamNullable = dataRequest.OpenReadStream(cancellationToken: ct) ?? throw new InvalidOperationException("The stream from OpenReadStream cannot be null.");
         var fileStream = fileStreamNullable; // fileStream is now non-nullable
 
         // Determine the file type and process it

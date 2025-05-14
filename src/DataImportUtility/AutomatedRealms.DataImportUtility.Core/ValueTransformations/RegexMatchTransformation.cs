@@ -53,7 +53,7 @@ public class RegexMatchTransformation : ValueTransformationBase
                 return Task.FromResult(previousResult);
             }
 
-            TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(previousResult, ValueTransformationBase.OperationInvalidForCollectionsMessage);
+            TransformationResult checkedResult = TransformationResultHelpers.ErrorIfCollection(previousResult, OperationInvalidForCollectionsMessage);
             if (checkedResult.WasFailure)
             {
                 return Task.FromResult(checkedResult);

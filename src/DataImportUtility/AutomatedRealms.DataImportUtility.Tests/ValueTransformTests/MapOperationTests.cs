@@ -20,7 +20,7 @@ public class MapOperationTests
         var operation = new MapTransformation()
         {
             Mappings = valueMappingsFromTestData
-                .Where(vm => vm.FromValue != null && vm.ToValue != null) // Ensure keys and values are not null
+                .Where(vm => vm.FromValue is not null && vm.ToValue is not null) // Ensure keys and values are not null
                 .ToDictionary(vm => vm.FromValue!, vm => vm.ToValue!) // Use null-forgiving operator due to Where clause
         };
 
@@ -50,7 +50,7 @@ public class MapOperationTests
         var operation = new MapTransformation()
         {
             Mappings = valueMappings
-                .Where(vm => vm.FromValue != null && vm.ToValue != null)
+                .Where(vm => vm.FromValue is not null && vm.ToValue is not null)
                 .ToDictionary(vm => vm.FromValue!, vm => vm.ToValue!)
         };
         
@@ -83,7 +83,7 @@ public class MapOperationTests
         var mapOperation = new MapTransformation()
         {
             Mappings = valueMappings
-                .Where(vm => vm.FromValue != null && vm.ToValue != null)
+                .Where(vm => vm.FromValue is not null && vm.ToValue is not null)
                 .ToDictionary(vm => vm.FromValue!, vm => vm.ToValue!)
         };
 

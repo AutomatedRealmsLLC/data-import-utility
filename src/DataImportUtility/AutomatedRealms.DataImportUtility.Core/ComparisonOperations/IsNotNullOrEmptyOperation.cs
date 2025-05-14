@@ -33,7 +33,7 @@ public class IsNotNullOrEmptyOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override void ConfigureOperands(MappingRuleBase? leftOperand, MappingRuleBase? rightOperand = null, MappingRuleBase? secondaryRightOperand = null)
     {
-        if (leftOperand == null)
+        if (leftOperand is null)
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
         }
@@ -60,21 +60,21 @@ public class IsNotNullOrEmptyOperation : ComparisonOperationBase
             }
         }
 
-        if (LeftOperand == null)
+        if (LeftOperand is null)
         {
             throw new InvalidOperationException($"{nameof(LeftOperand)} must be configured for {DisplayName} operation.");
         }
 
         var leftValueResult = await LeftOperand.Apply(context);
 
-        if (leftValueResult == null || leftValueResult.WasFailure)
+        if (leftValueResult is null || leftValueResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftValueResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        object? leftValue = leftValueResult.CurrentValue;
+        var leftValue = leftValueResult.CurrentValue;
 
-        if (leftValue == null)
+        if (leftValue is null)
         {
             return false; // Null is considered null or empty
         }

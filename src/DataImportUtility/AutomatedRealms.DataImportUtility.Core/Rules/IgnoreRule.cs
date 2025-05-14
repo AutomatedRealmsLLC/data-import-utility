@@ -80,7 +80,7 @@ public class IgnoreRule : MappingRuleBase
     /// <inheritdoc />
     public override async Task<IEnumerable<TransformationResult?>> Apply(DataTable data)
     {
-        if (data == null) return [];
+        if (data is null) return [];
         var results = new List<TransformationResult?>();
         foreach (DataRow row in data.Rows)
         {
@@ -118,7 +118,7 @@ public class IgnoreRule : MappingRuleBase
     /// <inheritdoc />
     public override TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecord, ImportedRecordFieldDescriptor targetField)
     {
-        Type effectiveTargetType = targetField?.FieldType ?? typeof(object);
+        var effectiveTargetType = targetField?.FieldType ?? typeof(object);
         var context = TransformationResult.Success(
             originalValue: null,
             originalValueType: null,

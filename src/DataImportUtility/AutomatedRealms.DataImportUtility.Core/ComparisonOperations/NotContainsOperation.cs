@@ -1,7 +1,7 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
-using AutomatedRealms.DataImportUtility.Abstractions.Models; // For TransformationResult and ITransformationContext
+using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
-using System.Collections; // For IEnumerable
+using System.Collections;
 using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ComparisonOperations;
@@ -34,11 +34,11 @@ public class NotContainsOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override void ConfigureOperands(MappingRuleBase? leftOperand, MappingRuleBase? rightOperand, MappingRuleBase? secondaryRightOperand = null)
     {
-        if (leftOperand == null)
+        if (leftOperand is null)
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand cannot be null for {DisplayName}.");
         }
-        if (rightOperand == null)
+        if (rightOperand is null)
         {
             throw new ArgumentNullException(nameof(rightOperand), $"Right operand cannot be null for {DisplayName}.");
         }
@@ -75,37 +75,37 @@ public class NotContainsOperation : ComparisonOperationBase
         var leftResult = await LeftOperand.Apply(transformationContext);
         var rightResult = await RightOperand.Apply(transformationContext);
 
-        if (leftResult == null || leftResult.WasFailure)
+        if (leftResult is null || leftResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult?.ErrorMessage ?? "Result was null."}");
         }
-        if (rightResult == null || rightResult.WasFailure)
+        if (rightResult is null || rightResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        object? leftValue = leftResult.CurrentValue;
-        object? rightValue = rightResult.CurrentValue;
+        var leftValue = leftResult.CurrentValue;
+        var rightValue = rightResult.CurrentValue;
 
-        if (leftValue == null)
+        if (leftValue is null)
         {
             // null does not contain anything, unless rightValue is also null.
             // If rightValue is null, previous Contains logic said true (everything contains null).
             // So, !(null contains null) = !true = false.
             // If rightValue is not null, previous Contains logic said false (null does not contain non-null).
             // So, !(null contains non-null) = !false = true.
-            return rightValue != null;
+            return rightValue is not null;
         }
 
-        if (rightValue == null)
+        if (rightValue is null)
         {
             // Previous Contains logic: everything contains null (empty string) -> true.
             // So, NotContains null is false.
             return false;
         }
 
-        string leftString = leftValue.ToString() ?? ""; // Ensure not null for operations
-        string rightString = rightValue.ToString() ?? "";
+        var leftString = leftValue.ToString() ?? ""; // Ensure not null for operations
+        var rightString = rightValue.ToString() ?? "";
 
         // Handle if leftValue is a collection (e.g., string array from a multi-select or split)
         if (leftValue is IEnumerable enumerable && leftValue is not string)

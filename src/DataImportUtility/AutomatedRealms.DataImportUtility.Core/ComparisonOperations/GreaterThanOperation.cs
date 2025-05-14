@@ -1,4 +1,5 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
+using AutomatedRealms.DataImportUtility.Abstractions.Helpers;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 using System.Globalization;
@@ -39,11 +40,11 @@ public class GreaterThanOperation : ComparisonOperationBase
     {
         base.ConfigureOperands(leftOperand, rightOperand, secondaryRightOperand); // Calls base to set LeftOperand and RightOperand
 
-        if (this.LeftOperand is null) // Validation after base call
+        if (LeftOperand is null) // Validation after base call
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
         }
-        if (this.RightOperand is null) // Validation after base call
+        if (RightOperand is null) // Validation after base call
         {
             // For GreaterThan, RightOperand is the value to compare against (like LowLimit in base, but conceptually the primary comparison value)
             throw new ArgumentNullException(nameof(rightOperand), $"Right operand (value to compare against) must be provided for {TypeIdString}.");
@@ -60,13 +61,13 @@ public class GreaterThanOperation : ComparisonOperationBase
             throw new InvalidOperationException($"Both {nameof(LeftOperand)} and {nameof(RightOperand)} must be set for {DisplayName} operation. Ensure ConfigureOperands was called.");
         }
 
-        TransformationResult? leftOpResult = await LeftOperand.Apply(contextResult);
+        var leftOpResult = await LeftOperand.Apply(contextResult);
         if (leftOpResult is null || leftOpResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftOpResult?.ErrorMessage ?? "Result was null."}");
         }
 
-        TransformationResult? rightOpResult = await RightOperand.Apply(contextResult);
+        var rightOpResult = await RightOperand.Apply(contextResult);
         if (rightOpResult is null || rightOpResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(RightOperand)} for {DisplayName} operation: {rightOpResult?.ErrorMessage ?? "Result was null."}");
@@ -88,30 +89,6 @@ public class GreaterThanOperation : ComparisonOperationBase
 /// </summary>
 public static class GreaterThanOperationExtensions
 {
-    private static bool IsNumeric(object? value)
-    {
-        return value != null && (value is sbyte || value is byte || value is short || value is ushort || value is int || value is uint ||
-               value is long || value is ulong || value is float || value is double || value is decimal);
-    }
-
-    private static bool CanConvertToDateTime(object? value, out DateTime result)
-    {
-        result = default;
-        if (value == null) return false;
-        if (value is DateTime dt)
-        {
-            result = dt;
-            return true;
-        }
-        if (value is DateTimeOffset dto)
-        {
-            result = dto.UtcDateTime;
-            return true;
-        }
-        var stringValue = value.ToString();
-        return !string.IsNullOrEmpty(stringValue) && DateTime.TryParse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out result);
-    }
-
     /// <summary>
     /// Checks if the left result's current value is greater than the right result's current value.
     /// </summary>
@@ -120,25 +97,25 @@ public static class GreaterThanOperationExtensions
     /// <returns>True if the left value is greater than the right value; otherwise, false.</returns>
     public static bool GreaterThan(this TransformationResult leftResult, TransformationResult rightResult)
     {
-        object? leftVal = leftResult.CurrentValue;
-        object? rightVal = rightResult.CurrentValue;
+        var leftVal = leftResult.CurrentValue;
+        var rightVal = rightResult.CurrentValue;
 
-        if (leftVal == null || rightVal == null) { return false; }
+        if (leftVal is null || rightVal is null) { return false; }
 
-        if (IsNumeric(leftVal) && IsNumeric(rightVal))
+        if (leftVal.IsNumericType() && rightVal.IsNumericType())
         {
             try
             {
-                decimal dLeft = Convert.ToDecimal(leftVal, CultureInfo.InvariantCulture);
-                decimal dRight = Convert.ToDecimal(rightVal, CultureInfo.InvariantCulture);
+                var dLeft = Convert.ToDecimal(leftVal, CultureInfo.InvariantCulture);
+                var dRight = Convert.ToDecimal(rightVal, CultureInfo.InvariantCulture);
                 return dLeft > dRight;
             }
             catch (OverflowException)
             {
                 try
                 {
-                    double dblLeft = Convert.ToDouble(leftVal, CultureInfo.InvariantCulture);
-                    double dblRight = Convert.ToDouble(rightVal, CultureInfo.InvariantCulture);
+                    var dblLeft = Convert.ToDouble(leftVal, CultureInfo.InvariantCulture);
+                    var dblRight = Convert.ToDouble(rightVal, CultureInfo.InvariantCulture);
                     return dblLeft > dblRight;
                 }
                 catch { /* Fall through */ }
@@ -146,13 +123,13 @@ public static class GreaterThanOperationExtensions
             catch (FormatException) { /* Fall through */ }
         }
 
-        if (CanConvertToDateTime(leftVal, out var leftDate) && CanConvertToDateTime(rightVal, out var rightDate))
+        if (leftVal.CanConvertToDateTime(out var leftDate) && rightVal.CanConvertToDateTime(out var rightDate))
         {
             return leftDate > rightDate;
         }
 
         var sLeft = leftVal.ToString();
         var sRight = rightVal.ToString();
-        return sLeft != null && sRight != null && string.Compare(sLeft, sRight, StringComparison.OrdinalIgnoreCase) > 0;
+        return sLeft is not null && sRight is not null && string.Compare(sLeft, sRight, StringComparison.OrdinalIgnoreCase) > 0;
     }
 }

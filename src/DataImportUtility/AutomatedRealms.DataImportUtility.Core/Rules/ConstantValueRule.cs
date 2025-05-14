@@ -38,7 +38,7 @@ public partial class ConstantValueRule : MappingRuleBase
     /// <param name="constantValue">The constant value for this rule.</param>
     public ConstantValueRule(string? constantValue) : base(TypeIdString)
     {
-        this.RuleDetail = constantValue;
+        RuleDetail = constantValue;
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public partial class ConstantValueRule : MappingRuleBase
     /// <returns>A transformation result containing the constant value.</returns>
     public override Task<TransformationResult?> Apply(ITransformationContext context)
     {
-        if (context == null)
+        if (context is null)
         {
             throw new ArgumentNullException(nameof(context));
         }
@@ -103,7 +103,7 @@ public partial class ConstantValueRule : MappingRuleBase
         Type valueType = context.TargetFieldType ?? RuleDetail?.GetType() ?? typeof(string);
         object? typedValue = RuleDetail;
 
-        if (RuleDetail != null && context.TargetFieldType != null && context.TargetFieldType != typeof(string))
+        if (RuleDetail is not null && context.TargetFieldType is not null && context.TargetFieldType != typeof(string))
         {
             try
             {
@@ -177,7 +177,7 @@ public partial class ConstantValueRule : MappingRuleBase
     /// <returns>A collection of transformation results, one for each row.</returns>
     public override async Task<IEnumerable<TransformationResult?>> Apply(DataTable data)
     {
-        if (data == null)
+        if (data is null)
         {
             throw new ArgumentNullException(nameof(data));
         }
@@ -198,10 +198,10 @@ public partial class ConstantValueRule : MappingRuleBase
     public override TransformationResult GetValue(List<ImportedRecordFieldDescriptor> sourceRecord, ImportedRecordFieldDescriptor targetField)
     {
         // Use targetField.FieldType (not DataType)
-        Type targetType = targetField.FieldType ?? RuleDetail?.GetType() ?? typeof(string);
-        object? finalValue = RuleDetail;
+        var targetType = targetField.FieldType ?? RuleDetail?.GetType() ?? typeof(string);
+        var finalValue = (object?)RuleDetail;
 
-        if (RuleDetail != null && targetField.FieldType != null && targetField.FieldType != typeof(string))
+        if (RuleDetail is not null && targetField.FieldType is not null && targetField.FieldType != typeof(string))
         {
             try
             {

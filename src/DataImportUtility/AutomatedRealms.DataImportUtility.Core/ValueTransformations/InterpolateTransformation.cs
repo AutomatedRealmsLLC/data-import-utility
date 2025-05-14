@@ -1,7 +1,7 @@
 using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
-using System.Collections; // Added for IEnumerable
+using System.Collections;
 using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
@@ -59,7 +59,7 @@ public class InterpolateTransformation : ValueTransformationBase
                 return Task.FromResult(previousResult);
             }
 
-            string? pattern = TransformationDetail;
+            var pattern = TransformationDetail;
 
             if (string.IsNullOrWhiteSpace(pattern))
             {
@@ -78,7 +78,7 @@ public class InterpolateTransformation : ValueTransformationBase
 
             // Logic from InterpolateTransformationExtensions.Interpolate starts here
             string?[] valuesToUse;
-            if (previousResult.CurrentValue == null)
+            if (previousResult.CurrentValue is null)
             {
                 valuesToUse = [];
             }
@@ -96,7 +96,7 @@ public class InterpolateTransformation : ValueTransformationBase
             }
 
             // pattern is guaranteed not null or whitespace here due to the earlier check.
-            string interpolatedValue = pattern!;
+            var interpolatedValue = pattern!;
 
             for (var i = 0; i < valuesToUse.Length; i++)
             {

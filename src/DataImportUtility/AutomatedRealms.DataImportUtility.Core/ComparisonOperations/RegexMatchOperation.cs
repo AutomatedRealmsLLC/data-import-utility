@@ -34,11 +34,11 @@ public class RegexMatchOperation : ComparisonOperationBase
     /// <inheritdoc />
     public override void ConfigureOperands(MappingRuleBase? leftOperand, MappingRuleBase? rightOperand, MappingRuleBase? secondaryRightOperand = null)
     {
-        if (leftOperand == null)
+        if (leftOperand is null)
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand (input string) cannot be null for {DisplayName}.");
         }
-        if (rightOperand == null)
+        if (rightOperand is null)
         {
             throw new ArgumentNullException(nameof(rightOperand), $"Right operand (regex pattern) cannot be null for {DisplayName}.");
         }
@@ -66,17 +66,17 @@ public class RegexMatchOperation : ComparisonOperationBase
             }
         }
 
-        if (LeftOperand == null)
+        if (LeftOperand is null)
         {
             throw new InvalidOperationException($"{nameof(LeftOperand)} (input string) must be configured for {DisplayName} operation.");
         }
-        if (RightOperand == null)
+        if (RightOperand is null)
         {
             throw new InvalidOperationException($"{nameof(RightOperand)} (regex pattern) must be configured for {DisplayName} operation.");
         }
 
         var leftValueResult = await LeftOperand.Apply(context);
-        if (leftValueResult == null || leftValueResult.WasFailure)
+        if (leftValueResult is null || leftValueResult.WasFailure)
         {
             // If input evaluation fails, cannot perform regex match.
             // Consider logging: Console.WriteLine($"Warning: LeftOperand evaluation failed for RegexMatch: {leftValueResult?.ErrorMessage}");
@@ -84,7 +84,7 @@ public class RegexMatchOperation : ComparisonOperationBase
         }
 
         var rightValueResult = await RightOperand.Apply(context);
-        if (rightValueResult == null || rightValueResult.WasFailure)
+        if (rightValueResult is null || rightValueResult.WasFailure)
         {
             // If pattern evaluation fails, cannot perform regex match.
             // Consider logging: Console.WriteLine($"Warning: RightOperand (pattern) evaluation failed for RegexMatch: {rightValueResult?.ErrorMessage}");
@@ -94,12 +94,12 @@ public class RegexMatchOperation : ComparisonOperationBase
         object? leftValue = leftValueResult.CurrentValue;
         object? rightValue = rightValueResult.CurrentValue;
 
-        if (leftValue == null) // An input of null typically doesn't match any pattern unless pattern specifically handles it.
+        if (leftValue is null) // An input of null typically doesn't match any pattern unless pattern specifically handles it.
         {
             return false;
         }
 
-        if (rightValue == null || rightValue is not string patternString || string.IsNullOrEmpty(patternString))
+        if (rightValue is null || rightValue is not string patternString || string.IsNullOrEmpty(patternString))
         {
             // Pattern must be a non-empty string.
             // Consider logging: Console.WriteLine("Warning: Regex pattern is null, not a string, or empty.");
@@ -128,11 +128,11 @@ public class RegexMatchOperation : ComparisonOperationBase
     public override ComparisonOperationBase Clone()
     {
         var clone = new RegexMatchOperation();
-        if (LeftOperand != null)
+        if (LeftOperand is not null)
         {
             clone.LeftOperand = LeftOperand.Clone();
         }
-        if (RightOperand != null)
+        if (RightOperand is not null)
         {
             clone.RightOperand = RightOperand.Clone();
         }

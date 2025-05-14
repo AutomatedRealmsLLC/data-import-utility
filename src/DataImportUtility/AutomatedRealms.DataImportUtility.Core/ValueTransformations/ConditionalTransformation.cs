@@ -64,7 +64,7 @@ public partial class ConditionalTransformation : ValueTransformationBase
 
     /// <inheritdoc />
     [JsonIgnore]
-    public override bool IsEmpty => ComparisonOperation == null || TrueMappingRule == null || FalseMappingRule == null;
+    public override bool IsEmpty => ComparisonOperation is null || TrueMappingRule is null || FalseMappingRule is null;
 
     /// <inheritdoc />
     [JsonIgnore]
@@ -166,7 +166,7 @@ public partial class ConditionalTransformation : ValueTransformationBase
                 ruleResult = await FalseMappingRule!.Apply(previousResult);
             }
 
-            return ruleResult == null
+            return ruleResult is null
                 ? TransformationResult.Failure(
                     originalValue: previousResult.OriginalValue,
                     targetType: OutputType,

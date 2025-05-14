@@ -87,7 +87,7 @@ public class ConditionalRule : IDisposable, IEquatable<ConditionalRule>
         if (disposing)
         {
             // Clear event subscriptions
-            if (OnDefinitionChanged != null)
+            if (OnDefinitionChanged is not null)
             {
                 foreach (var d in OnDefinitionChanged.GetInvocationList())
                 {

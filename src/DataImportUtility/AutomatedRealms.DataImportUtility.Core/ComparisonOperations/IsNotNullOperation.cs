@@ -15,8 +15,6 @@ public class IsNotNullOperation : ComparisonOperationBase
     /// </summary>
     public static readonly string TypeIdString = "Core.IsNotNull";
 
-    // EnumMemberName and EnumMemberOrder removed
-
     /// <inheritdoc />
     [JsonIgnore]
     public override string DisplayName { get; } = "Is not null";
@@ -42,7 +40,7 @@ public class IsNotNullOperation : ComparisonOperationBase
         // but IsNotNullOperation only uses LeftOperand.
         base.ConfigureOperands(leftOperand, null, null);
 
-        if (this.LeftOperand is null) // Validation after base call
+        if (LeftOperand is null) // Validation after base call
         {
             throw new ArgumentNullException(nameof(leftOperand), $"Left operand must be provided for {TypeIdString}.");
         }
@@ -62,13 +60,7 @@ public class IsNotNullOperation : ComparisonOperationBase
             throw new InvalidOperationException($"LeftOperand must be set for {DisplayName} operation. Ensure ConfigureOperands was called.");
         }
 
-        var leftResult = await LeftOperand.Apply(contextResult);
-
-        if (leftResult == null)
-        {
-            throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned a null TransformationResult, indicating an issue with the operand rule itself.");
-        }
-
+        var leftResult = await LeftOperand.Apply(contextResult) ?? throw new InvalidOperationException($"Applying {nameof(LeftOperand)} for {DisplayName} operation returned a null TransformationResult, indicating an issue with the operand rule itself.");
         if (leftResult.WasFailure)
         {
             throw new InvalidOperationException($"Failed to evaluate {nameof(LeftOperand)} for {DisplayName} operation: {leftResult.ErrorMessage}");
@@ -76,7 +68,7 @@ public class IsNotNullOperation : ComparisonOperationBase
 
         // If we reach here, leftResult is not null and WasFailure is false.
         // Now we check the actual CurrentValue of the successful transformation.
-        return leftResult.CurrentValue != null;
+        return leftResult.CurrentValue is not null;
     }
 
     /// <inheritdoc />
