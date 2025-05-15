@@ -14,14 +14,18 @@ public class MapOperationTests
     /// </summary>
     [Theory]
     [MemberData(nameof(ImportDataObjects.ValidInputData), MemberType = typeof(ImportDataObjects))]
-    private async Task MapOperation_WorksOnValidInput(string input, List<ValueMap> valueMappingsFromTestData, string expected)
+    private async Task MapOperation_WorksOnValidInput(string fieldName, string input, List<ValueMap> valueMappingsFromTestData, string expected)
     {
         // Arrange
         var operation = new MapTransformation()
         {
             Mappings = valueMappingsFromTestData
                 .Where(vm => vm.FromValue is not null && vm.ToValue is not null) // Ensure keys and values are not null
-                .ToDictionary(vm => vm.FromValue!, vm => vm.ToValue!) // Use null-forgiving operator due to Where clause
+                .GroupBy(vm => vm.FromValue) // Group by keys to handle duplicates
+                .ToDictionary(
+                    g => g.Key!, // Key is guaranteed not null from Where clause
+                    g => g.First().ToValue! // Take first value for each group
+                )
         };
 
         var initialResult = TransformationResult.Success(input, input?.GetType(), input, input?.GetType());
@@ -33,6 +37,7 @@ public class MapOperationTests
         Assert.False(result.WasFailure, result.ErrorMessage ?? "Error message was null.");
         Assert.Equal(expected, result.CurrentValue);
     }
+    
     /// <summary>
     /// Tests that the <see cref="MapTransformation"/> fails when applied to a collection.
     /// </summary>
@@ -54,7 +59,13 @@ public class MapOperationTests
                 .ToDictionary(vm => vm.FromValue!, vm => vm.ToValue!)
         };
         
-        var initialResult = TransformationResult.Success(collectionInput, collectionInput?.GetType(), collectionInput, collectionInput?.GetType());
+        // When input is already a collection type
+        var initialResult = TransformationResult.Success(
+            originalValue: collectionInput, 
+            originalValueType: collectionInput?.GetType(), 
+            currentValue: collectionInput, 
+            currentValueType: collectionInput?.GetType()
+        );
 
         // Act
         var result = await operation.ApplyTransformationAsync(initialResult);

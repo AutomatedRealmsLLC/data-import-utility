@@ -51,8 +51,25 @@ public class RegexMatchOperationTests
         };
 
         // Act
-        var result = await regExOperation.Transform(input, typeof(string));
-        result = await interpolateOperation.ApplyTransformationAsync(result);
+        var regexResult = await regExOperation.Transform(input, typeof(string));
+        
+        // Convert the JSON array result to an actual string array object
+        // that the interpolate transformation can properly use
+        var resultAsArray = System.Text.Json.JsonSerializer.Deserialize<string[]>(regexResult.CurrentValue!.ToString());
+        
+        var intermediateResult = TransformationResult.Success(
+            originalValue: regexResult.OriginalValue,
+            originalValueType: regexResult.OriginalValueType,
+            currentValue: resultAsArray,
+            currentValueType: typeof(string[]),
+            appliedTransformations: regexResult.AppliedTransformations,
+            record: regexResult.Record,
+            tableDefinition: regexResult.TableDefinition,
+            sourceRecordContext: regexResult.SourceRecordContext,
+            targetFieldType: regexResult.TargetFieldType
+        );
+        
+        var result = await interpolateOperation.ApplyTransformationAsync(intermediateResult);
 
         // Assert
         Assert.False(result.WasFailure, result.ErrorMessage);

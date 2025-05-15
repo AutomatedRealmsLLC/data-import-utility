@@ -1,5 +1,5 @@
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
-
+using System.Collections;
 using System.Text.Json;
 
 namespace AutomatedRealms.DataImportUtility.Abstractions.Helpers;
@@ -51,15 +51,17 @@ public static class TransformationResultHelpers
             : string.IsNullOrWhiteSpace(result.OriginalValue.ToString())
                 ? "<blank>"
                 : result.OriginalValue.ToString()!;
-    }    /// <summary>
-         /// Generates a display for the <see cref="TransformationResult" />'s <see cref="TransformationResult.CurrentValue" />.
-         /// </summary>
-         /// <param name="result">
-         /// The <see cref="TransformationResult" /> to generate the display for.
-         /// </param>
-         /// <returns>
-         /// The display for the <see cref="TransformationResult" />'s <see cref="TransformationResult.CurrentValue" />.
-         /// </returns>
+    }    
+    
+    /// <summary>
+    /// Generates a display for the <see cref="TransformationResult" />'s <see cref="TransformationResult.CurrentValue" />.
+    /// </summary>
+    /// <param name="result">
+    /// The <see cref="TransformationResult" /> to generate the display for.
+    /// </param>
+    /// <returns>
+    /// The display for the <see cref="TransformationResult" />'s <see cref="TransformationResult.CurrentValue" />.
+    /// </returns>
     public static string GetCurrentValueDisplay(this TransformationResult? result)
     {
         return result?.WasFailure ?? false
@@ -87,25 +89,52 @@ public static class TransformationResultHelpers
             return result;
         }
 
-        var valueStr = result.CurrentValue.ToString();
-        if (!valueStr.Trim().StartsWith("["))
+        // Check if it's a direct collection type (except string which is a char collection but treated as scalar)
+        if (result.CurrentValue is IEnumerable && !(result.CurrentValue is string))
         {
-            return result;
+            return TransformationResult.Failure(
+                originalValue: result.OriginalValue,
+                targetType: result.TargetFieldType ?? typeof(object),
+                errorMessage: errorMessage,
+                originalValueType: result.OriginalValueType,
+                currentValueType: result.CurrentValueType,
+                appliedTransformations: result.AppliedTransformations,
+                record: result.Record,
+                tableDefinition: result.TableDefinition,
+                sourceRecordContext: result.SourceRecordContext,
+                explicitTargetFieldType: result.TargetFieldType
+            );
         }
 
-        try
+        // Check if it's a JSON array
+        var valueStr = result.CurrentValue.ToString();
+        if (!string.IsNullOrEmpty(valueStr) && valueStr.Trim().StartsWith("["))
         {
-            using var jsonDoc = JsonDocument.Parse(valueStr);
-            if (jsonDoc.RootElement.ValueKind == JsonValueKind.Array)
+            try
             {
-                return result with { ErrorMessage = errorMessage };
+                using var jsonDoc = JsonDocument.Parse(valueStr);
+                if (jsonDoc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    return TransformationResult.Failure(
+                        originalValue: result.OriginalValue,
+                        targetType: result.TargetFieldType ?? typeof(object),
+                        errorMessage: errorMessage,
+                        originalValueType: result.OriginalValueType,
+                        currentValueType: result.CurrentValueType,
+                        appliedTransformations: result.AppliedTransformations,
+                        record: result.Record,
+                        tableDefinition: result.TableDefinition,
+                        sourceRecordContext: result.SourceRecordContext,
+                        explicitTargetFieldType: result.TargetFieldType
+                    );
+                }
             }
-        }
-        catch (JsonException)
-        {
+            catch (JsonException)
+            {
 #if DEBUG
-            Console.WriteLine("The value is not a valid JSON array.");
+                Console.WriteLine("The value is not a valid JSON array.");
 #endif
+            }
         }
 
         return result;
