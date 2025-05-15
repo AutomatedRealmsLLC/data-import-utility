@@ -131,24 +131,27 @@ public class FieldMappingTests
         var fieldMapping = FieldMappingUT;
         fieldMapping.MappingRule = mappingRuleBase;
 
+        // Create a TransformationResult as the context
+        var context = TransformationResult.Success(
+            originalValue: null,
+            originalValueType: null,
+            currentValue: null,
+            currentValueType: null,
+            record: ImportRowUT,
+            targetFieldType: fieldMapping.FieldType
+        );
+
         // Act
-        // Apply returns a single TransformationResult for a single DataRow context
-        var result = await fieldMapping.Apply(ImportRowUT);
+        var result = await mappingRuleBase.Apply(context);
 
         // Assert
-        // For rules like IgnoreRule or unconfigured rules, CurrentValue might be null or the result might indicate failure.
-        // The original test asserted Assert.Null(result) which implies the Apply method itself returned null.
-        // Now Apply returns TransformationResult, so we check CurrentValue or WasFailure.
-        // For an unconfigured CopyRule or CombineFieldsRule, or an IgnoreRule, the expectation is likely no successful value.
         if (mappingRuleBase is IgnoreRule)
         {
-            Assert.True(result?.WasFailure ?? true); // Or specific check for IgnoreRule behavior
+            Assert.True(result?.WasFailure ?? true);
         }
         else
         {
-            // For unconfigured Copy/Combine, it should likely be a failure or null CurrentValue.
-            // The original test checked for null, implying no value was produced.
-            Assert.Null(result?.CurrentValue); 
+            Assert.Null(result?.CurrentValue);
         }
     }
 

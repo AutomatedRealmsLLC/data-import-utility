@@ -2,6 +2,7 @@ using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 using System.Collections;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace AutomatedRealms.DataImportUtility.Core.ValueTransformations;
@@ -79,6 +80,11 @@ public partial class CombineFieldsTransformation : ValueTransformationBase
             if (previousResult.CurrentValue is null)
             {
                 valuesToInterpolate = [];
+            }
+            else if (previousResult.CurrentValue is string jsonString && jsonString.TrimStart().StartsWith("["))
+            {
+                // Attempt to deserialize JSON string into an array of strings
+                valuesToInterpolate = JsonSerializer.Deserialize<string[]>(jsonString) ?? [];
             }
             else if (previousResult.CurrentValue is IEnumerable<string> stringEnumerable)
             {

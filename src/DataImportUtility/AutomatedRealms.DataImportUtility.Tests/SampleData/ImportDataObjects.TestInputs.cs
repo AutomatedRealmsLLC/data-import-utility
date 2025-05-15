@@ -9,8 +9,31 @@ internal static partial class ImportDataObjects
 {
     // Changed collection expression to new string[] for compatibility with older .NET versions
     internal static string[] ValueCollectionForFailures { get; } = new string[] { "1234567890", "1234567890" };
-    // Corrected the TransformationResult.Success call to have 9 arguments
-    internal static TransformationResult TransformResultForRuleInput { get; } = TransformationResult.Success("Test Input", typeof(string), "Test Input", typeof(string), null, null, null, null, typeof(string));
+
+    internal static TransformationResult TransformResultForRuleInput
+    {
+        get
+        {
+            // Create a DataTable with a column named 'Lab Sample ID'
+            var dataTable = new DataTable();
+            dataTable.Columns.Add("Lab Sample ID", typeof(string));
+
+            // Add a row with a value for 'Lab Sample ID'
+            var dataRow = dataTable.NewRow();
+            dataRow["Lab Sample ID"] = "Test Input";
+            dataTable.Rows.Add(dataRow);
+
+            // Return a TransformationResult with the DataRow
+            return TransformationResult.Success(
+                originalValue: "Test Input",
+                originalValueType: typeof(string),
+                currentValue: "Test Input",
+                currentValueType: typeof(string),
+                record: dataRow,
+                targetFieldType: typeof(string)
+            );
+        }
+    }
 
     public static IEnumerable<object[]> InterpolateOperationHappyPathInputs =>
         [

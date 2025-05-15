@@ -1,0 +1,9 @@
+- Prefer File-scoped namespace
+- Prefer using SCSS
+- Use nullability syntax (nullable objects are declared with '?')
+- Prefer collection initilizer syntax (`List<SomeList> someList = []`) and collection expressions (`someList = [.. someList.Select(x => x.SomeProp)]` instead of `someList = someList.Select(x => x.SomeProp).ToList()`...these examples are contrived, but I'm sure you know what I mean)
+- Prefer `var` when the type can be inferred
+- For multi-line string declarations, use raw string literal syntax.
+- Prefer code-behind (`.razor.cs`) files over code blocks
+- Avoid null forgiveness operators where possible
+- Always use curly braces for `if` statements, even if there is only one statement in it.
