@@ -6,92 +6,184 @@ This document outlines the detailed design decisions for refactoring the `Automa
 
 ### 1.1 File Type Handling
 
-Instead of `DataFileType` enum, we'll implement a file type provider system:
+Instead of a simple `DataFileType` enum, we'll implement a "smart enum" pattern with extensibility:
 
 ```csharp
-public interface IFileTypeProvider
+public abstract class FileType
 {
-    string Name { get; }
-    string DisplayName { get; }
-    string[] SupportedExtensions { get; }
-    string[] MimeTypes { get; }
-    bool CanHandleFile(string fileName, string? mimeType = null);
-}
-
-public interface IFileTypeRegistry
-{
-    IReadOnlyCollection<IFileTypeProvider> RegisteredFileTypes { get; }
-    void RegisterFileType(IFileTypeProvider fileTypeProvider); IFileTypeProvider? GetFileTypeForFile(string fileName, string? mimeType = null); IFileTypeProvider? GetFileTypeByName(string name);
+    // Built-in types as static instances
+    public static readonly FileType Excel = new ExcelFileType();
+    public static readonly FileType Csv = new CsvFileType();
+    
+    // Properties that must be implemented
+    public abstract string Name { get; }
+    public abstract string DisplayName { get; }
+    public abstract string[] SupportedExtensions { get; }
+    public abstract string[] MimeTypes { get; }
+    
+    // Helper methods
+    public virtual bool CanHandleFile(string fileName, string? mimeType = null)
+    {
+        if (string.IsNullOrEmpty(fileName))
+            return false;
+            
+        return SupportedExtensions.Any(ext => 
+            fileName.EndsWith(ext, StringComparison.OrdinalIgnoreCase));
+    }
+    
+    // Registry functionality
+    private static readonly List<FileType> _knownTypes = [Excel, Csv];
+    
+    public static IReadOnlyList<FileType> KnownTypes => _knownTypes.AsReadOnly();
+    
+    public static void Register(FileType fileType)
+    {
+        if (fileType == null)
+            throw new ArgumentNullException(nameof(fileType));
+            
+        if (!_knownTypes.Contains(fileType))
+            _knownTypes.Add(fileType);
+    }
+    
+    public static FileType? GetByName(string name) => 
+        KnownTypes.FirstOrDefault(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 }
 ```
 
 ### 1.2 Import Process Flow
 
-Replace `FileImportType` enum with a workflow interface:
+Replace `FileImportType` enum with a workflow pattern that supports extensibility:
 
 ```csharp
-public interface IImportWorkflow
+public abstract class ImportWorkflow
 {
-    string Name { get; }
-    string DisplayName { get; }
-    int StepCount { get; }
-    Type ComponentType { get; } // The component to render for this workflow
-    bool SupportsFileType(IFileTypeProvider fileType);
-}
-
-public interface IImportWorkflowRegistry
-{
-    IReadOnlyCollection<IImportWorkflow> RegisteredWorkflows { get; }
-    void RegisterWorkflow(IImportWorkflow workflow); IImportWorkflow? GetWorkflowByName(string name); IEnumerable<IImportWorkflow> GetWorkflowsForFileType(IFileTypeProvider fileType);
+    // Built-in workflow types
+    public static readonly ImportWorkflow Standard = new StandardImportWorkflow();
+    public static readonly ImportWorkflow Advanced = new AdvancedImportWorkflow();
+    
+    // Properties
+    public abstract string Name { get; }
+    public abstract string DisplayName { get; }
+    public abstract int StepCount { get; }
+    public abstract Type ComponentType { get; } // The component to render for this workflow
+    
+    // Methods
+    public abstract bool SupportsFileType(FileType fileType);
+    
+    // Registry functionality
+    private static readonly List<ImportWorkflow> _knownWorkflows = [Standard, Advanced];
+    
+    public static IReadOnlyList<ImportWorkflow> KnownWorkflows => _knownWorkflows.AsReadOnly();
+    
+    public static void Register(ImportWorkflow workflow)
+    {
+        if (workflow == null)
+            throw new ArgumentNullException(nameof(workflow));
+            
+        if (!_knownWorkflows.Contains(workflow))
+            _knownWorkflows.Add(workflow);
+    }
+    
+    public static ImportWorkflow? GetByName(string name) =>
+        KnownWorkflows.FirstOrDefault(w => w.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 }
 ```
 
 ### 1.3 Mapping Strategy
 
-Replace `ColumnMappingType` enum with an interface:
+Similar smart enum pattern for mapping strategies:
 
 ```csharp
-public interface IMappingStrategy
+public abstract class MappingStrategy
 {
-    string Name { get; }
-    string DisplayName { get; }
-    Type ComponentType { get; } // The mapping component to render
-    bool SupportsFileType(IFileTypeProvider fileType);
-}
-
-public interface IMappingStrategyRegistry
-{
-    IReadOnlyCollection<IMappingStrategy> RegisteredStrategies { get; }
-    void RegisterStrategy(IMappingStrategy strategy); IMappingStrategy? GetStrategyByName(string name); IEnumerable<IMappingStrategy> GetStrategiesForFileType(IFileTypeProvider fileType);
+    // Built-in strategies
+    public static readonly MappingStrategy HeaderBased = new HeaderBasedMappingStrategy();
+    public static readonly MappingStrategy PositionBased = new PositionBasedMappingStrategy();
+    
+    // Properties
+    public abstract string Name { get; }
+    public abstract string DisplayName { get; }
+    public abstract Type ComponentType { get; }
+    
+    // Methods
+    public abstract bool SupportsFileType(FileType fileType);
+    
+    // Registry
+    private static readonly List<MappingStrategy> _knownStrategies = [HeaderBased, PositionBased];
+    
+    public static IReadOnlyList<MappingStrategy> KnownStrategies => _knownStrategies.AsReadOnly();
+    
+    public static void Register(MappingStrategy strategy)
+    {
+        if (strategy == null)
+            throw new ArgumentNullException(nameof(strategy));
+            
+        if (!_knownStrategies.Contains(strategy))
+            _knownStrategies.Add(strategy);
+    }
+    
+    public static MappingStrategy? GetByName(string name) =>
+        KnownStrategies.FirstOrDefault(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 }
 ```
 
 ### 1.4 Validation Framework
 
-Replace validation enums with interfaces:
+For validation, we'll use a hybrid approach with enums where appropriate and extensibility where needed:
 
 ```csharp
-public interface IValidationSeverity
+// Keep enum for simple cases where extensibility isn't needed
+public enum ValidationSeverity
 {
-    string Name { get; }
-    string DisplayName { get; }
-    int SeverityLevel { get; } // For ordering/filtering (higher = more severe)
-    string CssClass { get; } // For styling messages
+    Info = 0,
+    Warning = 1,
+    Error = 2,
+    Critical = 3
 }
 
-public interface IValidationTrigger
+// Use a constant class for JavaScript interop values
+public static class ValidationSeverityNames
 {
-    string Name { get; }
-    string DisplayName { get; }
+    public const string Info = "info";
+    public const string Warning = "warning";
+    public const string Error = "error";
+    public const string Critical = "critical";
+    
+    public static string GetName(ValidationSeverity severity) => severity switch
+    {
+        ValidationSeverity.Info => Info,
+        ValidationSeverity.Warning => Warning,
+        ValidationSeverity.Error => Error,
+        ValidationSeverity.Critical => Critical,
+        _ => Error // Default
+    };
 }
 
-// Replace flag-based enums with a rule registry
-public interface IValidationRule
+// For validation rules that need to be extensible
+public abstract class ValidationRule
 {
-    string Name { get; }
-    string DisplayName { get; }
-    IValidationSeverity DefaultSeverity { get; }
-    bool IsApplicableToProperty(Type modelType, string propertyName);
+    // Properties
+    public abstract string Name { get; }
+    public abstract string DisplayName { get; }
+    public abstract ValidationSeverity DefaultSeverity { get; }
+    
+    // Methods
+    public abstract bool IsApplicableToProperty(Type modelType, string propertyName);
+    public abstract bool Validate(object? value, out string? errorMessage);
+    
+    // Registry
+    private static readonly List<ValidationRule> _knownRules = [];
+    
+    public static IReadOnlyList<ValidationRule> KnownRules => _knownRules.AsReadOnly();
+    
+    public static void Register(ValidationRule rule)
+    {
+        if (rule == null)
+            throw new ArgumentNullException(nameof(rule));
+            
+        if (!_knownRules.Contains(rule))
+            _knownRules.Add(rule);
+    }
 }
 ```
 
@@ -117,21 +209,12 @@ public interface IComponentResolver
 }
 ```
 
-
 ## 3. JavaScript Interop Architecture
 
-Replace enum integer values with string constants:
+For JavaScript interop, we'll use static classes with constants for string values:
 
 ```csharp
-public static class FileValidationConstants
-{
-    public const string Success = "success";
-    public const string InvalidFormat = "invalid-format";
-    public const string TooLarge = "too-large";
-    public const string Empty = "empty";
-    // etc.
-}
-public static class ImportStatusConstants
+public static class ImportStatus
 {
     public const string Idle = "idle";
     public const string Uploading = "uploading";
@@ -140,68 +223,73 @@ public static class ImportStatusConstants
     public const string Validating = "validating";
     public const string Completed = "completed";
     public const string Error = "error";
-    // etc.
+}
+
+public static class FileValidation
+{
+    public const string Success = "success";
+    public const string InvalidFormat = "invalid-format";
+    public const string TooLarge = "too-large";
+    public const string Empty = "empty";
 }
 ```
 
 ## 4. Class Relationships Diagram
 
-```
-                               ┌───────────────────┐
-                               │                   │
-                        ┌─────►│ IFileTypeProvider │
-                        │      │                   │
-                        │      └───────────────────┘
-                        │               ▲
-                   uses │               │implements
-┌──────────────┐        │        ┌───────────────┐ 
-│              │        │        │               │ 
-│ FileUploader ├────────┘        │ ExcelFileType │ 
-│  Component   │                 │               │ 
-│              │                 └───────────────┘ 
-└──────────────┘                        ▲
-       ▲                                │contains
-       │implements               ┌──────────────┐    
-┌──────────────┐                 │              │
-│              │                 │  CSVFileType │
-│              │                 │              │ 
-│ ImportWizard ├─────┐           └──────────────┘ 
-│  Component   │     │            
-│              │     │ uses           
-└──────────────┘     │          ┌─────────────────┐     
-                     │          │                 │
-                     └─────────►│ IImportWorkflow │ 
-                                │                 │ 
-                                └─────────────────┘ 
-                                        ▲ 
-                                        │implements 
-                                 ┌──────────────┐ 
-                                 │              │ 
-                                 │StandardImport│ 
-                                 │   Workflow   │ 
-                                 └──────────────┘
+```txt
+                               ┌────────────┐
+                               │            │
+                        ┌─────►│  FileType  │
+                        │      │            │
+                        │      └────────────┘
+                        │             ▲
+                   uses │             │extends
+┌──────────────┐        │      ┌─────────────┐
+│              │        │      │             │
+│ FileUploader ├────────┘      │ExcelFileType│
+│  Component   │               │             │
+│              │               └─────────────┘
+└──────────────┘                      ▲
+       ▲                              │extends
+       │implements           ┌────────────┐
+┌──────────────┐             │            │
+│              │             │CsvFileType │
+│ ImportWizard ├─────┐       │            │
+│  Component   │     │       └────────────┘
+│              │     │
+└──────────────┘     │       ┌───────────────┐
+                     │       │               │
+                     └──────►│ImportWorkflow │
+                             │               │
+                             └───────────────┘
+                                     ▲
+                                     │extends
+                             ┌──────────────────┐
+                             │                  │
+                             │StandardImportWork│
+                             │      flow        │
+                             └──────────────────┘
 ```
 
 ## 5. Generic Type Parameters
 
-Replace enum-based type constraints with interface constraints:
+Use the new class hierarchy in component parameters:
 
 ```csharp
 // Before:
-public class ValidationMessage<TModel> where TModel : class
+public class FileUploader
 {
-    [Parameter] public ValidationSeverity MinimumSeverity { get; set; } 
+    [Parameter] public DataFileType[] AllowedFileTypes { get; set; } = [DataFileType.Excel, DataFileType.Csv];
     // ...
 }
 
 // After:
-public class ValidationMessage<TModel> where TModel : class 
-{ 
-    [Parameter] public IValidationSeverity MinimumSeverity { get; set; } 
+public class FileUploader
+{
+    [Parameter] public FileType[] AllowedFileTypes { get; set; } = [FileType.Excel, FileType.Csv];
     // ...
 }
 ```
-
 
 ## 6. Extension Points for Consumers
 
@@ -213,33 +301,17 @@ public static class DataImportComponentsServiceCollectionExtensions
     public static IServiceCollection AddDataImportComponents(this IServiceCollection services)
     { 
         // Register core services
-        services.AddSingleton<IFileTypeRegistry, FileTypeRegistry>(); 
-        services.AddSingleton<IImportWorkflowRegistry, ImportWorkflowRegistry>(); 
-        services.AddSingleton<IMappingStrategyRegistry, MappingStrategyRegistry>(); 
         services.AddSingleton<IComponentFactory, ComponentFactory>(); 
         services.AddSingleton<IComponentResolver, ComponentResolver>();
         
-        // Register built-in implementations
-        services.AddSingleton<IFileTypeProvider, ExcelFileTypeProvider>();
-        services.AddSingleton<IFileTypeProvider, CsvFileTypeProvider>();
-        services.AddSingleton<IImportWorkflow, StandardImportWorkflow>();
-        services.AddSingleton<IMappingStrategy, HeaderBasedMappingStrategy>();
-
+        // Register built-in types
+        FileType.Register(new CustomExcelType());
+        ImportWorkflow.Register(new CustomWorkflow());
+        
         return services;
     }
-
-    // Extension method for adding custom file types
-    public static IServiceCollection AddFileType<T>(this IServiceCollection services)
-        where T : class, IFileTypeProvider
-    {
-        services.AddSingleton<IFileTypeProvider, T>();
-        return services;
-    }
-
-    // Similar extension methods for workflows, mapping strategies, etc.
 }
 ```
-
 
 ### 6.2 Runtime Component Registration
 
@@ -258,31 +330,42 @@ public interface IComponentRegistration
 
 ## 7. Backward Compatibility Layer
 
-For a transitional period, provide adapter classes that convert between the new interface-based system and the old enum-based system:
+For a transitional period, provide adapter extensions for the old enum types:
 
 ```csharp
-public static class FileTypeProviderExtensions 
+public static class LegacyFileTypeExtensions 
 { 
-    // Convert from old enum to new interface (for existing code) 
-    public static IFileTypeProvider ToFileTypeProvider(this DataFileType fileType) 
+    // Convert from old enum to new class 
+    public static FileType ToFileType(this DataFileType fileType) 
         => fileType switch 
         { 
-            DataFileType.Excel => new ExcelFileTypeProvider(),
-            DataFileType.Csv => new CsvFileTypeProvider(), 
+            DataFileType.Excel => FileType.Excel,
+            DataFileType.Csv => FileType.Csv, 
             _ => throw new ArgumentOutOfRangeException(nameof(fileType))
         };
 
-    // Convert from new interface to old enum (for backward compatibility)
-    public static DataFileType ToLegacyEnum(this IFileTypeProvider fileTypeProvider) 
-        => fileTypeProvider switch
-        {
-            ExcelFileTypeProvider => DataFileType.Excel,
-            CsvFileTypeProvider => DataFileType.Csv,
-            _ => DataFileType.Unknown
-        };
+    // Convert from new class to old enum
+    public static DataFileType ToLegacyEnum(this FileType fileType) 
+    {
+        if (fileType == FileType.Excel) return DataFileType.Excel;
+        if (fileType == FileType.Csv) return DataFileType.Csv;
+        return DataFileType.Unknown;
+    }
 }
 ```
 
-## 8. Conclusion
+## 8. Core Enhancement Strategy
 
-This design provides a flexible, extensible foundation for the component library without relying on enum discriminators, while still offering backward compatibility during the transition period.
+For the core base classes (`MappingRuleBase`, `ValueTransformationBase`, `ComparisonOperationBase`), we'll maintain their existing approach using string TypeId properties and extensibility features, as they already support the extensibility pattern we're aiming for.
+
+## 9. Conclusion
+
+This hybrid design provides a flexible, extensible foundation by:
+
+1. Using smart enum patterns with static properties for common enumerations where extensibility is needed
+2. Retaining true enums for simple cases with limited values where extensibility isn't required
+3. Using string constants for JavaScript interop values
+4. Leveraging the existing extensible design of core base classes
+5. Providing backward compatibility for legacy enum usages
+
+This approach balances the need for extensibility with type safety and code clarity while minimizing the need for refactoring.
