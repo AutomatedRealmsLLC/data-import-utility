@@ -100,3 +100,34 @@ This document outlines the tasks required for the data-import-utility refactorin
 *   Refer to `DO_NOT_MODIFY_OriginalImplementation/` for understanding the original behavior when needed.
 *   Commit changes frequently with clear messages.
 *   Write unit tests for new and refactored logic.
+
+## Some more information while going through the current refactoring
+
+- Regarding `ImportWorkFlow.cs` (and `StandardImportWorkflow` and `AdvancedImportWorkflow`), we got the message:
+
+> Then, when you need to create the component from the workflow, you'll need to handle creating the generic instance with the appropriate type parameter:
+
+```csharp
+// Example usage in a factory class:
+public RenderFragment CreateWorkflowComponent<TTargetType>(ImportWorkflow workflow) 
+    where TTargetType : class, new()
+{
+    if (workflow.IsGenericComponent) 
+    {
+        // For generic components like DataFileMapper<T>
+        var closedType = workflow.ComponentType.MakeGenericType(typeof(TTargetType));
+        return builder => {
+            builder.OpenComponent(0, closedType);
+            builder.CloseComponent();
+        };
+    }
+    else 
+    {
+        // For non-generic components
+        return builder => {
+            builder.OpenComponent(0, workflow.ComponentType);
+            builder.CloseComponent();
+        };
+    }
+}
+```
