@@ -1,76 +1,64 @@
-# Data Import Utility Refactoring: Extensibility Implementation Plan
+﻿# Blazor Component Library Refactoring Plan: Replacing Enum Discriminators
 
-**Overarching Goal:** Refactor the data import utility to allow consumers to easily define and use their own custom implementations of core extensible types (e.g., `MappingRuleBase`, `ValueTransformationBase`, `ComparisonOperationBase`) without relying on enums, ensuring good performance and a clean developer experience.
+This plan outlines the steps to refactor the `AutomatedRealms.DataImportUtility.Components` library to move away from enum discriminators in favor of a more extensible approach, consistent with the refactoring already completed in the core libraries.
 
-## Phase 1: Core Abstraction Changes & Registration Foundation
+## Analysis Phase
 
-This phase focuses on modifying the base abstractions and setting up the core infrastructure for the new `TypeId`-driven registration and serialization model.
+- ✅ Review all existing enum usage in the Components library
+- ✅ Map dependencies between Components and core libraries
+- ✅ Identify components that need modification based on enum usage
+- ✅ Document any JavaScript interop that relies on enum values
 
-- [X] **1. Modify Base Abstraction Classes (`MappingRuleBase`, `ValueTransformationBase`, etc.):**
-    - [X] **Task:** Add `TypeId` Property.
-        - **Details:** Add a `public string TypeId { get; protected set; }` (or `init;`) property to each base class.
-        - The `TypeId` should be a unique string identifier (e.g., "Core.CopyRule", "MyCompany.CustomRule").
-        - Concrete implementations will be responsible for setting this `TypeId` in their constructors (e.g., `public CopyRule() : base("Core.CopyRule") { ... }`) or by overriding an abstract property.
-    - [X] **Task:** Remove Obsolete Enum Properties.
-        - **Details:** Remove properties like `public MappingRuleType RuleType { get; }` if their sole purpose was for the old enum-based discrimination.
+### Analysis Phase Results
 
-- [ ] **2. Develop Central Type Registry & DI Integration:**
-    - [ ] **Task:** Create `TypeRegistryService` (or similar).
-        - **Details:** This service will internally hold a mapping (e.g., `Dictionary<string, Type>`) from `TypeId` strings to `System.Type`.
-        - It will expose methods like `RegisterType(string typeId, Type type)` and `ResolveType(string typeId)`. It should also provide a way to get all registered types (or their `TypeId`s and display names) for UI population. Make thread-safe if necessary.
-    - [ ] **Task:** Implement DI Extension for Core Types.
-        - **Details:** In `AutomatedRealms.DataImportUtility.Core`, create a public static class (e.g., `DataImportCoreServiceCollectionExtensions`) with an extension method like `public static IServiceCollection AddDataImportUtilityCore(this IServiceCollection services)`.
-        - This method will explicitly register all default implementations from the `.Core` project with the `TypeRegistryService` (e.g., `typeRegistry.RegisterType("Core.CopyRule", typeof(CopyRule));`).
-        - It will also register the `TypeRegistryService` itself as a singleton.
-    - [ ] **Task:** Implement DI Extensions for Consumer Registration (Explicit Method).
-        - **Details:** In `AutomatedRealms.DataImportUtility.Abstractions` or a new dedicated DI helper library, provide generic extension methods for consumers, e.g., `services.AddMappingRule<TImplementation>(string typeId)` where `TImplementation : MappingRuleBase`.
-        - This allows consumers to explicitly register their types: `services.AddMappingRule<MyCustomRule>("MyCompany.MyRule");`.
+See the [Analysis Document](AnalysisPhaseResults.md) for a detailed breakdown of enum usage and dependencies.
 
-- [ ] **3. Update Custom JSON Converters (`MappingRuleBaseConverter`, etc.):**
-    - [ ] **Task:** Modify Converters to Use `TypeId` and `TypeRegistryService`.
-        - **Details (Serialization):**
-            - Ensure the `TypeId` property of the object being serialized is written to the JSON (e.g., as a `"$typeId"` property, or a clearly named one like `"RuleTypeId"`).
-        - **Details (Deserialization):**
-            - Read the `TypeId` property from the JSON.
-            - Use the injected `TypeRegistryService` to resolve this `typeId` to a `System.Type`.
-            - If resolved, deserialize the JSON object into an instance of this specific `System.Type`.
-            - Handle cases where `typeId` is missing or cannot be resolved (throw informative exception).
+---
 
-## Phase 2: Removing Old Enum-Based System & UI Updates
+## Design Phase
 
-- [X] **4. Decouple and Remove Obsolete Enum-Based Logic:**
-    - [X] **Task:** Remove Enum Definitions.
-        - **Details:** Delete enum files like `MappingRuleType.cs`, `ValueTransformationType.cs` from `Abstractions/Enums/`.
-    - [X] **Task:** Remove Enum-Based Helper Extensions.
-        - **Details:** Delete files like `MappingRuleTypeExtensions.cs` from `Abstractions/Helpers/` that contained the old `CreateNewInstance` logic.
-    - [ ] **Task:** Clean up any remaining direct usages of these enums for type discrimination logic if not already covered.
+- [ ] Design component interfaces that align with the new approach in core libraries
+- [ ] Create class diagrams showing the relationship between components and core classes
+- [ ] Define extension points for consumer customization
+- [ ] Design generic type parameters to replace enum-based type constraints where applicable
 
-- [ ] **5. Update UI Components (e.g., Blazor Components):**
-    - [ ] **Task:** Modify UI for Dynamic Type Selection.
-        - **Details:** Components that allowed users to select a rule/transformation type via an enum-populated dropdown will need to be changed.
-        - They should now fetch the list of available types from the `TypeRegistryService` (e.g., get all registered `TypeId`s, potentially with associated display names if we add that feature - perhaps a `DisplayName` property on the base class or an attribute).
-        - The UI will then bind to the `TypeId` string.
+### Design Phase Results
 
-## Phase 3: Consumer Experience & Advanced Features (Future Considerations)
+See the [Design Decisions Document](DesignDecisions.md) for detailed designs of the new component interfaces and their relationships.
 
-- [ ] **6. Develop Source Generator for Consumer Type Registration (Performance & DX Enhancement):**
-    - [ ] **Task:** Design and Implement Source Generator.
-        - **Details:** Create/Update the `AutomatedRealms.DataImportUtility.SourceGenerator` project.
-        - This generator would scan the consumer's project for classes inheriting `MappingRuleBase`, etc. (potentially marked with a specific attribute if needed to narrow scope or provide metadata like a display name).
-        - It would then auto-generate a partial class with an extension method (e.g., `services.AddMyProjectDataImportExtensions()`) that contains explicit registration calls for all discovered custom types, using their self-defined `TypeId`.
-        - This combines ease of use (developer just creates the class) with the performance of explicit registration.
-    - [ ] **Task:** Provide clear documentation on how to use the source generator.
+## Implementation Phase - Core Changes
 
-- [ ] **7. Documentation & Examples:**
-    - [ ] **Task:** Update all relevant documentation.
-        - **Details:** Explain the new extensibility model, how to create custom types (including setting their `TypeId`), how to register them (explicitly and via source generator if implemented), and how `TypeId`s work in serialization.
-    - [ ] **Task:** Create comprehensive examples in `SampleApp` demonstrating custom type creation and registration.
+- [ ] Create base component classes/interfaces that align with core library patterns
+- [ ] Implement factory classes for component creation where needed
+- [ ] Add DI registration extensions for components
+- [ ] Update any existing TypeScript code to accommodate the new type system
 
-## Ongoing Tasks (Throughout all Phases):
+## Implementation Phase - Component Updates
 
-- [ ] **Testing:** Write unit and integration tests for the new registration system, JSON converters, and any modified components.
-- [ ] **Error Handling:** Ensure robust error handling (e.g., for missing `TypeId`s during deserialization, registration conflicts, `TypeId` uniqueness if not enforced by convention).
-- [ ] **Project References:** Adjust project references as needed (e.g., `Core` will reference `Abstractions`, `Components` will reference `Abstractions` and potentially `Core` for DI setup).
-- [ ] **Address Build Errors:** Systematically resolve any build errors that arise from these changes.
+- [ ] Refactor file import components to use the new type system
+- [ ] Update data mapping components to work with extensible type definitions
+- [ ] Modify validation components to use interface-based validation instead of enum flags
+- [ ] Adjust any component parameters that previously used enums
 
-This plan provides a structured approach. We will iterate on these tasks and add more detail as we progress.
+## Testing Phase
+
+- [ ] Create unit tests for new component interfaces
+- [ ] Test extensibility by creating sample extensions
+- [ ] Verify backward compatibility where possible
+- [ ] Test performance impacts of the new architecture
+
+## Documentation and Examples
+
+- [ ] Update component documentation to reflect the new architecture
+- [ ] Create example implementations showing how to extend the components
+- [ ] Document migration path for existing consumers
+- [ ] Update any XML documentation comments in the codebase
+
+## Final Verification
+
+- [ ] Perform compatibility testing against the original implementations
+- [ ] Verify that all JavaScript interop features work correctly
+- [ ] Ensure all public APIs are appropriately documented
+- [ ] Review for any remaining enum usages that should be replaced
+
+This plan will be our guide for refactoring the Components library to better align with the core libraries and provide more extensibility for consumers.

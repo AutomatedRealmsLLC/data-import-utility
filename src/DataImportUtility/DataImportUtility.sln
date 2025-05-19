@@ -31,7 +31,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomatedRealms.DataImportU
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{53E2C711-909C-41AA-8B55-6EF7421CA78B}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\Docs\AnalysisPhaseResults.md = ..\..\Docs\AnalysisPhaseResults.md
 		..\..\Docs\CustomTypeImplementationRegistration.md = ..\..\Docs\CustomTypeImplementationRegistration.md
+		..\..\Docs\DesignDecisions.md = ..\..\Docs\DesignDecisions.md
+		..\..\Docs\ImplementationPlan.md = ..\..\Docs\ImplementationPlan.md
+		..\..\Docs\ProjectStructure.md = ..\..\Docs\ProjectStructure.md
+		..\..\Docs\ToDoList_Refactoring.md = ..\..\Docs\ToDoList_Refactoring.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ORIGINAL_DO_NOT_MODIFY", "ORIGINAL_DO_NOT_MODIFY", "{738E8D13-09A2-4512-9BE6-49B450395460}"
