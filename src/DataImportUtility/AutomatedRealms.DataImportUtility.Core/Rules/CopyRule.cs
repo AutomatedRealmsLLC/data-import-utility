@@ -2,6 +2,7 @@ using AutomatedRealms.DataImportUtility.Abstractions;
 using AutomatedRealms.DataImportUtility.Abstractions.Models;
 
 using System.Data;
+using System.Collections;
 
 namespace AutomatedRealms.DataImportUtility.Core.Rules;
 
@@ -15,6 +16,11 @@ public class CopyRule : MappingRuleBase
     /// Gets the unique identifier for this type of mapping rule.
     /// </summary>
     public static readonly string TypeIdString = "Core.CopyRule";
+
+    /// <summary>
+    /// Error message when input is a collection.
+    /// </summary>
+    public const string InvalidInputCollectionMessage = "CopyRule cannot process collections directly. Input value is a collection.";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CopyRule"/> class.
@@ -85,6 +91,20 @@ public class CopyRule : MappingRuleBase
         var sourceValueType = sourceValue?.GetType();
         var targetType = context.TargetFieldType ?? sourceValueType ?? typeof(object);
 
+        // Check if input is a collection (except for strings which are technically collections of char)
+        if (IsCollection(sourceValue) && !(sourceValue is string))
+        {
+            return TransformationResult.Failure(
+                originalValue: sourceValue,
+                targetType: targetType,
+                errorMessage: InvalidInputCollectionMessage,
+                originalValueType: sourceValueType,
+                currentValueType: sourceValueType,
+                record: dataRow,
+                sourceRecordContext: context.SourceRecordContext,
+                explicitTargetFieldType: targetType);
+        }
+
         var initialLog = new List<string> { $"CopyRule: Initial value from '{SourceField}' ('{sourceValue ?? "null"}')." };
 
         var currentProcessingResult = TransformationResult.Success(
@@ -113,6 +133,21 @@ public class CopyRule : MappingRuleBase
         };
 
         return currentProcessingResult with { AppliedTransformations = finalLog };
+    }
+
+    /// <summary>
+    /// Checks if the given value is a collection.
+    /// </summary>
+    /// <param name="value">The value to check.</param>
+    /// <returns>True if the value is a collection, false otherwise.</returns>
+    private static bool IsCollection(object? value)
+    {
+        if (value == null)
+        {
+            return false;
+        }
+
+        return value is IEnumerable && !(value is string);
     }
 
     /// <summary>
