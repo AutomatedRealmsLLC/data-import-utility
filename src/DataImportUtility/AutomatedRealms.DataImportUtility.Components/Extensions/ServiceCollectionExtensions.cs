@@ -1,8 +1,10 @@
 namespace AutomatedRealms.DataImportUtility.Components.Extensions;
 
+using AutomatedRealms.DataImportUtility.Abstractions.Services;
 using AutomatedRealms.DataImportUtility.Components.Models;
 using AutomatedRealms.DataImportUtility.Components.Models.Validation;
 using AutomatedRealms.DataImportUtility.Components.Services;
+using AutomatedRealms.DataImportUtility.Core.Services;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,6 +21,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddDataImportComponents(this IServiceCollection services)
     {
         // Register core services
+        services.AddSingleton<ITypeRegistryService, TypeRegistryService>();
         services.AddSingleton<IComponentFactory, ComponentFactory>();
 
         return services;

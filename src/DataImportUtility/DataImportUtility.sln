@@ -7,7 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		..\..\.github\workflows\build-test-publish.yml = ..\..\.github\workflows\build-test-publish.yml
-		..\..\.github\copilot-instructions.md = ..\..\.github\copilot-instructions.md
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
@@ -48,6 +47,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImportUtility.Tests", "..\DO_NOT_MODIFY_OriginalImplementation\DataImportUtility.Tests\DataImportUtility.Tests.csproj", "{56CE2658-D85C-C510-D180-EDD8D64C4E2D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImportUtility.Components", "..\DO_NOT_MODIFY_OriginalImplementation\DataImportUtility.Components\DataImportUtility.Components.csproj", "{7A92044A-99FE-F501-EC6B-E52E19AD67FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AI Instructions", "AI Instructions", "{C6F155A3-4967-4328-87D2-21E374FD44A2}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\.github\copilot-instructions.md = ..\..\.github\copilot-instructions.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -182,6 +186,7 @@ Global
 		{1D7DF4A2-C707-3869-EF2F-3F903B601738} = {738E8D13-09A2-4512-9BE6-49B450395460}
 		{56CE2658-D85C-C510-D180-EDD8D64C4E2D} = {738E8D13-09A2-4512-9BE6-49B450395460}
 		{7A92044A-99FE-F501-EC6B-E52E19AD67FD} = {738E8D13-09A2-4512-9BE6-49B450395460}
+		{C6F155A3-4967-4328-87D2-21E374FD44A2} = {25F29BAB-ABFB-4CD6-ABB3-221358EB403B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9CE3595B-7FDB-43D8-87CA-F9283C01C2E0}

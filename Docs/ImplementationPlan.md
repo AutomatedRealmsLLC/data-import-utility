@@ -55,6 +55,27 @@ See the [Design Decisions Document](DesignDecisions.md) for detailed designs of 
   -	Created specialized registration for validation rules
 - [ ] Update any existing TypeScript code to accommodate the new type system
 
+## Implementation Phase - Immediate Priorities
+
+To restore functionality to the component library, we need to focus on these specific priorities:
+
+1. **Address Critical Enum Dependencies**
+   - [ ] ValueTransformationType - Used extensively in transformation configuration components
+   - [ ] ComparisonOperationType - Used in conditional transformations
+   - [ ] MappingRuleType - Used across multiple mapping components
+
+2. **Create TypeId-based Extensions**
+   - [ ] Create extension methods that bridge between TypeId strings and the former enum values
+   - [ ] Implement ValueTransformationTypeExtensions with GetClassType() and CreateNewInstance() methods
+   - [ ] Implement GetEnumValue() extension methods for backward compatibility
+
+3. **Update Component Parameter Types**
+   - [ ] Update parameter types in FieldTransformationConfiguration
+   - [ ] Update parameter types in ValueTransformationConfiguration
+   - [ ] Update parameter types in ConditionalValueTransformationInput
+
+This focused approach will ensure we restore functionality first while implementing our extensibility design.
+
 ## Implementation Phase - Component Updates
 
 - [ ] Refactor file import components to use the new type system

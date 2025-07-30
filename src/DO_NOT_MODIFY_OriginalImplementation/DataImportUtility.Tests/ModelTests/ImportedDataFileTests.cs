@@ -1,8 +1,8 @@
-﻿using System.Data;
-
-using DataImportUtility.Models;
+﻿using DataImportUtility.Models;
 using DataImportUtility.Rules;
 using DataImportUtility.Tests.SampleData;
+
+using System.Data;
 
 namespace DataImportUtility.Tests.ModelTests;
 
@@ -63,7 +63,7 @@ public class ImportedDataFileTests
         var targetTypeFieldNames = typeof(FakeTargetType).GetProperties().Select(x => x.Name).ToArray();
 
         // To be moved to a field mappings test -- tests that all of the target type properties are mapped
-        Assert.Equal(targetTypeFieldNames, [.. fieldMappings.Select(x => x.FieldName)]);
+        Assert.Equal<string>(targetTypeFieldNames, [.. fieldMappings.Select(x => x.FieldName)]);
 
         var labAnalysisFieldMapping = fieldMappings.First();
         labAnalysisFieldMapping.MappingRule = new CombineFieldsRule
@@ -91,7 +91,7 @@ public class ImportedDataFileTests
         Assert.NotNull(outputDataTable);
         Assert.Equal(expectedRowCount, outputDataTable.Rows.Count);
         Assert.Equal(expectedColumnCount, outputDataTable.Columns.Count);
-        Assert.Equal(expectedColumnNames, [.. outputDataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)]);
+        Assert.Equal<string>(expectedColumnNames, [.. outputDataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)]);
 
         var result = outputDataTable.Rows.Cast<DataRow>().Select(x => x[labAnalysisFieldMapping.FieldName]).ToArray();
         Assert.Equal(expectedValues, result);
