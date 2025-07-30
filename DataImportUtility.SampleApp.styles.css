@@ -1,0 +1,40 @@
+@import '_content/AutomatedRealms.DataImportUtility.Components/AutomatedRealms.DataImportUtility.Components.n6nz6y9zsq.bundle.scp.css';
+
+/* /Layout/MainLayout.razor.rz.scp.css */
+#blazor-error-ui[b-7is1gc72px] {
+  position: relative;
+  background: rgba(51, 51, 51, 0.2);
+  bottom: 0;
+  box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+  display: none;
+  padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+  z-index: 1000;
+  vertical-align: middle;
+}
+#blazor-error-ui .reload[b-7is1gc72px] {
+  color: teal;
+}
+#blazor-error-ui .dismiss[b-7is1gc72px] {
+  cursor: pointer;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+/* /Pages/Home.razor.rz.scp.css */
+.page[b-t6bbjs3bhk] {
+  --o1l-upload-area-bg-color: var(--primary-button-bg-color);
+  --o1l-upload-area-bg-hover-color: var(--primary-button-hover-bg-color);
+  --o1l-upload-area-border-color: var(--primary-button-border-color);
+  --o1l-upload-area-border-hover-color: var(--primary-button-hover-border-color);
+  --o1l-upload-area-text-color: var(--primary-button-text-color);
+  --o1l-upload-area-text-hover-color: var(--primary-button-text-hover-color);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+.page h1[b-t6bbjs3bhk] {
+  padding: 0 1rem;
+}
