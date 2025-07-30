@@ -4,7 +4,6 @@ using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Components.DataSetComponents;
 using DataImportUtility.Components.FieldMappingComponents.Wrappers;
-using DataImportUtility.Components.FilePickerComponent;
 using DataImportUtility.Components.Models;
 using DataImportUtility.Components.Services;
 using DataImportUtility.Models;
@@ -161,7 +160,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
 
     #region Component Callback Registrations
     /// <inheritdoc />
-    public virtual void RegisterFilePicker(DataFilePicker dataFilePicker)
+    public virtual void RegisterFilePicker(FileImportUtilityComponentBase dataFilePicker)
     {
         dataFilePicker.OnFileRequestChangedInternal = new EventCallbackFactory().Create<ImportDataFileRequest>(this, HandleFilePicked);
     }

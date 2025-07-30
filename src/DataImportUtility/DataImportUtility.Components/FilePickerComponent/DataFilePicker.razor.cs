@@ -36,13 +36,6 @@ public partial class DataFilePicker : FileImportUtilityComponentBase
     /// Whether to register this component to the <see cref="DataFileMapperState" /> (if one was provided).
     /// </summary>
     [Parameter] public bool RegisterSelfToState { get; set; } = true;
-    /// <summary>
-    /// The callback for when a file is picked.
-    /// </summary>
-    /// <remarks>
-    /// This is used internally with the <see cref="DataFileMapperState"/>. It should not be used directly.
-    /// </remarks>
-    internal EventCallback<ImportDataFileRequest> OnFileRequestChangedInternal { get; set; }
 
     private ImportDataFileRequest? _selectedFileRequest;
 
