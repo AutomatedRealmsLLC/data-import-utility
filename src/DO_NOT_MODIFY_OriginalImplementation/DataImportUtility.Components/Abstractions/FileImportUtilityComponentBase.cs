@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using DataImportUtility.Components.Models;
+
+using Microsoft.AspNetCore.Components;
 
 namespace DataImportUtility.Components.Abstractions;
 
@@ -35,6 +37,14 @@ public abstract class FileImportUtilityComponentBase : ComponentBase
     /// </list>
     /// </remarks>
     protected string? DefaultCssClass => ApplyDefaultCss ? " o1l-library-style" : null;
+
+    /// <summary>
+    /// The callback for when a file is picked.
+    /// </summary>
+    /// <remarks>
+    /// This is used internally with the <see cref="DataFileMapperState"/>. It should not be used directly.
+    /// </remarks>
+    internal EventCallback<ImportDataFileRequest> OnFileRequestChangedInternal { get; set; }
 
     /// <summary>
     /// The unique identifier for the component instance.  It will be put in a <code>data-instance-id</code> html attribute on all elements within the component (but not child components).
