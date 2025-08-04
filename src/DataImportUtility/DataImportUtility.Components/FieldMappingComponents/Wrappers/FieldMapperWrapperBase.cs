@@ -54,12 +54,7 @@ public abstract class FieldMapperWrapperBase : FileImportUtilityComponentBase
     /// <summary>
     /// The field mapper editor component to use for editing the field mappings.
     /// </summary>
-    [CascadingParameter] public FieldMapperEditorBase? FieldMapperEditor { get; set; }
-
-    /// <summary>
-    /// The field mapper editor component to use for editing the field mappings.
-    /// </summary>
-    protected FieldMapperEditorBase _fieldMapperEditor = default!; // Initialized in OnInitializedAsync
+    protected Type _fieldMapperEditorType = typeof(FieldMapperEditor);
 
     /// <summary>
     /// A copy of the field mappings to edit.
@@ -81,9 +76,11 @@ public abstract class FieldMapperWrapperBase : FileImportUtilityComponentBase
 
         // Use the field mapper editor type from the UI Options if one is specified
         var uiOptions = ServiceProvider.GetService<DataFileMapperUiOptions>();
-        _fieldMapperEditor = uiOptions?.FieldMapperEditorComponentType is not null
-            ? (FieldMapperEditorBase)(Activator.CreateInstance(uiOptions.FieldMapperEditorComponentType)!)
-            : new FieldMapperEditor();
+
+        if (uiOptions?.FieldMapperEditorComponentType is not null)
+        {
+            _fieldMapperEditorType = uiOptions.FieldMapperEditorComponentType;
+        }
 
         return Task.CompletedTask;
     }
@@ -94,7 +91,7 @@ public abstract class FieldMapperWrapperBase : FileImportUtilityComponentBase
     public RenderFragment RenderFieldMapperEditor => builder =>
     {
         var curElem = 0;
-        builder.OpenComponent(curElem++, _fieldMapperEditor.GetType());
+        builder.OpenComponent(curElem++, _fieldMapperEditorType);
         // Set the parameters
         builder.AddAttribute(curElem++, nameof(FieldMapperEditorBase.FieldMappings), FieldMappings);
         builder.AddAttribute(curElem++, nameof(FieldMapperEditorBase.FieldDescriptors), FieldDescriptors);

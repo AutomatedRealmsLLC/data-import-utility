@@ -3,12 +3,16 @@ using System.Timers;
 
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Components.DataSetComponents;
+using DataImportUtility.Components.Extensions;
 using DataImportUtility.Components.FieldMappingComponents.Wrappers;
+using DataImportUtility.Components.FilePickerComponent;
 using DataImportUtility.Components.JsInterop;
+using DataImportUtility.Components.Models;
 using DataImportUtility.Components.State;
 using DataImportUtility.Models;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
@@ -24,8 +28,9 @@ namespace DataImportUtility.Components;
 public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBase, IDisposable
     where TTargetType : class, new()
 {
-    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
-    [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
+    [Inject, AllowNull] private IJSRuntime JsRuntime { get; set; }
+    [Inject, AllowNull] private ILoggerFactory LoggerFactory { get; set; }
+    [Inject, AllowNull] private IServiceProvider ServiceProvider { get; set; }
 
     /// <summary>
     /// Whether to register this component to the <see cref="DataFileMapperState" />.
@@ -83,7 +88,9 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
     private FileMapperJsModule? _fileMapperJsModule;
     private FileMapperJsModule FileMapperJsModule => _fileMapperJsModule ??= new FileMapperJsModule(JsRuntime);
 
-    private System.Timers.Timer _setJsHandlersTimer = new()
+    private Type _dataFilePickerType = typeof(DataFilePicker);
+
+    private readonly System.Timers.Timer _setJsHandlersTimer = new()
     {
         Interval = 200,
         AutoReset = false
@@ -96,6 +103,14 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
     {
         DataFileMapperState ??= new DataFileMapperState(loggerFactory: LoggerFactory);
         _myDataFileMapperState = DataFileMapperState;
+
+        var uiOptions = ServiceProvider.GetService<DataFileMapperUiOptions>();
+
+        if (uiOptions?.DataFilePickerComponentType is not null)
+        {
+            _dataFilePickerType = uiOptions.DataFilePickerComponentType;
+        }
+
         if (RegisterSelfToState) { _myDataFileMapperState.RegisterDataFileMapper(this); }
 
         _myDataFileMapperState.OnActiveDataTableChanged += HandleStateChanged;
@@ -108,6 +123,17 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
         _myDataFileMapperState.OnStatePropertyChanged += HandleStatePropertyChanged;
         _setJsHandlersTimer.Elapsed += HandleSetJsHandlers;
     }
+
+    private RenderFragment DataFilePickerComponent => builder =>
+    {
+
+        var curElem = 0;
+        builder.OpenComponent(curElem++, _dataFilePickerType);
+        builder.AddAttribute(curElem++, nameof(DataFilePickerComponentBase.ApplyDefaultCss), ApplyDefaultCss);
+        builder.AddAttribute(curElem++, nameof(DataFilePickerComponentBase.Disabled), _myDataFileMapperState.FileReadState == FileReadState.Reading);
+        builder.AddAttribute(curElem++, nameof(DataFilePickerComponentBase.OnFileRequestChanged), EventCallback.Factory.Create<ImportDataFileRequest>(this, HandleFilePicked));
+        builder.CloseComponent();
+    };
 
     private Task HandleStatePropertyChanged(string propName)
     {

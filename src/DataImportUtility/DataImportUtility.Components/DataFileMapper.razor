@@ -36,8 +36,7 @@
             </div>
         }
 
-        <DataFilePicker OnFileRequestChanged=HandleFilePicked
-                        ApplyDefaultCss=ApplyDefaultCss />
+        @DataFilePickerComponent
 
         @if (_myDataFileMapperState.DataFile is not null)
         {
