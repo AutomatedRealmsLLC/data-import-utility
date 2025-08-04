@@ -88,14 +88,13 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
     private FileMapperJsModule? _fileMapperJsModule;
     private FileMapperJsModule FileMapperJsModule => _fileMapperJsModule ??= new FileMapperJsModule(JsRuntime);
 
-    private System.Timers.Timer _setJsHandlersTimer = new()
+    private Type _dataFilePickerType = typeof(DataFilePicker);
+
+    private readonly System.Timers.Timer _setJsHandlersTimer = new()
     {
         Interval = 200,
         AutoReset = false
     };
-
-    [AllowNull]
-    private FileImportUtilityComponentBase _dataFilePickerComponent;
 
     private int? _hoveredRowIndex;
 
@@ -107,9 +106,10 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
 
         var uiOptions = ServiceProvider.GetService<DataFileMapperUiOptions>();
 
-        _dataFilePickerComponent = uiOptions?.DataFilePickerComponentType is not null
-            ? (DataFilePickerComponentBase)(Activator.CreateInstance(uiOptions.DataFilePickerComponentType)!)
-            : new DataFilePicker();
+        if (uiOptions?.DataFilePickerComponentType is not null)
+        {
+            _dataFilePickerType = uiOptions.DataFilePickerComponentType;
+        }
 
         if (RegisterSelfToState) { _myDataFileMapperState.RegisterDataFileMapper(this); }
 
@@ -126,15 +126,9 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
 
     private RenderFragment DataFilePickerComponent => builder =>
     {
-        if (_dataFilePickerComponent is null)
-        {
-            builder.AddContent(0, "No data file picker component is available.");
-            return;
-        }
 
         var curElem = 0;
-        builder.OpenComponent(curElem++, _dataFilePickerComponent.GetType());
-        builder.AddAttribute(curElem++, nameof(DataFilePickerComponentBase.UploadAreaLabelText), _myDataFileMapperState.DataFile?.FileName ?? DataFilePickerComponentBase._defaultDataFilePickerTitle);
+        builder.OpenComponent(curElem++, _dataFilePickerType);
         builder.AddAttribute(curElem++, nameof(DataFilePickerComponentBase.ApplyDefaultCss), ApplyDefaultCss);
         builder.AddAttribute(curElem++, nameof(DataFilePickerComponentBase.Disabled), _myDataFileMapperState.FileReadState == FileReadState.Reading);
         builder.AddAttribute(curElem++, nameof(DataFilePickerComponentBase.OnFileRequestChanged), EventCallback.Factory.Create<ImportDataFileRequest>(this, HandleFilePicked));
