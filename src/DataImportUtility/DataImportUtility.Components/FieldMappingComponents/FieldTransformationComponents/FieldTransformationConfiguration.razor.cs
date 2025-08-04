@@ -11,7 +11,7 @@ namespace DataImportUtility.Components.FieldMappingComponents.FieldTransformatio
 /// <summary>
 /// Displays the configuration for a <see cref="FieldTransformation" />.
 /// </summary>
-public partial class FieldTransformationConfiguration : DataFilePickerComponentBase
+public partial class FieldTransformationConfiguration : FileImportUtilityComponentBase
 {
     private const ValueTransformationType _defaultTransformationType = ValueTransformationType.InterpolateTransformation;
 

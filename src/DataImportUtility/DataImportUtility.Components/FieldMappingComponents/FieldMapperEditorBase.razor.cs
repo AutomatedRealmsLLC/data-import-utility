@@ -12,7 +12,7 @@ namespace DataImportUtility.Components.FieldMappingComponents;
 /// <summary>
 /// The base class for the FieldMapperEditor component.
 /// </summary>
-public abstract partial class FieldMapperEditorBase : DataFilePickerComponentBase
+public abstract partial class FieldMapperEditorBase : FileImportUtilityComponentBase
 {
     /// <summary>
     /// The field mappings to configure.

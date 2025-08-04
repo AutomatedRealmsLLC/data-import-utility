@@ -12,7 +12,7 @@ namespace DataImportUtility.Components.FieldMappingComponents.Wrappers;
 /// <summary>
 /// The base class for all field mapper wrappers.
 /// </summary>
-public abstract class FieldMapperWrapperBase : DataFilePickerComponentBase
+public abstract class FieldMapperWrapperBase : FileImportUtilityComponentBase
 {
     [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
 

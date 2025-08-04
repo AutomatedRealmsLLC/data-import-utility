@@ -64,16 +64,16 @@ public class DataFileMapperUiOptions
         get => _dataFilePickerComponentType;
         set
         {
-            // Throw an exception if the type is not a subclass of DataFilePickerComponentType
+            // Throw an exception if the type is not a subclass of FileImportUtilityComponentBase
             // or if it is not a concrete type.
             if (value is null)
             {
                 _dataFilePickerComponentType = typeof(DataFilePicker);
                 return;
             }
-            if (!typeof(DataFilePickerComponentBase).IsAssignableFrom(value))
+            if (!typeof(FileImportUtilityComponentBase).IsAssignableFrom(value))
             {
-                throw new ArgumentException($"The type {value.FullName} is not a subclass of {nameof(DataFilePickerComponentBase)}.", nameof(value));
+                throw new ArgumentException($"The type {value.FullName} is not a subclass of {nameof(FileImportUtilityComponentBase)}.", nameof(value));
             }
             else if (value.IsAbstract)
             {
