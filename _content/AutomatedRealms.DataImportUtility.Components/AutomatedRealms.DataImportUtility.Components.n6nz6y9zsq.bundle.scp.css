@@ -1,0 +1,2208 @@
+/* _content/AutomatedRealms.DataImportUtility.Components/ButtonComponents/CheckButton.razor.rz.scp.css */
+button.check-button[b-a4knk99o9v] {
+  background: none;
+  padding: 0;
+  height: auto;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #0078d4;
+}
+button.check-button.unchecked svg[b-a4knk99o9v] {
+  fill: #fff;
+}
+/* _content/AutomatedRealms.DataImportUtility.Components/DataFileMapper.razor.rz.scp.css */
+.control-group label[b-90pzab93hl], [b-90pzab93hl] .control-group label {
+  padding: 0.5rem 0;
+}
+
+select[b-90pzab93hl], input:not([type=checkbox])[b-90pzab93hl], textarea[b-90pzab93hl],
+[b-90pzab93hl] select, [b-90pzab93hl] input:not([type=checkbox]), [b-90pzab93hl] textarea {
+  font-size: 0.9rem;
+  border-radius: 0.25rem;
+  padding: 0.4em;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+input[type=checkbox].some-selected[b-90pzab93hl],
+[b-90pzab93hl] input[type=checkbox].some-selected {
+  opacity: 0.5;
+  filter: alpha(opacity=50);
+}
+
+.darker-border-checkbox.form-check-input[b-90pzab93hl],
+[b-90pzab93hl] .darker-border-checkbox.form-check-input {
+  border-color: #929292;
+}
+
+button:disabled[b-90pzab93hl], button[disabled][b-90pzab93hl], button[disabled=disabled][b-90pzab93hl],
+[b-90pzab93hl] button:disabled, [b-90pzab93hl] button[disabled], [b-90pzab93hl] button[disabled=disabled] {
+  filter: saturate(0%);
+}
+button:disabled:hover[b-90pzab93hl], button[disabled]:hover[b-90pzab93hl], button[disabled=disabled]:hover[b-90pzab93hl],
+[b-90pzab93hl] button:disabled:hover, [b-90pzab93hl] button[disabled]:hover, [b-90pzab93hl] button[disabled=disabled]:hover {
+  cursor: not-allowed !important;
+}
+
+.data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl] {
+  display: grid;
+  grid-template-areas: "ed ed fm" "fp fp fm" "dso dso fm" "dd dd fm";
+  grid-template-rows: repeat(3, auto) 1fr;
+  grid-template-columns: repeat(2, 1fr) auto;
+  overflow: hidden;
+}
+.data-file-mapper-wrapper.o1l-library-style:has(.preview-data-table-wrapper)[b-90pzab93hl] {
+  grid-template-areas: "ed  ed  fm" "fp  fp  fm" "dso dso fm" "dd  pd  fm";
+}
+.data-file-mapper-wrapper.o1l-library-style .error-display[b-90pzab93hl] {
+  grid-area: ed;
+}
+.data-file-mapper-wrapper.o1l-library-style .preview-data-table-wrapper[b-90pzab93hl] {
+  grid-area: pd;
+  overflow: auto;
+}
+.data-file-mapper-wrapper.o1l-library-style .file-loader-wrapper[b-90pzab93hl] {
+  grid-area: dd;
+  padding: 0 1rem;
+  font-size: 2em;
+}
+.data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  .data-file-picker {
+  grid-area: fp;
+  padding: 1rem;
+}
+.data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  .field-mapper-wrapper {
+  grid-area: fm;
+}
+.data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  .data-set-options {
+  grid-area: dso;
+}
+.data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  .data-table-display-wrapper {
+  grid-area: dd;
+  overflow: auto;
+}
+.data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  table.o1l-library-style thead tr {
+  height: var(--o1l-use-table-thead-tr-height);
+  z-index: 3;
+  white-space: nowrap;
+}
+.data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  table.o1l-library-style thead tr:first-of-type {
+  height: 8ch;
+}
+.data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  table.o1l-library-style thead tr:last-of-type th, .data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  table.o1l-library-style thead tr:last-of-type td {
+  border-bottom: var(--o1l-use-table-head-border);
+}
+.data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  table.o1l-library-style thead tr th, .data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  table.o1l-library-style thead tr td {
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-head-background);
+  color: var(--o1l-use-table-head-foreground);
+  text-align: left;
+  border-top: var(--o1l-use-table-head-border);
+  border-right: var(--o1l-use-table-head-border);
+  padding: var(--o1l-use-table-cell-padding);
+}
+.data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  table.o1l-library-style thead tr th:first-of-type, .data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  table.o1l-library-style thead tr td:first-of-type {
+  border-left: var(--o1l-use-table-head-border);
+}
+.data-file-mapper-wrapper.o1l-library-style[b-90pzab93hl]  table.o1l-library-style thead tr.header-controls td .header-wrapper {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.data-file-mapper-wrapper.o1l-library-style button[b-90pzab93hl] {
+  --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);
+  --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #004578);
+  --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #0078d4);
+  --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #004578);
+  --o1l-use-button-primary-text: var(--o1l-button-primary-text, #f0f0f0);
+  --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+  --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+  --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+  --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+  --o1l-use-link-color: var(--o1l-link-color, #2196f3);
+  --o1l-use-success-color: var(--o1l-success-color, #26b050);
+  --o1l-use-warning-color: var(--o1l-warning-color, #e88a00);
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  background: var(--o1l-use-button-primary-background);
+  border: var(--o1l-use-button-primary-border);
+  color: var(--o1l-use-button-primary-text);
+  padding: var(--o1l-use-button-padding);
+  border-radius: var(--o1l-use-button-border-radius);
+  cursor: pointer;
+}
+.data-file-mapper-wrapper.o1l-library-style button:hover[b-90pzab93hl] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-sm[b-90pzab93hl] {
+  padding: var(--o1l-use-button-padding-small);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-cancel[b-90pzab93hl] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-cancel:hover[b-90pzab93hl], .data-file-mapper-wrapper.o1l-library-style button.o1l-btn-cancel:focus[b-90pzab93hl] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only[b-90pzab93hl] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-90pzab93hl] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-90pzab93hl] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-remove[b-90pzab93hl] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-danger-color);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-remove:hover[b-90pzab93hl] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-add[b-90pzab93hl] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-success-color);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-add:hover[b-90pzab93hl] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-edit[b-90pzab93hl] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-warning-color);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-edit:hover[b-90pzab93hl] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-link[b-90pzab93hl] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+  padding: 0;
+}
+.data-file-mapper-wrapper.o1l-library-style button.o1l-btn-link:hover[b-90pzab93hl], .data-file-mapper-wrapper.o1l-library-style button.o1l-btn-link:focus[b-90pzab93hl] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+
+.o1l-sr-only[b-90pzab93hl] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+/* _content/AutomatedRealms.DataImportUtility.Components/DataSetComponents/DataSetDisplay.razor.rz.scp.css */
+/* _content/AutomatedRealms.DataImportUtility.Components/DataSetComponents/DataTableDisplay.razor.rz.scp.css */
+.o1l-sr-only[b-uu0ijr9tsa] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+table.o1l-library-style[b-uu0ijr9tsa] {
+  border-spacing: 0;
+  transition: opacity 0.2s ease-in-out, filter 0.2s ease-in-out;
+  /*
+      tbody {
+          tr {
+              &:not(.force-hover-style) {
+                  &:hover, &:hover td {
+                      background: var(--o1l-use-table-body-background);
+                  }
+              }
+          }
+      }
+  */
+}
+table.o1l-library-style thead[b-uu0ijr9tsa] {
+  --o1l-use-table-thead-tr-height: var(--o1l-table-thead-tr-height, 2.4em);
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+table.o1l-library-style thead tr[b-uu0ijr9tsa] {
+  height: var(--o1l-use-table-thead-tr-height);
+  z-index: 3;
+  white-space: nowrap;
+}
+table.o1l-library-style thead tr:first-of-type[b-uu0ijr9tsa] {
+  height: 8ch;
+}
+table.o1l-library-style thead tr:last-of-type th[b-uu0ijr9tsa], table.o1l-library-style thead tr:last-of-type td[b-uu0ijr9tsa] {
+  border-bottom: var(--o1l-use-table-head-border);
+}
+table.o1l-library-style thead tr th[b-uu0ijr9tsa], table.o1l-library-style thead tr td[b-uu0ijr9tsa] {
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-head-background);
+  color: var(--o1l-use-table-head-foreground);
+  text-align: left;
+  border-top: var(--o1l-use-table-head-border);
+  border-right: var(--o1l-use-table-head-border);
+  padding: var(--o1l-use-table-cell-padding);
+}
+table.o1l-library-style thead tr th:first-of-type[b-uu0ijr9tsa], table.o1l-library-style thead tr td:first-of-type[b-uu0ijr9tsa] {
+  border-left: var(--o1l-use-table-head-border);
+}
+table.o1l-library-style tbody[b-uu0ijr9tsa] {
+  --o1l-use-table-tbody-tr-height: var(--o1l-table-tbody-tr-height, 2.4em);
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  z-index: 1;
+}
+table.o1l-library-style tbody tr[b-uu0ijr9tsa] {
+  --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, rgba(128, 128, 128, 0.04));
+  --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, rgba(200, 200, 200, 0.1));
+  --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, rgba(33, 33, 33, 0.2));
+  height: var(--o1l-use-table-tbody-tr-height);
+  --o1l-use-active-table-tr-outline: var(--o1l-active-table-tr-border, 1px solid #0078d4);
+  height: var(--o1l-use-table-tr-height);
+  z-index: 2;
+  white-space: nowrap;
+}
+table.o1l-library-style tbody tr th[b-uu0ijr9tsa], table.o1l-library-style tbody tr td[b-uu0ijr9tsa] {
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  --o1l-use-table-body-border: var(--o1l-table-body-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  border-right: var(--o1l-use-table-body-border);
+  border-bottom: var(--o1l-use-table-body-border);
+  padding: var(--o1l-use-table-cell-padding);
+  text-align: left;
+  z-index: 2;
+}
+table.o1l-library-style tbody tr th:first-of-type[b-uu0ijr9tsa], table.o1l-library-style tbody tr td:first-of-type[b-uu0ijr9tsa] {
+  border-left: var(--o1l-use-table-body-border);
+}
+table.o1l-library-style tbody tr:nth-child(odd)[b-uu0ijr9tsa] {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+table.o1l-library-style tbody tr:nth-child(odd) th[b-uu0ijr9tsa], table.o1l-library-style tbody tr:nth-child(odd) td[b-uu0ijr9tsa] {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+table.o1l-library-style tbody tr:hover[b-uu0ijr9tsa], table.o1l-library-style tbody tr.force-hover-style[b-uu0ijr9tsa] {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+table.o1l-library-style tbody tr:hover th[b-uu0ijr9tsa], table.o1l-library-style tbody tr:hover td[b-uu0ijr9tsa], table.o1l-library-style tbody tr.force-hover-style th[b-uu0ijr9tsa], table.o1l-library-style tbody tr.force-hover-style td[b-uu0ijr9tsa] {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+table.o1l-library-style tbody tr.selected[b-uu0ijr9tsa] {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+table.o1l-library-style tbody tr.selected th[b-uu0ijr9tsa], table.o1l-library-style tbody tr.selected td[b-uu0ijr9tsa] {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+table.o1l-library-style *[b-uu0ijr9tsa] {
+  white-space: nowrap;
+}
+table.o1l-library-style tbody tr.active[b-uu0ijr9tsa] {
+  filter: brightness(120%);
+  outline: var(--o1l-use-active-table-tr-outline);
+}
+table.o1l-library-style.busy[b-uu0ijr9tsa] {
+  cursor: wait;
+  opacity: 0.5;
+  filter: brightness(30%);
+  transition: opacity 0.2s ease-in-out, filter 0.2s ease-in-out;
+}
+table.o1l-library-style thead[b-uu0ijr9tsa], table.o1l-library-style[b-uu0ijr9tsa]  thead {
+  --o1l-table-thead-tr-height: 8ch;
+}
+table.o1l-library-style .col-header-wrapper[b-uu0ijr9tsa], table.o1l-library-style .cell-value-wrapper[b-uu0ijr9tsa], table.o1l-library-style[b-uu0ijr9tsa]  .col-header-wrapper, table.o1l-library-style[b-uu0ijr9tsa]  .cell-value-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+table.o1l-library-style i.error-indicator[b-uu0ijr9tsa], table.o1l-library-style[b-uu0ijr9tsa]  i.error-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+/* _content/AutomatedRealms.DataImportUtility.Components/FieldMappingComponents/FieldMapperEditor.razor.rz.scp.css */
+table.o1l-library-style[b-f63od8vxj6] {
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  border-spacing: 0;
+}
+table.o1l-library-style thead[b-f63od8vxj6] {
+  --o1l-use-table-thead-tr-height: var(--o1l-table-thead-tr-height, 2.4em);
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+table.o1l-library-style thead tr[b-f63od8vxj6] {
+  height: var(--o1l-use-table-thead-tr-height);
+  z-index: 3;
+}
+table.o1l-library-style thead tr:last-of-type th[b-f63od8vxj6], table.o1l-library-style thead tr:last-of-type td[b-f63od8vxj6] {
+  border-bottom: var(--o1l-use-table-head-border);
+}
+table.o1l-library-style thead tr th[b-f63od8vxj6], table.o1l-library-style thead tr td[b-f63od8vxj6] {
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-head-background);
+  color: var(--o1l-use-table-head-foreground);
+  text-align: left;
+  border-top: var(--o1l-use-table-head-border);
+  border-right: var(--o1l-use-table-head-border);
+  padding: var(--o1l-use-table-cell-padding);
+}
+table.o1l-library-style thead tr th:first-of-type[b-f63od8vxj6], table.o1l-library-style thead tr td:first-of-type[b-f63od8vxj6] {
+  border-left: var(--o1l-use-table-head-border);
+}
+table.o1l-library-style tbody[b-f63od8vxj6] {
+  --o1l-use-table-tbody-tr-height: var(--o1l-table-tbody-tr-height, 2.4em);
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  z-index: 1;
+}
+table.o1l-library-style tbody tr[b-f63od8vxj6] {
+  --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, rgba(128, 128, 128, 0.04));
+  --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, rgba(200, 200, 200, 0.1));
+  --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, rgba(33, 33, 33, 0.2));
+  height: var(--o1l-use-table-tbody-tr-height);
+  z-index: 2;
+}
+table.o1l-library-style tbody tr th[b-f63od8vxj6], table.o1l-library-style tbody tr td[b-f63od8vxj6] {
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  --o1l-use-table-body-border: var(--o1l-table-body-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  border-right: var(--o1l-use-table-body-border);
+  border-bottom: var(--o1l-use-table-body-border);
+  padding: var(--o1l-use-table-cell-padding);
+  text-align: left;
+  z-index: 2;
+}
+table.o1l-library-style tbody tr th:first-of-type[b-f63od8vxj6], table.o1l-library-style tbody tr td:first-of-type[b-f63od8vxj6] {
+  border-left: var(--o1l-use-table-body-border);
+}
+table.o1l-library-style tbody tr:nth-child(odd)[b-f63od8vxj6] {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+table.o1l-library-style tbody tr:nth-child(odd) th[b-f63od8vxj6], table.o1l-library-style tbody tr:nth-child(odd) td[b-f63od8vxj6] {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+table.o1l-library-style tbody tr:hover[b-f63od8vxj6], table.o1l-library-style tbody tr.force-hover-style[b-f63od8vxj6] {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+table.o1l-library-style tbody tr:hover th[b-f63od8vxj6], table.o1l-library-style tbody tr:hover td[b-f63od8vxj6], table.o1l-library-style tbody tr.force-hover-style th[b-f63od8vxj6], table.o1l-library-style tbody tr.force-hover-style td[b-f63od8vxj6] {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+table.o1l-library-style tbody tr.selected[b-f63od8vxj6] {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+table.o1l-library-style tbody tr.selected th[b-f63od8vxj6], table.o1l-library-style tbody tr.selected td[b-f63od8vxj6] {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+table.o1l-library-style button[b-f63od8vxj6] {
+  --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);
+  --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #004578);
+  --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #0078d4);
+  --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #004578);
+  --o1l-use-button-primary-text: var(--o1l-button-primary-text, #f0f0f0);
+  --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+  --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+  --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+  --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+  --o1l-use-link-color: var(--o1l-link-color, #2196f3);
+  --o1l-use-success-color: var(--o1l-success-color, #26b050);
+  --o1l-use-warning-color: var(--o1l-warning-color, #e88a00);
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  background: var(--o1l-use-button-primary-background);
+  border: var(--o1l-use-button-primary-border);
+  color: var(--o1l-use-button-primary-text);
+  padding: var(--o1l-use-button-padding);
+  border-radius: var(--o1l-use-button-border-radius);
+  cursor: pointer;
+}
+table.o1l-library-style button:hover[b-f63od8vxj6] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+table.o1l-library-style button.o1l-btn-sm[b-f63od8vxj6] {
+  padding: var(--o1l-use-button-padding-small);
+}
+table.o1l-library-style button.o1l-btn-cancel[b-f63od8vxj6] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+}
+table.o1l-library-style button.o1l-btn-cancel:hover[b-f63od8vxj6], table.o1l-library-style button.o1l-btn-cancel:focus[b-f63od8vxj6] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+table.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only[b-f63od8vxj6] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+}
+table.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-f63od8vxj6] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+table.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-f63od8vxj6] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+table.o1l-library-style button.o1l-btn-remove[b-f63od8vxj6] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-danger-color);
+}
+table.o1l-library-style button.o1l-btn-remove:hover[b-f63od8vxj6] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+table.o1l-library-style button.o1l-btn-add[b-f63od8vxj6] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-success-color);
+}
+table.o1l-library-style button.o1l-btn-add:hover[b-f63od8vxj6] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+table.o1l-library-style button.o1l-btn-edit[b-f63od8vxj6] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-warning-color);
+}
+table.o1l-library-style button.o1l-btn-edit:hover[b-f63od8vxj6] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+table.o1l-library-style button.o1l-btn-link[b-f63od8vxj6] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+  padding: 0;
+}
+table.o1l-library-style button.o1l-btn-link:hover[b-f63od8vxj6], table.o1l-library-style button.o1l-btn-link:focus[b-f63od8vxj6] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+table.o1l-library-style .field-info-wrapper[b-f63od8vxj6] {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+table.o1l-library-style .field-info-wrapper .field-name-wrapper[b-f63od8vxj6] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+table.o1l-library-style .field-info-wrapper .field-name-wrapper .required-field[b-f63od8vxj6] {
+  color: var(--o1l-use-danger-color);
+}
+/* _content/AutomatedRealms.DataImportUtility.Components/FieldMappingComponents/FieldTransformationComponents/FieldTransformationConfiguration.razor.rz.scp.css */
+.field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr] {
+  --o1l-use-primary-modal-background: var(--o1l-primary-modal-background, rgba(33, 33, 33, 0.2));
+  --o1l-use-primary-modal-dialog-background: var(--o1l-primary-modal-dialog-background, #222);
+  --o1l-use-primary-modal-dialog-box-shadow: var(--o1l-primary-modal-dialog-box-shadow, 0 0 10px rgba(33, 33, 33, 0.2));
+  --o1l-use-primary-modal-header-border: var(--o1l-primary-modal-header-border, 1px solid rgba(200, 200, 200, 0.1));
+  /* Styles */
+  position: fixed;
+  inset: 0;
+  background: var(--o1l-use-primary-modal-background);
+  z-index: 1;
+  animation: fadeOut-b-kqv4xgoxxr 0.2s forwards;
+  z-index: 4;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button[b-kqv4xgoxxr] {
+  --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);
+  --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #004578);
+  --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #0078d4);
+  --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #004578);
+  --o1l-use-button-primary-text: var(--o1l-button-primary-text, #f0f0f0);
+  --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+  --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+  --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+  --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+  --o1l-use-link-color: var(--o1l-link-color, #2196f3);
+  --o1l-use-success-color: var(--o1l-success-color, #26b050);
+  --o1l-use-warning-color: var(--o1l-warning-color, #e88a00);
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  background: var(--o1l-use-button-primary-background);
+  border: var(--o1l-use-button-primary-border);
+  color: var(--o1l-use-button-primary-text);
+  padding: var(--o1l-use-button-padding);
+  border-radius: var(--o1l-use-button-border-radius);
+  cursor: pointer;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button:hover[b-kqv4xgoxxr] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-sm[b-kqv4xgoxxr] {
+  padding: var(--o1l-use-button-padding-small);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-cancel[b-kqv4xgoxxr] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-cancel:hover[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-cancel:focus[b-kqv4xgoxxr] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only[b-kqv4xgoxxr] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-kqv4xgoxxr] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-kqv4xgoxxr] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-remove[b-kqv4xgoxxr] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-danger-color);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-remove:hover[b-kqv4xgoxxr] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-add[b-kqv4xgoxxr] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-success-color);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-add:hover[b-kqv4xgoxxr] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-edit[b-kqv4xgoxxr] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-warning-color);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-edit:hover[b-kqv4xgoxxr] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-link[b-kqv4xgoxxr] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+  padding: 0;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-link:hover[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style button.o1l-btn-link:focus[b-kqv4xgoxxr] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style.show[b-kqv4xgoxxr] {
+  animation: fadeIn-b-kqv4xgoxxr 0.2s forwards;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style .o1l-modal-dialog[b-kqv4xgoxxr] {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--o1l-use-primary-modal-dialog-background);
+  border: var(--o1l-use-primary-modal-header-border);
+  border-radius: 0.4rem;
+  overflow: clip;
+  z-index: 2;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content[b-kqv4xgoxxr] {
+  box-shadow: 0 0 10px var(--o1l-use-primary-modal-dialog-box-shadow);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 30ch;
+  max-width: 80vw;
+  min-height: 10rem;
+  max-height: 80vh;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-header[b-kqv4xgoxxr] {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: var(--o1l-use-primary-modal-header-border);
+  padding: 1em;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-header .o1l-modal-title[b-kqv4xgoxxr] {
+  font-size: 1.25em;
+  white-space: nowrap;
+  padding-right: 1rem;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-header .o1l-btn-close[b-kqv4xgoxxr] {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
+  cursor: pointer;
+  color: white;
+  background: transparent;
+  border: none;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-body[b-kqv4xgoxxr] {
+  padding: 1em;
+  overflow: auto;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-footer[b-kqv4xgoxxr] {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1em;
+  padding: 1em;
+}
+@keyframes fadeIn-b-kqv4xgoxxr {
+  from {
+    display: block;
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fadeOut-b-kqv4xgoxxr {
+  0% {
+    display: block;
+    opacity: 1;
+  }
+  99% {
+    display: block;
+    opacity: 0;
+  }
+  100% {
+    display: none;
+  }
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style .o1l-modal-dialog[b-kqv4xgoxxr] {
+  inset: 0;
+  transform: unset;
+  border: none;
+  border-radius: 0;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content[b-kqv4xgoxxr] {
+  max-height: unset;
+  height: 100vh;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-body[b-kqv4xgoxxr] {
+  margin: 1em 0;
+  overflow: auto;
+  padding: 0 1em;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-footer[b-kqv4xgoxxr] {
+  border-top: var(--o1l-use-primary-modal-header-border);
+  padding: calc(1em + 1px) 1em;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr[b-kqv4xgoxxr] {
+  cursor: pointer;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr:not(.active):hover[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr:not(.active):focus-within[b-kqv4xgoxxr] {
+  filter: brightness(90%);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr.active[b-kqv4xgoxxr] {
+  filter: brightness(120%);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table {
+  border-spacing: 0;
+  width: 100%;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table thead[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table thead {
+  --o1l-use-table-thead-tr-height: var(--o1l-table-thead-tr-height, 2.4em);
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table thead tr[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table thead tr {
+  height: var(--o1l-use-table-thead-tr-height);
+  z-index: 3;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table thead tr:last-of-type th[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table thead tr:last-of-type td[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table thead tr:last-of-type th, .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table thead tr:last-of-type td {
+  border-bottom: var(--o1l-use-table-head-border);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table thead tr th[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table thead tr td[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table thead tr th, .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table thead tr td {
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-head-background);
+  color: var(--o1l-use-table-head-foreground);
+  text-align: left;
+  border-top: var(--o1l-use-table-head-border);
+  border-right: var(--o1l-use-table-head-border);
+  padding: var(--o1l-use-table-cell-padding);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table thead tr th:first-of-type[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table thead tr td:first-of-type[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table thead tr th:first-of-type, .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table thead tr td:first-of-type {
+  border-left: var(--o1l-use-table-head-border);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody {
+  --o1l-use-table-tbody-tr-height: var(--o1l-table-tbody-tr-height, 2.4em);
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  z-index: 1;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr {
+  --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, rgba(128, 128, 128, 0.04));
+  --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, rgba(200, 200, 200, 0.1));
+  --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, rgba(33, 33, 33, 0.2));
+  height: var(--o1l-use-table-tbody-tr-height);
+  z-index: 2;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr th[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr td[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr th, .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr td {
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  --o1l-use-table-body-border: var(--o1l-table-body-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  border-right: var(--o1l-use-table-body-border);
+  border-bottom: var(--o1l-use-table-body-border);
+  padding: var(--o1l-use-table-cell-padding);
+  text-align: left;
+  z-index: 2;
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr th:first-of-type[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr td:first-of-type[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr th:first-of-type, .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr td:first-of-type {
+  border-left: var(--o1l-use-table-body-border);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr:nth-child(odd)[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr:nth-child(odd) {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr:nth-child(odd) th[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr:nth-child(odd) td[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr:nth-child(odd) th, .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr:nth-child(odd) td {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr:hover[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr.force-hover-style[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr:hover, .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr.force-hover-style {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr:hover th[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr:hover td[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr.force-hover-style th[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr.force-hover-style td[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr:hover th, .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr:hover td, .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr.force-hover-style th, .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr.force-hover-style td {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr.selected[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr.selected {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+.field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr.selected th[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style table tbody tr.selected td[b-kqv4xgoxxr], .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr.selected th, .field-transform-config-modal.o1l-modal.o1l-library-style[b-kqv4xgoxxr]  table tbody tr.selected td {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+/* _content/AutomatedRealms.DataImportUtility.Components/FieldMappingComponents/OperandComponents/MappingRuleConfigPanel.razor.rz.scp.css */
+.mapping-rule-config-panel .field-input-container[b-a4wnhlwurs] {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.mapping-rule-config-panel .field-transform-config-wrapper[b-a4wnhlwurs] {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border-left: 3px solid var(--o1l-use-primary-modal-header-border, #ccc);
+}
+/* _content/AutomatedRealms.DataImportUtility.Components/FieldMappingComponents/ValueTransformationComponents/BasicValueTransformationInput.razor.rz.scp.css */
+/* _content/AutomatedRealms.DataImportUtility.Components/FieldMappingComponents/ValueTransformationComponents/ConditionalValueTransformationInput.razor.rz.scp.css */
+.conditional-transformation-input[b-m7ktxztih4] {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.conditional-transformation-input fieldset[b-m7ktxztih4] {
+  border: 1px solid var(--o1l-use-primary-modal-header-border, 1px solid rgba(200, 200, 200, 0.1));
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  margin: 0;
+}
+.conditional-transformation-input fieldset legend[b-m7ktxztih4] {
+  font-weight: bold;
+  padding: 0 0.5rem;
+}
+.conditional-transformation-input fieldset .transformation-input[b-m7ktxztih4] {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) 2fr;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  align-items: center;
+}
+.conditional-transformation-input fieldset .transformation-input:last-child[b-m7ktxztih4] {
+  margin-bottom: 0;
+}
+.conditional-transformation-input fieldset .transformation-input label[b-m7ktxztih4] {
+  font-size: 0.9rem;
+}
+.conditional-transformation-input fieldset .operand-container[b-m7ktxztih4], .conditional-transformation-input fieldset .mapping-container[b-m7ktxztih4] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-left: 3px solid transparent;
+  margin-bottom: 0.75rem;
+}
+.conditional-transformation-input fieldset .operand-container .operand-details[b-m7ktxztih4], .conditional-transformation-input fieldset .operand-container .mapping-details[b-m7ktxztih4], .conditional-transformation-input fieldset .mapping-container .operand-details[b-m7ktxztih4], .conditional-transformation-input fieldset .mapping-container .mapping-details[b-m7ktxztih4] {
+  padding-left: 1rem;
+}
+.conditional-transformation-input .field-input-container[b-m7ktxztih4] {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.conditional-transformation-input .condition-section[b-m7ktxztih4] {
+  border-color: var(--o1l-use-warning-color, #e88a00);
+}
+.conditional-transformation-input .condition-section .operand-container[b-m7ktxztih4] {
+  border-left-color: var(--o1l-use-warning-color, #e88a00);
+  background-color: rgba(232, 138, 0, 0.05);
+}
+.conditional-transformation-input .true-case-section[b-m7ktxztih4] {
+  border-color: var(--o1l-use-success-color, #26b050);
+}
+.conditional-transformation-input .true-case-section .mapping-container[b-m7ktxztih4] {
+  border-left-color: var(--o1l-use-success-color, #26b050);
+  background-color: rgba(38, 176, 80, 0.05);
+}
+.conditional-transformation-input .false-case-section[b-m7ktxztih4] {
+  border-color: var(--o1l-use-danger-color, #e50000);
+}
+.conditional-transformation-input .false-case-section .mapping-container[b-m7ktxztih4] {
+  border-left-color: var(--o1l-use-danger-color, #e50000);
+  background-color: rgba(229, 0, 0, 0.05);
+}
+/* _content/AutomatedRealms.DataImportUtility.Components/FieldMappingComponents/ValueTransformationComponents/ValueTransformationConfiguration.razor.rz.scp.css */
+.value-transform-rule[b-04o9c7z4bl] {
+  background: #333;
+}
+.value-transform-rule .transform-type-selector[b-04o9c7z4bl] {
+  display: grid;
+  grid-template-columns: 20ch auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+/* _content/AutomatedRealms.DataImportUtility.Components/FieldMappingComponents/ValueTransformationComponents/ValueTransformationRuleDetails.razor.rz.scp.css */
+.value-transform-details[b-ha89d1gmfu]  .transformation-input {
+  display: grid;
+  grid-template-columns: 20ch auto;
+  padding: 0.5rem;
+  align-items: center;
+  gap: 1rem;
+}
+.value-transform-details table.o1l-library-style[b-ha89d1gmfu] {
+  border-spacing: 0;
+}
+.value-transform-details table.o1l-library-style thead[b-ha89d1gmfu] {
+  --o1l-use-table-thead-tr-height: var(--o1l-table-thead-tr-height, 2.4em);
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.value-transform-details table.o1l-library-style thead tr[b-ha89d1gmfu] {
+  height: var(--o1l-use-table-thead-tr-height);
+  z-index: 3;
+}
+.value-transform-details table.o1l-library-style thead tr:last-of-type th[b-ha89d1gmfu], .value-transform-details table.o1l-library-style thead tr:last-of-type td[b-ha89d1gmfu] {
+  border-bottom: var(--o1l-use-table-head-border);
+}
+.value-transform-details table.o1l-library-style thead tr th[b-ha89d1gmfu], .value-transform-details table.o1l-library-style thead tr td[b-ha89d1gmfu] {
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-head-background);
+  color: var(--o1l-use-table-head-foreground);
+  text-align: left;
+  border-top: var(--o1l-use-table-head-border);
+  border-right: var(--o1l-use-table-head-border);
+  padding: var(--o1l-use-table-cell-padding);
+}
+.value-transform-details table.o1l-library-style thead tr th:first-of-type[b-ha89d1gmfu], .value-transform-details table.o1l-library-style thead tr td:first-of-type[b-ha89d1gmfu] {
+  border-left: var(--o1l-use-table-head-border);
+}
+.value-transform-details table.o1l-library-style tbody[b-ha89d1gmfu] {
+  --o1l-use-table-tbody-tr-height: var(--o1l-table-tbody-tr-height, 2.4em);
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  z-index: 1;
+}
+.value-transform-details table.o1l-library-style tbody tr[b-ha89d1gmfu] {
+  --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, rgba(128, 128, 128, 0.04));
+  --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, rgba(200, 200, 200, 0.1));
+  --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, rgba(33, 33, 33, 0.2));
+  height: var(--o1l-use-table-tbody-tr-height);
+  z-index: 2;
+}
+.value-transform-details table.o1l-library-style tbody tr th[b-ha89d1gmfu], .value-transform-details table.o1l-library-style tbody tr td[b-ha89d1gmfu] {
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  --o1l-use-table-body-border: var(--o1l-table-body-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  border-right: var(--o1l-use-table-body-border);
+  border-bottom: var(--o1l-use-table-body-border);
+  padding: var(--o1l-use-table-cell-padding);
+  text-align: left;
+  z-index: 2;
+}
+.value-transform-details table.o1l-library-style tbody tr th:first-of-type[b-ha89d1gmfu], .value-transform-details table.o1l-library-style tbody tr td:first-of-type[b-ha89d1gmfu] {
+  border-left: var(--o1l-use-table-body-border);
+}
+.value-transform-details table.o1l-library-style tbody tr:nth-child(odd)[b-ha89d1gmfu] {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+.value-transform-details table.o1l-library-style tbody tr:nth-child(odd) th[b-ha89d1gmfu], .value-transform-details table.o1l-library-style tbody tr:nth-child(odd) td[b-ha89d1gmfu] {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+.value-transform-details table.o1l-library-style tbody tr:hover[b-ha89d1gmfu], .value-transform-details table.o1l-library-style tbody tr.force-hover-style[b-ha89d1gmfu] {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+.value-transform-details table.o1l-library-style tbody tr:hover th[b-ha89d1gmfu], .value-transform-details table.o1l-library-style tbody tr:hover td[b-ha89d1gmfu], .value-transform-details table.o1l-library-style tbody tr.force-hover-style th[b-ha89d1gmfu], .value-transform-details table.o1l-library-style tbody tr.force-hover-style td[b-ha89d1gmfu] {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+.value-transform-details table.o1l-library-style tbody tr.selected[b-ha89d1gmfu] {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+.value-transform-details table.o1l-library-style tbody tr.selected th[b-ha89d1gmfu], .value-transform-details table.o1l-library-style tbody tr.selected td[b-ha89d1gmfu] {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+.value-transform-details table.o1l-library-style button[b-ha89d1gmfu] {
+  --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);
+  --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #004578);
+  --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #0078d4);
+  --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #004578);
+  --o1l-use-button-primary-text: var(--o1l-button-primary-text, #f0f0f0);
+  --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+  --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+  --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+  --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+  --o1l-use-link-color: var(--o1l-link-color, #2196f3);
+  --o1l-use-success-color: var(--o1l-success-color, #26b050);
+  --o1l-use-warning-color: var(--o1l-warning-color, #e88a00);
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  background: var(--o1l-use-button-primary-background);
+  border: var(--o1l-use-button-primary-border);
+  color: var(--o1l-use-button-primary-text);
+  padding: var(--o1l-use-button-padding);
+  border-radius: var(--o1l-use-button-border-radius);
+  cursor: pointer;
+}
+.value-transform-details table.o1l-library-style button:hover[b-ha89d1gmfu] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-sm[b-ha89d1gmfu] {
+  padding: var(--o1l-use-button-padding-small);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-cancel[b-ha89d1gmfu] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-cancel:hover[b-ha89d1gmfu], .value-transform-details table.o1l-library-style button.o1l-btn-cancel:focus[b-ha89d1gmfu] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only[b-ha89d1gmfu] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-ha89d1gmfu] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-ha89d1gmfu] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-remove[b-ha89d1gmfu] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-danger-color);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-remove:hover[b-ha89d1gmfu] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-add[b-ha89d1gmfu] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-success-color);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-add:hover[b-ha89d1gmfu] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-edit[b-ha89d1gmfu] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-warning-color);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-edit:hover[b-ha89d1gmfu] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-link[b-ha89d1gmfu] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+  padding: 0;
+}
+.value-transform-details table.o1l-library-style button.o1l-btn-link:hover[b-ha89d1gmfu], .value-transform-details table.o1l-library-style button.o1l-btn-link:focus[b-ha89d1gmfu] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+/* _content/AutomatedRealms.DataImportUtility.Components/FieldMappingComponents/Wrappers/FieldMapperDialog.razor.rz.scp.css */
+.o1l-modal.o1l-library-style[b-bfigj2ci9k] {
+  --o1l-use-primary-modal-background: var(--o1l-primary-modal-background, rgba(33, 33, 33, 0.2));
+  --o1l-use-primary-modal-dialog-background: var(--o1l-primary-modal-dialog-background, #222);
+  --o1l-use-primary-modal-dialog-box-shadow: var(--o1l-primary-modal-dialog-box-shadow, 0 0 10px rgba(33, 33, 33, 0.2));
+  --o1l-use-primary-modal-header-border: var(--o1l-primary-modal-header-border, 1px solid rgba(200, 200, 200, 0.1));
+  /* Styles */
+  position: fixed;
+  inset: 0;
+  background: var(--o1l-use-primary-modal-background);
+  z-index: 1;
+  animation: fadeOut-b-bfigj2ci9k 0.2s forwards;
+}
+.o1l-modal.o1l-library-style button[b-bfigj2ci9k] {
+  --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);
+  --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #004578);
+  --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #0078d4);
+  --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #004578);
+  --o1l-use-button-primary-text: var(--o1l-button-primary-text, #f0f0f0);
+  --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+  --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+  --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+  --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+  --o1l-use-link-color: var(--o1l-link-color, #2196f3);
+  --o1l-use-success-color: var(--o1l-success-color, #26b050);
+  --o1l-use-warning-color: var(--o1l-warning-color, #e88a00);
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  background: var(--o1l-use-button-primary-background);
+  border: var(--o1l-use-button-primary-border);
+  color: var(--o1l-use-button-primary-text);
+  padding: var(--o1l-use-button-padding);
+  border-radius: var(--o1l-use-button-border-radius);
+  cursor: pointer;
+}
+.o1l-modal.o1l-library-style button:hover[b-bfigj2ci9k] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-sm[b-bfigj2ci9k] {
+  padding: var(--o1l-use-button-padding-small);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-cancel[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-cancel:hover[b-bfigj2ci9k], .o1l-modal.o1l-library-style button.o1l-btn-cancel:focus[b-bfigj2ci9k] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-bfigj2ci9k] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-remove[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-danger-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-remove:hover[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-add[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-success-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-add:hover[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-edit[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-warning-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-edit:hover[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-link[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+  padding: 0;
+}
+.o1l-modal.o1l-library-style button.o1l-btn-link:hover[b-bfigj2ci9k], .o1l-modal.o1l-library-style button.o1l-btn-link:focus[b-bfigj2ci9k] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style.show[b-bfigj2ci9k] {
+  animation: fadeIn-b-bfigj2ci9k 0.2s forwards;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog[b-bfigj2ci9k] {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--o1l-use-primary-modal-dialog-background);
+  border: var(--o1l-use-primary-modal-header-border);
+  border-radius: 0.4rem;
+  overflow: clip;
+  z-index: 2;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content[b-bfigj2ci9k] {
+  box-shadow: 0 0 10px var(--o1l-use-primary-modal-dialog-box-shadow);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 30ch;
+  max-width: 80vw;
+  min-height: 10rem;
+  max-height: 80vh;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-header[b-bfigj2ci9k] {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: var(--o1l-use-primary-modal-header-border);
+  padding: 1em;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-header .o1l-modal-title[b-bfigj2ci9k] {
+  font-size: 1.25em;
+  white-space: nowrap;
+  padding-right: 1rem;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-header .o1l-btn-close[b-bfigj2ci9k] {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
+  cursor: pointer;
+  color: white;
+  background: transparent;
+  border: none;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-body[b-bfigj2ci9k] {
+  padding: 1em;
+  overflow: auto;
+}
+.o1l-modal.o1l-library-style .o1l-modal-dialog .o1l-modal-content .o1l-modal-footer[b-bfigj2ci9k] {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1em;
+  padding: 1em;
+}
+@keyframes fadeIn-b-bfigj2ci9k {
+  from {
+    display: block;
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fadeOut-b-bfigj2ci9k {
+  0% {
+    display: block;
+    opacity: 1;
+  }
+  99% {
+    display: block;
+    opacity: 0;
+  }
+  100% {
+    display: none;
+  }
+}
+.o1l-modal.o1l-library-style button[b-bfigj2ci9k] {
+  --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);
+  --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #004578);
+  --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #0078d4);
+  --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #004578);
+  --o1l-use-button-primary-text: var(--o1l-button-primary-text, #f0f0f0);
+  --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+  --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+  --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+  --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+  --o1l-use-link-color: var(--o1l-link-color, #2196f3);
+  --o1l-use-success-color: var(--o1l-success-color, #26b050);
+  --o1l-use-warning-color: var(--o1l-warning-color, #e88a00);
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  background: var(--o1l-use-button-primary-background);
+  border: var(--o1l-use-button-primary-border);
+  color: var(--o1l-use-button-primary-text);
+  padding: var(--o1l-use-button-padding);
+  border-radius: var(--o1l-use-button-border-radius);
+  cursor: pointer;
+}
+.o1l-modal.o1l-library-style button:hover[b-bfigj2ci9k] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-sm[b-bfigj2ci9k] {
+  padding: var(--o1l-use-button-padding-small);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-cancel[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-cancel:hover[b-bfigj2ci9k], .o1l-modal.o1l-library-style button.o1l-btn-cancel:focus[b-bfigj2ci9k] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-bfigj2ci9k] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-remove[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-danger-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-remove:hover[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-add[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-success-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-add:hover[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-edit[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-warning-color);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-edit:hover[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style button.o1l-btn-link[b-bfigj2ci9k] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+  padding: 0;
+}
+.o1l-modal.o1l-library-style button.o1l-btn-link:hover[b-bfigj2ci9k], .o1l-modal.o1l-library-style button.o1l-btn-link:focus[b-bfigj2ci9k] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style {
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  border-spacing: 0;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style thead {
+  --o1l-use-table-thead-tr-height: var(--o1l-table-thead-tr-height, 2.4em);
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style thead tr {
+  height: var(--o1l-use-table-thead-tr-height);
+  z-index: 3;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style thead tr:last-of-type th, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style thead tr:last-of-type td {
+  border-bottom: var(--o1l-use-table-head-border);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style thead tr th, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style thead tr td {
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-head-background);
+  color: var(--o1l-use-table-head-foreground);
+  text-align: left;
+  border-top: var(--o1l-use-table-head-border);
+  border-right: var(--o1l-use-table-head-border);
+  padding: var(--o1l-use-table-cell-padding);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style thead tr th:first-of-type, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style thead tr td:first-of-type {
+  border-left: var(--o1l-use-table-head-border);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody {
+  --o1l-use-table-tbody-tr-height: var(--o1l-table-tbody-tr-height, 2.4em);
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  z-index: 1;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr {
+  --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, rgba(128, 128, 128, 0.04));
+  --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, rgba(200, 200, 200, 0.1));
+  --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, rgba(33, 33, 33, 0.2));
+  height: var(--o1l-use-table-tbody-tr-height);
+  z-index: 2;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td {
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  --o1l-use-table-body-border: var(--o1l-table-body-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  border-right: var(--o1l-use-table-body-border);
+  border-bottom: var(--o1l-use-table-body-border);
+  padding: var(--o1l-use-table-cell-padding);
+  text-align: left;
+  z-index: 2;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th:first-of-type, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td:first-of-type {
+  border-left: var(--o1l-use-table-body-border);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:nth-child(odd) {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:nth-child(odd) th, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:nth-child(odd) td {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:hover, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.force-hover-style {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:hover th, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:hover td, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.force-hover-style th, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.force-hover-style td {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.selected {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.selected th, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.selected td {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th:has(.mapping-rule-picker-wrapper), .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th:has(.combine-fields-wrapper), .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td:has(.mapping-rule-picker-wrapper), .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td:has(.combine-fields-wrapper) {
+  vertical-align: top;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div {
+  display: flex;
+  gap: 0.5em;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper {
+  flex-direction: column;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper.combine-fields-wrapper, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper.combine-fields-wrapper, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper.combine-fields-wrapper, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper.combine-fields-wrapper {
+  align-self: flex-start;
+  justify-self: flex-start;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper.combine-fields-wrapper .combined-field, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper.combine-fields-wrapper .combined-field, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper.combine-fields-wrapper .combined-field, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper.combine-fields-wrapper .combined-field {
+  display: flex;
+  gap: 0.2em;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper.combine-fields-wrapper .combined-field > div, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper.combine-fields-wrapper .combined-field > div, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper.combine-fields-wrapper .combined-field > div, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper.combine-fields-wrapper .combined-field > div {
+  display: flex;
+  gap: 0.5em;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper button.o1l-library-style.o1l-btn-remove, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper button.o1l-library-style.o1l-btn-add, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper button.o1l-library-style.o1l-btn-remove, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper button.o1l-library-style.o1l-btn-add, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper button.o1l-library-style.o1l-btn-remove, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper button.o1l-library-style.o1l-btn-add, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper button.o1l-library-style.o1l-btn-remove, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper button.o1l-library-style.o1l-btn-add {
+  font-size: 1.4rem;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style .field-info-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style .field-info-wrapper .field-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper table.o1l-library-style .field-info-wrapper .field-name-wrapper .required-field {
+  color: var(--o1l-use-danger-color);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button {
+  --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);
+  --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #004578);
+  --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #0078d4);
+  --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #004578);
+  --o1l-use-button-primary-text: var(--o1l-button-primary-text, #f0f0f0);
+  --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+  --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+  --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+  --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+  --o1l-use-link-color: var(--o1l-link-color, #2196f3);
+  --o1l-use-success-color: var(--o1l-success-color, #26b050);
+  --o1l-use-warning-color: var(--o1l-warning-color, #e88a00);
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  background: var(--o1l-use-button-primary-background);
+  border: var(--o1l-use-button-primary-border);
+  color: var(--o1l-use-button-primary-text);
+  padding: var(--o1l-use-button-padding);
+  border-radius: var(--o1l-use-button-border-radius);
+  cursor: pointer;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button:hover {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-sm {
+  padding: var(--o1l-use-button-padding-small);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-cancel {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-cancel:hover, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-cancel:focus {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-close.o1l-btn-icon-only {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-close.o1l-btn-icon-only:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-close.o1l-btn-icon-only:hover {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-remove {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-danger-color);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-remove:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-add {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-success-color);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-add:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-edit {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-warning-color);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-edit:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-link {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+  padding: 0;
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-link:hover, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-btn-link:focus {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-library-style.o1l-btn-remove, .o1l-modal.o1l-library-style[b-bfigj2ci9k]  .field-mapper-editor-wrapper button.o1l-library-style.o1l-btn-add {
+  font-size: 1.4rem;
+}
+/* _content/AutomatedRealms.DataImportUtility.Components/FieldMappingComponents/Wrappers/FieldMapperFlyout.razor.rz.scp.css */
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn] {
+  --o1l-use-primary-flyout-background: var(--o1l-primary-flyout-background, rgba(33, 33, 33, 0.2));
+  --o1l-use-primary-flyout-content-background: var(--o1l-primary-flyout-content-background, #222);
+  --o1l-use-primary-flyout-content-border: var(--o1l-primary-flyout-content-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-primary-flyout-content-box-shadow: var(--o1l-primary-flyout-content-box-shadow, 0 0 10px rgba(33, 33, 33, 0.2));
+  --o1l-use-primary-flyout-header-border: var(--o1l-primary-flyout-header-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-primary-flyout-footer-border: var(--o1l-primary-flyout-footer-border, 1px solid rgba(200, 200, 200, 0.1));
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  background-color: var(--o1l-use-primary-flyout-background);
+  z-index: 10;
+  animation: fadeOut-b-0abx30bunn 0.2s forwards;
+}
+.o1l-flyout-wrapper.o1l-library-style .o1l-flyout-panel[b-0abx30bunn] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--o1l-use-primary-flyout-content-background);
+  z-index: 2;
+  overflow: hidden;
+  animation: flyOutToRight-b-0abx30bunn 0.2 forwards;
+  border: var(--o1l-use-primary-flyout-content-border);
+}
+.o1l-flyout-wrapper.o1l-library-style .o1l-flyout-panel .o1l-flyout-content[b-0abx30bunn] {
+  border-radius: 5px;
+  box-shadow: var(--o1l-use-primary-flyout-content-box-shadow);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+}
+.o1l-flyout-wrapper.o1l-library-style .o1l-flyout-panel .o1l-flyout-content .o1l-flyout-header[b-0abx30bunn] {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: var(--o1l-use-primary-flyout-header-border);
+  padding: 0 1em;
+}
+.o1l-flyout-wrapper.o1l-library-style .o1l-flyout-panel .o1l-flyout-content .o1l-flyout-header .o1l-flyout-title[b-0abx30bunn] {
+  font-size: 1.5em;
+  margin: 0;
+  padding: 0.4em 0;
+}
+.o1l-flyout-wrapper.o1l-library-style .o1l-flyout-panel .o1l-flyout-content .o1l-flyout-header .close[b-0abx30bunn] {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  cursor: pointer;
+  color: white;
+  background: none;
+  background-color: transparent;
+  border: none;
+}
+.o1l-flyout-wrapper.o1l-library-style .o1l-flyout-panel .o1l-flyout-content .o1l-flyout-body[b-0abx30bunn] {
+  padding: 1em;
+  overflow: auto;
+}
+.o1l-flyout-wrapper.o1l-library-style .o1l-flyout-panel .o1l-flyout-content .o1l-flyout-footer[b-0abx30bunn] {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1em;
+  padding: 1em;
+  border-top: var(--o1l-use-primary-flyout-footer-border);
+}
+.o1l-flyout-wrapper.o1l-library-style.show[b-0abx30bunn] {
+  animation: fadeIn-b-0abx30bunn 0.2s forwards;
+}
+.o1l-flyout-wrapper.o1l-library-style.show .o1l-flyout-panel[b-0abx30bunn] {
+  animation: flyInFromRight-b-0abx30bunn 0.2s forwards;
+}
+@keyframes fadeIn-b-0abx30bunn {
+  from {
+    display: block;
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fadeOut-b-0abx30bunn {
+  0% {
+    display: block;
+    opacity: 1;
+  }
+  99% {
+    display: block;
+    opacity: 0;
+  }
+  100% {
+    display: none;
+  }
+}
+@keyframes flyInFromRight-b-0abx30bunn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes flyInFromLeft-b-0abx30bunn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes flyInFromTop-b-0abx30bunn {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes flyInFromBottom-b-0abx30bunn {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes flyOutToRight-b-0abx30bunn {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes flyOutToLeft-b-0abx30bunn {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes flyOutToTop-b-0abx30bunn {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+@keyframes flyOutToBottom-b-0abx30bunn {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+.o1l-flyout-wrapper.o1l-library-style button[b-0abx30bunn] {
+  --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);
+  --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #004578);
+  --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #0078d4);
+  --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #004578);
+  --o1l-use-button-primary-text: var(--o1l-button-primary-text, #f0f0f0);
+  --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+  --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+  --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+  --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+  --o1l-use-link-color: var(--o1l-link-color, #2196f3);
+  --o1l-use-success-color: var(--o1l-success-color, #26b050);
+  --o1l-use-warning-color: var(--o1l-warning-color, #e88a00);
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  background: var(--o1l-use-button-primary-background);
+  border: var(--o1l-use-button-primary-border);
+  color: var(--o1l-use-button-primary-text);
+  padding: var(--o1l-use-button-padding);
+  border-radius: var(--o1l-use-button-border-radius);
+  cursor: pointer;
+}
+.o1l-flyout-wrapper.o1l-library-style button:hover[b-0abx30bunn] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-sm[b-0abx30bunn] {
+  padding: var(--o1l-use-button-padding-small);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-cancel[b-0abx30bunn] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-cancel:hover[b-0abx30bunn], .o1l-flyout-wrapper.o1l-library-style button.o1l-btn-cancel:focus[b-0abx30bunn] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only[b-0abx30bunn] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-0abx30bunn] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-close.o1l-btn-icon-only:hover[b-0abx30bunn] {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-remove[b-0abx30bunn] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-danger-color);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-remove:hover[b-0abx30bunn] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-add[b-0abx30bunn] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-success-color);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-add:hover[b-0abx30bunn] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-edit[b-0abx30bunn] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-warning-color);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-edit:hover[b-0abx30bunn] {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-link[b-0abx30bunn] {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+  padding: 0;
+}
+.o1l-flyout-wrapper.o1l-library-style button.o1l-btn-link:hover[b-0abx30bunn], .o1l-flyout-wrapper.o1l-library-style button.o1l-btn-link:focus[b-0abx30bunn] {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style {
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  border-spacing: 0;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style thead {
+  --o1l-use-table-thead-tr-height: var(--o1l-table-thead-tr-height, 2.4em);
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style thead tr {
+  height: var(--o1l-use-table-thead-tr-height);
+  z-index: 3;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style thead tr:last-of-type th, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style thead tr:last-of-type td {
+  border-bottom: var(--o1l-use-table-head-border);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style thead tr th, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style thead tr td {
+  --o1l-use-table-head-background: var(--o1l-table-head-background, #222);
+  --o1l-use-table-head-foreground: var(--o1l-table-head-foreground, #fff);
+  --o1l-use-table-head-border: var(--o1l-table-head-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-head-background);
+  color: var(--o1l-use-table-head-foreground);
+  text-align: left;
+  border-top: var(--o1l-use-table-head-border);
+  border-right: var(--o1l-use-table-head-border);
+  padding: var(--o1l-use-table-cell-padding);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style thead tr th:first-of-type, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style thead tr td:first-of-type {
+  border-left: var(--o1l-use-table-head-border);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody {
+  --o1l-use-table-tbody-tr-height: var(--o1l-table-tbody-tr-height, 2.4em);
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  z-index: 1;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr {
+  --o1l-use-table-body-row-background-alt: var(--o1l-table-body-row-background-alt, rgba(128, 128, 128, 0.04));
+  --o1l-use-table-body-row-selected-background: var(--o1l-table-body-row-selected-background, rgba(200, 200, 200, 0.1));
+  --o1l-use-table-body-row-hover-background: var(--o1l-table-body-row-hover-background, rgba(33, 33, 33, 0.2));
+  height: var(--o1l-use-table-tbody-tr-height);
+  z-index: 2;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td {
+  --o1l-use-table-body-background: var(--o1l-table-body-background, #333);
+  --o1l-use-table-body-foreground: var(--o1l-table-body-foreground, #fff);
+  --o1l-use-table-body-border: var(--o1l-table-body-border, 1px solid rgba(200, 200, 200, 0.1));
+  --o1l-use-table-cell-padding: var(--o1l-table-cell-padding, 0.4rem 0.6rem);
+  background: var(--o1l-use-table-body-background);
+  color: var(--o1l-use-table-body-foreground);
+  border-right: var(--o1l-use-table-body-border);
+  border-bottom: var(--o1l-use-table-body-border);
+  padding: var(--o1l-use-table-cell-padding);
+  text-align: left;
+  z-index: 2;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th:first-of-type, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td:first-of-type {
+  border-left: var(--o1l-use-table-body-border);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:nth-child(odd) {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:nth-child(odd) th, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:nth-child(odd) td {
+  background: var(--o1l-use-table-body-row-background-alt);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:hover, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.force-hover-style {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:hover th, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr:hover td, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.force-hover-style th, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.force-hover-style td {
+  background: var(--o1l-use-table-body-row-hover-background);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.selected {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.selected th, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr.selected td {
+  background: var(--o1l-use-table-body-row-selected-background);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th:has(.mapping-rule-picker-wrapper), .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th:has(.combine-fields-wrapper), .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td:has(.mapping-rule-picker-wrapper), .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td:has(.combine-fields-wrapper) {
+  vertical-align: top;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div {
+  display: flex;
+  gap: 0.5em;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper {
+  flex-direction: column;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper.combine-fields-wrapper, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper.combine-fields-wrapper, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper.combine-fields-wrapper, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper.combine-fields-wrapper {
+  align-self: flex-start;
+  justify-self: flex-start;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper.combine-fields-wrapper .combined-field, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper.combine-fields-wrapper .combined-field, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper.combine-fields-wrapper .combined-field, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper.combine-fields-wrapper .combined-field {
+  display: flex;
+  gap: 0.2em;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper.combine-fields-wrapper .combined-field > div, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper.combine-fields-wrapper .combined-field > div, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper.combine-fields-wrapper .combined-field > div, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper.combine-fields-wrapper .combined-field > div {
+  display: flex;
+  gap: 0.5em;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper button.o1l-library-style.o1l-btn-remove, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.combine-fields-wrapper button.o1l-library-style.o1l-btn-add, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper button.o1l-library-style.o1l-btn-remove, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr th > div.mapping-rule-picker-wrapper button.o1l-library-style.o1l-btn-add, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper button.o1l-library-style.o1l-btn-remove, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.combine-fields-wrapper button.o1l-library-style.o1l-btn-add, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper button.o1l-library-style.o1l-btn-remove, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style tbody tr td > div.mapping-rule-picker-wrapper button.o1l-library-style.o1l-btn-add {
+  font-size: 1.4rem;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style .field-info-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style .field-info-wrapper .field-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper table.o1l-library-style .field-info-wrapper .field-name-wrapper .required-field {
+  color: var(--o1l-use-danger-color);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button {
+  --o1l-use-button-primary-background: var(--o1l-button-primary-background, #0078d4);
+  --o1l-use-button-primary-background-hover: var(--o1l-button-primary-background-hover, #004578);
+  --o1l-use-button-primary-border: var(--o1l-button-primary-border, 1px solid #0078d4);
+  --o1l-use-button-primary-border-hover: var(--o1l-button-primary-border-hover, 1px solid #004578);
+  --o1l-use-button-primary-text: var(--o1l-button-primary-text, #f0f0f0);
+  --o1l-use-button-primary-text-hover: var(--o1l-button-primary-text-hover, var(--o1l-use-button-primary-text));
+  --o1l-use-button-padding: var(--o1l-button-padding, .5rem 1rem);
+  --o1l-use-button-padding-small: var(--o1l-button-padding-small, .25rem);
+  --o1l-use-button-border-radius: var(--o1l-button-border-radius, .4rem);
+  --o1l-use-link-color: var(--o1l-link-color, #2196f3);
+  --o1l-use-success-color: var(--o1l-success-color, #26b050);
+  --o1l-use-warning-color: var(--o1l-warning-color, #e88a00);
+  --o1l-use-danger-color: var(--o1l-danger-color, #e50000);
+  background: var(--o1l-use-button-primary-background);
+  border: var(--o1l-use-button-primary-border);
+  color: var(--o1l-use-button-primary-text);
+  padding: var(--o1l-use-button-padding);
+  border-radius: var(--o1l-use-button-border-radius);
+  cursor: pointer;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button:hover {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-sm {
+  padding: var(--o1l-use-button-padding-small);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-cancel {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-cancel:hover, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-cancel:focus {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-close.o1l-btn-icon-only {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-close.o1l-btn-icon-only:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-close.o1l-btn-icon-only:hover {
+  background: var(--o1l-use-button-primary-background-hover);
+  border: var(--o1l-use-button-primary-border-hover);
+  color: var(--o1l-use-button-primary-text-hover);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-remove {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-danger-color);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-remove:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-add {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-success-color);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-add:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-edit {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-button-primary-text);
+  color: var(--o1l-use-warning-color);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-edit:hover {
+  background: transparent;
+  border: none;
+  color: unset;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-link {
+  background: transparent;
+  border: none;
+  color: var(--o1l-use-link-color);
+  padding: 0;
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-link:hover, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-btn-link:focus {
+  text-decoration: underline;
+  filter: brightness(110%);
+}
+.o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-library-style.o1l-btn-remove, .o1l-flyout-wrapper.o1l-library-style[b-0abx30bunn]  .field-mapper-editor-wrapper button.o1l-library-style.o1l-btn-add {
+  font-size: 1.4rem;
+}
+/* _content/AutomatedRealms.DataImportUtility.Components/FilePickerComponent/DataFilePicker.razor.rz.scp.css */
+.data-file-picker.o1l-library-style[b-o9fx88lx3d] {
+  --o1l-use-upload-area-bg-color: var(--o1l-upload-area-bg-color, #0078d4);
+  --o1l-use-upload-area-bg-hover-color: var(--o1l-upload-area-bg-hover-color, #004578);
+  --o1l-use-upload-area-border-color: var(--o1l-upload-area-border-color, #0078d4);
+  --o1l-use-upload-area-border-hover-color: var(--o1l-upload-area-border-hover-color, #004578);
+  --o1l-use-upload-area-text-color: var(--o1l-upload-area-text-color, #f0f0f0);
+  --o1l-use-upload-area-text-hover-color: var(--o1l-upload-area-text-hover-color, var(--o1l-use-upload-area-text-color));
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+.data-file-picker.o1l-library-style label.upload-wrapper[b-o9fx88lx3d] {
+  position: relative;
+  cursor: pointer;
+  display: grid;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: hidden;
+  padding: 0.5rem 1rem;
+  border-radius: 0.4rem;
+  border: 3px solid transparent;
+  outline: 1px solid var(--o1l-use-upload-area-border-color);
+  background-color: var(--o1l-use-upload-area-bg-color);
+  color: var(--o1l-use-upload-area-text-color);
+}
+.data-file-picker.o1l-library-style label.upload-wrapper.has-hover[b-o9fx88lx3d] {
+  background-color: var(--o1l-use-upload-area-bg-hover-color);
+  outline: 3px dashed var(--o1l-use-upload-area-border-hover-color);
+  color: var(--o1l-use-upload-area-text-hover-color);
+}
+.data-file-picker.o1l-library-style label.upload-wrapper .label-text[b-o9fx88lx3d] {
+  display: grid;
+  grid-row: 1;
+  grid-column: 1;
+  z-index: 1;
+  cursor: pointer;
+  pointer-events: none;
+  margin: 0;
+}
+.data-file-picker.o1l-library-style label.upload-wrapper[b-o9fx88lx3d]  input[type=file] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 10rem;
+  opacity: 0;
+  cursor: pointer;
+}
+.data-file-picker.o1l-library-style p[b-o9fx88lx3d] {
+  margin: 0;
+}
+.data-file-picker.o1l-library-style p.file-display[b-o9fx88lx3d] {
+  font-size: 0.8em;
+}
