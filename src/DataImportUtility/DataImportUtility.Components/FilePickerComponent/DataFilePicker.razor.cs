@@ -1,8 +1,5 @@
-﻿using DataImportUtility.Components.Abstractions;
-using DataImportUtility.Components.Models;
-using DataImportUtility.Components.State;
+﻿using DataImportUtility.Components.Models;
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace DataImportUtility.Components.FilePickerComponent;
@@ -10,33 +7,8 @@ namespace DataImportUtility.Components.FilePickerComponent;
 /// <summary>
 /// The data file reader component.
 /// </summary>
-public partial class DataFilePicker : FileImportUtilityComponentBase
+public partial class DataFilePicker : DataFilePickerComponentBase
 {
-    /// <summary>
-    /// The default title for the data file picker.
-    /// </summary>
-    internal const string _defaultDataFilePickerTitle = "Select this or drag and drop a data file here";
-
-    /// <summary>
-    /// The callback for when a file is picked.
-    /// </summary>
-    [Parameter] public EventCallback<ImportDataFileRequest> OnFileRequestChanged { get; set; }
-    /// <summary>
-    /// Gets or sets whether the file reader is disabled.
-    /// </summary>
-    [Parameter] public bool Disabled { get; set; }
-    /// <summary>
-    /// The upload area label text.
-    /// </summary>
-    /// <remarks>
-    /// Defaults to "Select this or drag and drop a data file here".
-    /// </remarks>
-    [Parameter] public string UploadAreaLabelText { get; set; } = _defaultDataFilePickerTitle;
-    /// <summary>
-    /// Whether to register this component to the <see cref="DataFileMapperState" /> (if one was provided).
-    /// </summary>
-    [Parameter] public bool RegisterSelfToState { get; set; } = true;
-
     private ImportDataFileRequest? _selectedFileRequest;
 
     private bool _fileHovered;

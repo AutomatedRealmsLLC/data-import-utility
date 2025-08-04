@@ -1,5 +1,4 @@
-﻿using DataImportUtility.Components.Abstractions;
-using DataImportUtility.Components.FieldMappingComponents;
+﻿using DataImportUtility.Components.FieldMappingComponents;
 using DataImportUtility.Components.FilePickerComponent;
 
 namespace DataImportUtility.Components.Extensions;
@@ -26,7 +25,7 @@ public class DataFileMapperUiOptions
         get => _fieldMapperComponentType;
         set
         {
-            // Throw an exception if the type is not a subclass of <see cref="FieldMapperEditorBase" />
+            // Throw an exception if the type is not a subclass of FieldMapperEditorBase
             // or if it is not a concrete type.
             if (value is null)
             {
@@ -64,16 +63,16 @@ public class DataFileMapperUiOptions
         get => _dataFilePickerComponentType;
         set
         {
-            // Throw an exception if the type is not a subclass of FileImportUtilityComponentBase
+            // Throw an exception if the type is not a subclass of DataFilePickerComponentBase
             // or if it is not a concrete type.
             if (value is null)
             {
                 _dataFilePickerComponentType = typeof(DataFilePicker);
                 return;
             }
-            if (!typeof(FileImportUtilityComponentBase).IsAssignableFrom(value))
+            if (!typeof(DataFilePickerComponentBase).IsAssignableFrom(value))
             {
-                throw new ArgumentException($"The type {value.FullName} is not a subclass of {nameof(FileImportUtilityComponentBase)}.", nameof(value));
+                throw new ArgumentException($"The type {value.FullName} is not a subclass of {nameof(DataFilePickerComponentBase)}.", nameof(value));
             }
             else if (value.IsAbstract)
             {

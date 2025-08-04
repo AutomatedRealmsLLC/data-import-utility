@@ -1,19 +1,22 @@
-@inherits FileImportUtilityComponentBase
+@inherits DataFilePickerComponentBase
 
-<ErrorBoundary Context="errorContext">
-    <ErrorContent>
-        <DefaultErrorContextContent ErrorContext=errorContext
-                                    ApplyDefaultCss=ApplyDefaultCss />
-        @RenderMainContent
-    </ErrorContent>
-    <ChildContent>
-        @RenderMainContent
-    </ChildContent>
-</ErrorBoundary>
+@RenderMainContent
 
 @code {
-    private RenderFragment RenderMainContent =>
-    @<div class="data-file-picker@(DefaultCssClass)"
+    public override RenderFragment RenderMainContent =>
+    @<ErrorBoundary Context="errorContext">
+        <ErrorContent>
+            <DefaultErrorContextContent ErrorContext=errorContext
+                                        ApplyDefaultCss=ApplyDefaultCss />
+            @MainContent
+        </ErrorContent>
+        <ChildContent>
+            @MainContent
+        </ChildContent>
+    </ErrorBoundary>;
+
+    private RenderFragment MainContent => 
+        @<div class="data-file-picker@(DefaultCssClass)"
           data-from-component="@nameof(DataFilePicker)"
           data-component-instance="@InstanceId"
           data-mapper-state="@MapperStateId">
