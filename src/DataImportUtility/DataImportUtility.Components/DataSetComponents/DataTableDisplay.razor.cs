@@ -12,7 +12,7 @@ namespace DataImportUtility.Components.DataSetComponents;
 /// <summary>
 /// The Component to display a <see cref="DataTable" />.
 /// </summary>
-public partial class DataTableDisplay : FileImportUtilityComponentBase
+public partial class DataTableDisplay : DataFilePickerComponentBase
 {
     [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
 

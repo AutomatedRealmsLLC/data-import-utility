@@ -1,4 +1,6 @@
-﻿using DataImportUtility.Components.FieldMappingComponents;
+﻿using DataImportUtility.Components.Abstractions;
+using DataImportUtility.Components.FieldMappingComponents;
+using DataImportUtility.Components.FilePickerComponent;
 
 namespace DataImportUtility.Components.Extensions;
 
@@ -53,4 +55,40 @@ public class DataFileMapperUiOptions
         }
     }
     private Type _fieldMapperComponentType = typeof(FieldMapperEditor);
+
+    /// <summary>
+    /// The data file picker component to use.  The default is <see cref="DataFilePicker" />.
+    /// </summary>
+    public Type DataFilePickerComponentType
+    {
+        get => _dataFilePickerComponentType;
+        set
+        {
+            // Throw an exception if the type is not a subclass of DataFilePickerComponentType
+            // or if it is not a concrete type.
+            if (value is null)
+            {
+                _dataFilePickerComponentType = typeof(DataFilePicker);
+                return;
+            }
+            if (!typeof(DataFilePickerComponentBase).IsAssignableFrom(value))
+            {
+                throw new ArgumentException($"The type {value.FullName} is not a subclass of {nameof(DataFilePickerComponentBase)}.", nameof(value));
+            }
+            else if (value.IsAbstract)
+            {
+                throw new ArgumentException($"The type {value.FullName} is an abstract type.", nameof(value));
+            }
+            else if (value.IsGenericTypeDefinition)
+            {
+                throw new ArgumentException($"The type {value.FullName} is a generic type definition.", nameof(value));
+            }
+            else if (value.IsInterface)
+            {
+                throw new ArgumentException($"The type {value.FullName} is an interface.", nameof(value));
+            }
+            _dataFilePickerComponentType = value;
+        }
+    }
+    private Type _dataFilePickerComponentType = typeof(DataFilePicker);
 }

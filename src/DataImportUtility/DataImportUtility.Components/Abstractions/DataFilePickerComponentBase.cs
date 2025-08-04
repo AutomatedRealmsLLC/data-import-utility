@@ -10,7 +10,7 @@ namespace DataImportUtility.Components.Abstractions;
 /// <remarks>
 /// The components in the library can use an optional <see cref="IDataFileMapperState" /> to share state between components. They will be associated with the context of the <see cref="IDataFileMapperState" /> if one is provided, otherwise they will be associated with each other using a unique State identifier.
 /// </remarks>
-public abstract class FileImportUtilityComponentBase : ComponentBase
+public abstract class DataFilePickerComponentBase : ComponentBase
 {
     /// <summary>
     /// The <see cref="DataFileMapperState" /> to use.

@@ -12,7 +12,7 @@ namespace DataImportUtility.Components.FieldMappingComponents.ValueTransformatio
 /// <summary>
 /// Displays the configuration <see cref="ValueTransformationBase" /> to transform a value using.
 /// </summary>
-public partial class ValueTransformationConfiguration : FileImportUtilityComponentBase
+public partial class ValueTransformationConfiguration : DataFilePickerComponentBase
 {
     private readonly List<ValueTransformationBase> _createdTransformations = [];
 

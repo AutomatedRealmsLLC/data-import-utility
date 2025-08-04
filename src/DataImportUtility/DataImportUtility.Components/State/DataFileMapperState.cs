@@ -160,7 +160,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
 
     #region Component Callback Registrations
     /// <inheritdoc />
-    public virtual void RegisterFilePicker(FileImportUtilityComponentBase dataFilePicker)
+    public virtual void RegisterFilePicker(DataFilePickerComponentBase dataFilePicker)
     {
         dataFilePicker.OnFileRequestChangedInternal = new EventCallbackFactory().Create<ImportDataFileRequest>(this, HandleFilePicked);
     }

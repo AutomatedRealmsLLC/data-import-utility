@@ -108,7 +108,7 @@ public interface IDataFileMapperState : INotifyPropertyChanged, INotifyPropertyC
     /// Registers the file picker component.
     /// </summary>
     /// <param name="dataFilePicker">The file picker component to register.</param>
-    void RegisterFilePicker(FileImportUtilityComponentBase dataFilePicker);
+    void RegisterFilePicker(DataFilePickerComponentBase dataFilePicker);
 
     /// <summary>
     /// Sets the field mappings for a table.

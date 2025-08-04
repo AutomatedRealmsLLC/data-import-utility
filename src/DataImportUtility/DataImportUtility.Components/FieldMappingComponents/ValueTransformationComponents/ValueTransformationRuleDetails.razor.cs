@@ -12,7 +12,7 @@ namespace DataImportUtility.Components.FieldMappingComponents.ValueTransformatio
 /// <summary>
 /// Displays the detail input for a <see cref="ValueTransformationBase" /> rule.
 /// </summary>
-public partial class ValueTransformationRuleDetails : FileImportUtilityComponentBase
+public partial class ValueTransformationRuleDetails : DataFilePickerComponentBase
 {
     /// <summary>
     /// The output target to display the configuration for.

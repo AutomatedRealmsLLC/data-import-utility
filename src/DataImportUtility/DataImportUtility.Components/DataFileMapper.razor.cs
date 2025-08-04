@@ -21,7 +21,7 @@ namespace DataImportUtility.Components;
 /// <remarks>
 /// You can provide your own <see cref="IDataFileMapperState"/> using a <see cref="CascadingValue{IDataFileMapperState}"/>. This allows you to control the state of the data file mapper more directly. If you do not provide your own, a new <see cref="DataFileMapperState" /> will be created and managed internally.
 /// </remarks>
-public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBase, IDisposable
+public partial class DataFileMapper<TTargetType> : DataFilePickerComponentBase, IDisposable
     where TTargetType : class, new()
 {
     [Inject] private IJSRuntime JsRuntime { get; set; } = default!;

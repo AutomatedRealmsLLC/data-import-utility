@@ -10,7 +10,7 @@ namespace DataImportUtility.Components.FilePickerComponent;
 /// <summary>
 /// The data file reader component.
 /// </summary>
-public partial class DataFilePicker : FileImportUtilityComponentBase
+public partial class DataFilePicker : DataFilePickerComponentBase
 {
     /// <summary>
     /// The default title for the data file picker.

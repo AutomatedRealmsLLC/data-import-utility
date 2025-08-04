@@ -7,7 +7,7 @@ namespace DataImportUtility.Components.CustomErrorBoundaryComponent;
 /// <summary>
 /// The default error context content component.
 /// </summary>
-public partial class DefaultErrorContextContent : FileImportUtilityComponentBase
+public partial class DefaultErrorContextContent : DataFilePickerComponentBase
 {
     /// <summary>
     /// The error context.

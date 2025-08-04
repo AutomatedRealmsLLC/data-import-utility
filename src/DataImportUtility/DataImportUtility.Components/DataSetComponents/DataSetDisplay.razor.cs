@@ -11,7 +11,7 @@ namespace DataImportUtility.Components.DataSetComponents;
 /// <summary>
 /// The Component to display a <see cref="System.Data.DataSet" />.
 /// </summary>
-public partial class DataSetDisplay : FileImportUtilityComponentBase
+public partial class DataSetDisplay : DataFilePickerComponentBase
 {
     /// <summary>
     /// The data set to display.
