@@ -3,6 +3,7 @@ const eventHandlersMap = new Map<HTMLElement, { [key: string]: EventListener }>(
 interface ExtendedMouseEvent extends MouseEvent {
     customDetail?: {
         originalTarget?: EventTarget;
+        dispatchCount?: number;
     };
 }
 
@@ -147,14 +148,15 @@ export function elementExists(elemOrSelector: string | HTMLElement): boolean {
 }
 
 function handleAndCloneMouseEvent(event: MouseEvent | ExtendedMouseEvent, elem1: HTMLElement, elem2: HTMLElement) {
-    // Prevent infinite loop by checking if the event was already dispatched
+    // Prevent infinite loop by checking if the event was already dispatched and limiting the dispatch count
     const origEvent = event as ExtendedMouseEvent;
     const originalElement = origEvent?.customDetail?.originalTarget;
-    if (originalElement === event.currentTarget) {
+    let dispatchCount = origEvent?.customDetail?.dispatchCount ?? 0;
+    if (originalElement === event.currentTarget || dispatchCount >= 10) {
         return;
     }
 
-    var curTarget = event.currentTarget as HTMLElement;
+    let curTarget = event.currentTarget as HTMLElement;
 
     if (event.type === 'mouseover' && !curTarget.classList.contains('force-hover-style')) {
         curTarget.classList.add('force-hover-style');
@@ -170,7 +172,7 @@ function handleAndCloneMouseEvent(event: MouseEvent | ExtendedMouseEvent, elem1:
         cancelable: true, // Allow the event to be canceled
     }) as ExtendedMouseEvent;
 
-    clonedEvent.customDetail = { originalTarget: origEvent?.customDetail?.originalTarget ?? event.currentTarget };
+    clonedEvent.customDetail = { originalTarget: origEvent?.customDetail?.originalTarget ?? event.currentTarget, dispatchCount: dispatchCount + 1 };
 
     event.currentTarget === elem1
         ? elem2.dispatchEvent(clonedEvent)
