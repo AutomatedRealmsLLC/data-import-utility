@@ -76,7 +76,7 @@ public class DataReaderService : IDataReaderService
     }
 
     #region Helpers
-    private static Task<ImportedDataFile> ProcessDataSet(IImportDataFileRequest request, DataSet dataSet, CancellationToken ct = default)
+    private static async Task<ImportedDataFile> ProcessDataSet(IImportDataFileRequest request, DataSet dataSet, CancellationToken ct = default)
     {
         var dataFile = new ImportedDataFile()
         {
@@ -89,7 +89,7 @@ public class DataReaderService : IDataReaderService
 
         if (dataSet.Tables.Count == 0)
         {
-            return Task.FromResult(dataFile);
+            return dataFile;
         }
 
         // If this is a CSV file, there is only one table, so return it
@@ -100,11 +100,11 @@ public class DataReaderService : IDataReaderService
             // Check that the table has data
             if (dataTable.Rows.Count == 0)
             {
-                return Task.FromResult(dataFile);
+                return dataFile;
             }
 
-            dataFile.SetData(dataSet, true);
-            return Task.FromResult(dataFile);
+            await dataFile.SetDataAsync(dataSet, true);
+            return dataFile;
         }
 
         var sheetName = request.SheetName ?? string.Empty;
@@ -124,16 +124,16 @@ public class DataReaderService : IDataReaderService
             // Check if it has data
             if (useDataTable.Rows.Count == 0)
             {
-                return Task.FromResult(dataFile);
+                return dataFile;
             }
 
             // Since we are returning only one sheet, we can process it now
             // Remove the other tables
             dataSet.Tables.Clear();
             dataSet.Tables.Add(useDataTable);
-            dataFile.SetData(dataSet, true);
+            await dataFile.SetDataAsync(dataSet, true);
 
-            return Task.FromResult(dataFile);
+            return dataFile;
         }
 
         // If we are here, no sheet name was specified
@@ -160,9 +160,9 @@ public class DataReaderService : IDataReaderService
             }
         }
 
-        dataFile.SetData(dataSet, false);
+        await dataFile.SetDataAsync(dataSet, false);
 
-        return Task.FromResult(dataFile);
+        return dataFile;
     }
     #endregion Helpers
 }

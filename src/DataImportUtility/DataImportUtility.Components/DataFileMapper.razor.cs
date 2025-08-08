@@ -233,7 +233,7 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
         _myDataFileMapperState.FieldMapperDisplayMode = FieldMapperDisplayMode.Hide;
     }
 
-    private void HandleFieldMappingsChangesCommitted(IEnumerable<FieldMapping> incomingFieldMappings)
+    private async Task HandleFieldMappingsChangesCommitted(IEnumerable<FieldMapping> incomingFieldMappings)
     {
         if (_myDataFileMapperState.ActiveDataTable is null)
         {
@@ -241,7 +241,7 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
             return;
         }
 
-        _myDataFileMapperState.ReplaceFieldMappings(_myDataFileMapperState.ActiveDataTable.TableName, incomingFieldMappings);
+        await _myDataFileMapperState.ReplaceFieldMappingsAsync(_myDataFileMapperState.ActiveDataTable.TableName, incomingFieldMappings);
         _myDataFileMapperState.FieldMapperDisplayMode = FieldMapperDisplayMode.Hide;
     }
 

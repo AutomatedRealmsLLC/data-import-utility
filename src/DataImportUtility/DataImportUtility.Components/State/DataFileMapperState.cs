@@ -218,6 +218,22 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     }
 
     /// <inheritdoc />
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the <see cref="DataFile" /> or its <see cref="ImportedDataFile.DataSet"/> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">Thrown when the table does not exist in the data set.</exception>
+    public virtual async Task ReplaceFieldMappingsAsync(string tableName, IEnumerable<FieldMapping> incomingFieldMappings)
+    {
+        if (DataFile is null)
+        {
+            throw new InvalidOperationException("DataFile is null.");
+        }
+
+        await DataFile.ReplaceFieldMappingsAsync(tableName, incomingFieldMappings);
+        OnFieldMappingsChanged?.Invoke();
+    }
+
+    /// <inheritdoc />
     public virtual Task UpdateHeaderRowFlag(bool hasHeaderRow)
     {
         _fileReadRequest.HasHeaderRow = hasHeaderRow;
@@ -242,12 +258,12 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
 
             // Refresh the ImportedRecordFieldDescriptors
             DataFile.RefreshFieldDescriptors(false);
-            DataFile.RefreshFieldMappings(false);
+            await DataFile.RefreshFieldMappingsAsync(false);
 
             // Update target type auto-mappings
             if (_targetType is not null)
             {
-                DataFile.SetTargetType(_targetType, autoMatchFields: true);
+                await DataFile.SetTargetTypeAsync(_targetType, autoMatchFields: true);
             }
 
             FileReadState = FileReadState.Success;

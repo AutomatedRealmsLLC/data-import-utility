@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Diagnostics;
 
 using DataImportUtility.Abstractions;
 using DataImportUtility.Models;
@@ -55,7 +56,7 @@ public static partial class ValueTransformationHelper
     /// </remarks>
     public static async Task<DataTable> ApplyTransformation(this DataTable table, List<FieldMapping> fieldMapping, List<int>? selectedRecords = null)
     {
-        var destTable = new DataTable();
+        var destTable = new DataTable("TransformedData");
 
         // Only add columns that are in the field mapping
         foreach (var field in fieldMapping)
@@ -95,30 +96,38 @@ public static partial class ValueTransformationHelper
     /// <param name="fieldMappings">The field mapping to use for the transformation.</param>
     public static async Task ApplyTransformation(this DataRow sourceRow, DataRow destRow, List<FieldMapping> fieldMappings)
     {
-        var mappedFieldRules = fieldMappings.MappedFieldsOnly();
-
-        // Check for missing fields in the destination table
-        mappedFieldRules.CheckForMissingFields(sourceRow.Table, destRow.Table);
-
-        foreach (var fieldMap in mappedFieldRules)
+        try
         {
-            var transformedResult = await fieldMap.Apply(sourceRow);
+            var mappedFieldRules = fieldMappings.MappedFieldsOnly();
 
-            // Validate the current transformed result
-            if (!fieldMap.Validate(transformedResult, out var validationResults))
-            {
-                destRow.SetColumnError(destRow.Table.Columns[fieldMap.FieldName]!, $"{string.Join($". {Environment.NewLine}", validationResults!.Select(x => x.ErrorMessage))}.".Replace("..", "."));
-            }
+            // Check for missing fields in the destination table
+            mappedFieldRules.CheckForMissingFields(sourceRow.Table, destRow.Table);
 
-            // This needs to be split up like this since null propagation doesn't work with DBNull.Value and string?.
-            if (transformedResult?.Value is null || (string.IsNullOrWhiteSpace(transformedResult.Value) && destRow.Table.Columns[fieldMap.FieldName]!.DataType != typeof(string)))
+            foreach (var fieldMap in mappedFieldRules)
             {
-                destRow[fieldMap.FieldName] = DBNull.Value;
+                var transformedResult = await fieldMap.Apply(sourceRow);
+
+                // Validate the current transformed result
+                if (!fieldMap.Validate(transformedResult, out var validationResults))
+                {
+                    destRow.SetColumnError(destRow.Table.Columns[fieldMap.FieldName]!, $"{string.Join($". {Environment.NewLine}", validationResults!.Select(x => x.ErrorMessage))}.".Replace("..", "."));
+                }
+
+                // This needs to be split up like this since null propagation doesn't work with DBNull.Value and string?.
+                if (transformedResult?.Value is null || (string.IsNullOrWhiteSpace(transformedResult.Value) && destRow.Table.Columns[fieldMap.FieldName]!.DataType != typeof(string)))
+                {
+                    destRow[fieldMap.FieldName] = DBNull.Value;
+                }
+                else
+                {
+                    destRow[fieldMap.FieldName] = transformedResult.Value;
+                }
             }
-            else
-            {
-                destRow[fieldMap.FieldName] = transformedResult.Value; ;
-            }
+        }
+        catch (Exception ex)
+        {
+            Debug.Assert(false);
+            throw;
         }
     }
 
@@ -155,7 +164,7 @@ public static partial class ValueTransformationHelper
         {
             var property = typeof(TTargetType).GetProperty(column.ColumnName);
 
-            if (property is null) { continue; }
+            if (property is null || !property.CanWrite) { continue; }
 
             if (row[column.ColumnName] == DBNull.Value)
             {

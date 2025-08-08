@@ -118,6 +118,13 @@ public interface IDataFileMapperState : INotifyPropertyChanged, INotifyPropertyC
     void ReplaceFieldMappings(string tableName, IEnumerable<FieldMapping> incomingFieldMappings);
 
     /// <summary>
+    /// Sets the field mappings for a table.
+    /// </summary>
+    /// <param name="tableName">The name of the table.</param>
+    /// <param name="incomingFieldMappings">The field mappings to set.</param>
+    Task ReplaceFieldMappingsAsync(string tableName, IEnumerable<FieldMapping> incomingFieldMappings);
+
+    /// <summary>
     /// Updates the data file and shows the transform preview.
     /// </summary>
     Task UpdateAndShowTransformPreview();

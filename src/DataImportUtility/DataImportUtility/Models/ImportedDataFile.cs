@@ -66,7 +66,7 @@ public class ImportedDataFile
     /// </summary>
     /// <remarks>
     /// This represents the fields that are in the data as well as the mappings to a target type. 
-    /// This is updated when the <see cref="SetData(DataSet?, bool, bool)"/> or 
+    /// This is updated when the <see cref="SetData(DataSet?, bool, bool)"/> (or async version) or 
     /// <see cref="RefreshFieldDescriptors(bool, string?)"/> methods are called.
     /// </remarks>
     public List<ImportTableDefinition> TableDefinitions { get; private set; } = [];
@@ -152,6 +152,49 @@ public class ImportedDataFile
     }
 
     /// <summary>
+    /// Sets the target type for this imported data file.
+    /// </summary>
+    /// <typeparam name="TTargetType">
+    /// The type of the target object to map to.
+    /// </typeparam>
+    /// <param name="ignoreFields">
+    /// The fields to ignore when mapping to the target type.
+    /// </param>
+    /// <param name="requireFields">
+    /// The fields to mark as required when mapping to the target type.
+    /// </param>
+    public Task SetTargetTypeAsync<TTargetType>(IEnumerable<string>? ignoreFields = null, IEnumerable<string>? requireFields = null) where TTargetType : new()
+        => SetTargetTypeAsync(typeof(TTargetType), ignoreFields, requireFields);
+
+    /// <summary>
+    /// Sets the target type for this imported data file.
+    /// </summary>
+    /// <param name="targetType">The type of the target object to map to.</param>
+    /// <param name="ignoreFields">The fields to ignore when mapping to the target type.</param>
+    /// <param name="requireFields">The fields to mark as required when mapping to the target type.</param>
+    /// <param name="autoMatchFields">Try to auto match the imported fields to the target type.</param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the target type does not have a parameterless constructor.
+    /// </exception>
+    public Task SetTargetTypeAsync(Type targetType, IEnumerable<string>? ignoreFields = null, IEnumerable<string>? requireFields = null, bool autoMatchFields = false)
+    {
+        TargetType = targetType;
+
+        _targetTypeFieldMappings = null;
+
+        // Check if the target type is a class and has a parameterless constructor
+        if (targetType.GetConstructor(Type.EmptyTypes) is null)
+        {
+            throw new ArgumentException("The target type must have a parameterless constructor.");
+        }
+
+        _targetTypeFieldMappings = GenerateFieldsToMapTo(ignoreFields, requireFields);
+
+        // Refresh the field mappings
+        return RefreshFieldMappingsAsync(preserveValidMappings: false, autoMatchFields: autoMatchFields);
+    }
+
+    /// <summary>
     /// Sets the data for this imported data file and initializes the field descriptors and mappings.
     /// </summary>
     /// <param name="dataSet">The generated <see cref="System.Data.DataSet"/> produced when reading from a source file.</param>
@@ -183,6 +226,40 @@ public class ImportedDataFile
         }
 
         RefreshFieldMappings(preserveValidMappings, autoMatchFields);
+    }
+
+    /// <summary>
+    /// Sets the data for this imported data file and initializes the field descriptors and mappings.
+    /// </summary>
+    /// <param name="dataSet">The generated <see cref="System.Data.DataSet"/> produced when reading from a source file.</param>
+    /// <param name="preserveValidMappings">
+    /// Whether or not to preserve the valid mappings that already exist. 
+    /// </param>
+    /// <param name="autoMatchFields">
+    /// Try to auto match the imported fields to the target type.
+    /// </param>
+    /// <remarks>
+    /// Valid mappings mappings are those that are for tables that exist in the new 
+    /// data set and only field names that exist for that table in the new data set
+    /// are preserved when <paramref name="preserveValidMappings"/> is true.
+    /// 
+    /// If the data is null, the field descriptors will be cleared, but the all of the 
+    /// existing mappings will be preserved unless <paramref name="preserveValidMappings"/>
+    /// is false.
+    /// </remarks>
+    public virtual Task SetDataAsync(DataSet? dataSet, bool preserveValidMappings = true, bool autoMatchFields = false)
+    {
+        DataSet = dataSet;
+        TableDefinitions.Clear();
+        RefreshFieldDescriptors();
+
+        if (dataSet is null)
+        {
+            if (!preserveValidMappings) { TableDefinitions.Clear(); }
+            return Task.CompletedTask;
+        }
+
+        return RefreshFieldMappingsAsync(preserveValidMappings, autoMatchFields);
     }
 
     /// <summary>
@@ -264,10 +341,54 @@ public class ImportedDataFile
 
             if (autoMatchFields)
             {
-                TryMatchingFields(curTable.TableName);
+                TryMatchingFields(curTable.TableName).Wait();
             }
         }
     }
+
+
+    /// <summary>
+    /// Refreshes the field mappings for the current <see cref="DataSet" />.
+    /// </summary>
+    /// <param name="preserveValidMappings">
+    /// Whether or not to preserve the valid mappings that already exist.
+    /// </param>
+    /// <param name="autoMatchFields">
+    /// Try to auto match the imported fields to the target type.
+    /// </param>
+    public virtual async Task RefreshFieldMappingsAsync(bool preserveValidMappings = true, bool autoMatchFields = false)
+    {
+        if (DataSet is null || TargetType is null)
+        {
+            if (TargetType is null)
+            {
+                _targetTypeFieldMappings = null;
+            }
+            return;
+        }
+
+        foreach (var curTable in DataSet.Tables.OfType<DataTable>() ?? [])
+        {
+            // This will always give back a new instance for each field mapping
+            var fieldMappingSet = (GetTargetTypeFieldMappingCollection() ?? GenerateFieldsToMapTo()).ToArray();
+            if (preserveValidMappings && TableDefinitions.TryGetFieldMappings(curTable.TableName, out var existMappings) && existMappings is not null)
+            {
+                TableDefinitions.Get(curTable.TableName).FieldMappings = MergeValidFieldMappings(curTable, fieldMappingSet, existMappings);
+                continue;
+            }
+
+            if (!TableDefinitions.TryAdd(curTable.TableName, fieldMappings: [.. fieldMappingSet]))
+            {
+                TableDefinitions.Get(curTable.TableName).FieldMappings = [.. fieldMappingSet];
+            }
+
+            if (autoMatchFields)
+            {
+                await TryMatchingFields(curTable.TableName);
+            }
+        }
+    }
+
 
     #region Apply Methods
     /// <summary>
@@ -479,6 +600,48 @@ public class ImportedDataFile
         {
             RefreshFieldDescriptors(forTable: tableName);
             RefreshFieldMappings();
+            if (!TableDefinitions.TryGetTableDefinition(tableName, out tableDef) || tableDef is null)
+            {
+                throw new InvalidOperationException($"Failed to populate the field descriptors for the table '{tableName}'.");
+            }
+        }
+
+        tableDef.FieldMappings = incomingFieldMappings.ToList();
+        var foundDescriptors = TableDefinitions.TryGetFieldDescriptors(tableName, out var fieldDescriptors);
+
+        foreach (var fieldMapping in tableDef.FieldMappings)
+        {
+            fieldMapping.ValidationAttributes = _targetTypeFieldMappings!.First(x => x.FieldName == fieldMapping.FieldName).ValidationAttributes;
+            foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTransformations ?? []).Where(sfd => sfd?.Field is not null))
+            {
+                sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Replaces the field mappings for a table.
+    /// </summary>
+    /// <param name="tableName">The name of the table.</param>
+    /// <param name="incomingFieldMappings">The new field mappings to replace the existing ones.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the data file is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when the table does not exist in the data set.</exception>
+    public async Task ReplaceFieldMappingsAsync(string tableName, IEnumerable<FieldMapping> incomingFieldMappings)
+    {
+        if (DataSet is null)
+        {
+            throw new InvalidOperationException("Data file's DataSet is null.");
+        }
+
+        if (DataSet.Tables[tableName] is null)
+        {
+            throw new ArgumentException($"The table '{tableName}' does not exist in the data set.");
+        }
+
+        if (!TableDefinitions.TryGetTableDefinition(tableName, out var tableDef) || tableDef is null)
+        {
+            RefreshFieldDescriptors(forTable: tableName);
+            await RefreshFieldMappingsAsync();
             if (!TableDefinitions.TryGetTableDefinition(tableName, out tableDef) || tableDef is null)
             {
                 throw new InvalidOperationException($"Failed to populate the field descriptors for the table '{tableName}'.");
