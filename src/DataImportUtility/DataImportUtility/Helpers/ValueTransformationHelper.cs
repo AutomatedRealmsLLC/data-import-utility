@@ -113,20 +113,33 @@ public static partial class ValueTransformationHelper
                     destRow.SetColumnError(destRow.Table.Columns[fieldMap.FieldName]!, $"{string.Join($". {Environment.NewLine}", validationResults!.Select(x => x.ErrorMessage))}.".Replace("..", "."));
                 }
 
-                // This needs to be split up like this since null propagation doesn't work with DBNull.Value and string?.
-                if (transformedResult?.Value is null || (string.IsNullOrWhiteSpace(transformedResult.Value) && destRow.Table.Columns[fieldMap.FieldName]!.DataType != typeof(string)))
+                try
                 {
-                    destRow[fieldMap.FieldName] = DBNull.Value;
+                    // This needs to be split up like this since null propagation doesn't work with DBNull.Value and string?.
+                    if (transformedResult?.Value is null || (string.IsNullOrWhiteSpace(transformedResult.Value) && destRow.Table.Columns[fieldMap.FieldName]!.DataType != typeof(string)))
+                    {
+                        destRow[fieldMap.FieldName] = DBNull.Value;
+                    }
+                    else
+                    {
+                        destRow[fieldMap.FieldName] = transformedResult.Value;
+                    }
                 }
-                else
+                catch (ArgumentException ex)
                 {
-                    destRow[fieldMap.FieldName] = transformedResult.Value;
+                    if (ex.InnerException is FormatException sfe)
+                    {
+                        destRow.SetColumnError(destRow.Table.Columns[fieldMap.FieldName]!, $"The value '{(transformedResult?.Value ?? "<null>")}' could not be converted to the type '{destRow.Table.Columns[fieldMap.FieldName]!.DataType.Name}'. {sfe.Message}");
+                        continue;
+                    }
+
+                    throw;
                 }
             }
         }
         catch (Exception ex)
         {
-            Debug.Assert(false);
+            Debug.Assert(false, "An exception occurred when one should not have.");
             throw;
         }
     }
