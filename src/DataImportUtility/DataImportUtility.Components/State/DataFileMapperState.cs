@@ -230,7 +230,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
         }
 
         await DataFile.ReplaceFieldMappingsAsync(tableName, incomingFieldMappings);
-        OnFieldMappingsChanged?.Invoke();
+        await (OnFieldMappingsChanged?.Invoke() ?? Task.CompletedTask);
     }
 
     /// <inheritdoc />
