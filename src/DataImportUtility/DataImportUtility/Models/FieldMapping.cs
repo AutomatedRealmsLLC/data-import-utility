@@ -73,7 +73,7 @@ public class FieldMapping
     /// Whether the field has validation errors.
     /// </summary>
     [JsonIgnore]
-    public bool HasValidationErrors => _valueValidationResults.Sum(x => x.Value?.Count(y => !string.IsNullOrWhiteSpace(y?.ErrorMessage)) ?? 0) > 0;
+    public bool HasValidationErrors => _valueValidationResults.Any(x => x.Value?.Any(y => !string.IsNullOrWhiteSpace(y?.ErrorMessage)) == true) == true;
 
     /// <summary>
     /// The mapping rule to use to get the values.
