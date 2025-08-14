@@ -7,6 +7,7 @@ using DataImportUtility.Components.FieldMappingComponents.Wrappers;
 using DataImportUtility.Components.Models;
 using DataImportUtility.Components.Services;
 using DataImportUtility.Models;
+using DataImportUtility.Models.Validation;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
@@ -42,6 +43,13 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
         {
             if (SetProperty(ref _dataFile, value))
             {
+                // Configure validation for UI scenarios when DataFile is set
+                if (_dataFile is not null)
+                {
+                    ConfigureValidationForUI();
+                    SubscribeToDataFileValidationEvents();
+                }
+
                 OnDataFileChanged?.Invoke();
                 ActiveDataTable = value?.DataSet?.Tables.Count > 0
                     ? value.DataSet.Tables[0]
@@ -146,7 +154,86 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     public virtual event Func<Task>? OnFieldMapperDisplayModeChanged;
     /// <inheritdoc />
     public virtual event Func<Task>? OnShowTransformPreviewChanged;
+    /// <inheritdoc />
+    public virtual event Func<ValidationStateChangedEventArgs, Task>? OnValidationStateChanged;
     #endregion Events
+
+    #region Validation Integration
+    /// <inheritdoc />
+    public virtual Dictionary<string, FieldValidationState> GetValidationState(string tableName)
+    {
+        return DataFile?.GetValidationState(tableName) ?? [];
+    }
+
+    /// <inheritdoc />
+    public virtual async Task RefreshValidationAsync(string tableName, IEnumerable<string>? fieldNames = null)
+    {
+        if (DataFile is not null)
+        {
+            await DataFile.RefreshValidationAsync(tableName, fieldNames);
+        }
+    }
+
+    /// <inheritdoc />
+    public virtual bool HasAnyValidationErrors(string? tableName = null)
+    {
+        return DataFile?.HasAnyValidationErrors(tableName) ?? false;
+    }
+
+    /// <summary>
+    /// Configures the validation system for optimal UI scenarios.
+    /// Sets reactive mode with UI-optimized settings for responsive validation feedback.
+    /// </summary>
+    protected virtual void ConfigureValidationForUI()
+    {
+        if (DataFile is null) return;
+
+        // Configure reactive validation mode with UI-optimized settings
+        DataFile.ValidationConfiguration = new ValidationConfiguration
+        {
+            Mode = ValidationMode.Reactive,
+            ReactiveSettings = new ReactiveModeSettings
+            {
+                DebounceDelay = TimeSpan.FromMilliseconds(300), // Responsive but not excessive
+                ValidateOnMappingChange = true, // Essential for real-time field mapping feedback
+                ValidateOnDataChange = true, // Important for data file changes
+                ValidateOnTemplateChange = true // Important for template loading scenarios
+            }
+        };
+
+        // Reconfigure the validation system with new settings
+        DataFile.ReconfigureValidation();
+    }
+
+    /// <summary>
+    /// Subscribes to validation events from the DataFile to propagate them to UI components.
+    /// </summary>
+    protected virtual void SubscribeToDataFileValidationEvents()
+    {
+        if (DataFile is null) return;
+
+        DataFile.OnValidationStateChanged += HandleDataFileValidationStateChanged;
+    }
+
+    /// <summary>
+    /// Handles validation state changes from the DataFile and propagates them to UI components.
+    /// </summary>
+    /// <param name="eventArgs">The validation state change event arguments.</param>
+    protected virtual async Task HandleDataFileValidationStateChanged(ValidationStateChangedEventArgs eventArgs)
+    {
+        // Update the state version to indicate component state has changed
+        StateVersion = Guid.NewGuid();
+
+        // Propagate the validation state change to UI components
+        if (OnValidationStateChanged is not null)
+        {
+            await OnValidationStateChanged.Invoke(eventArgs);
+        }
+
+        // Also trigger general state change notification
+        await NotifyStateChangedAsync();
+    }
+    #endregion Validation Integration
 
     #region Public Methods
     /// <inheritdoc />
@@ -310,6 +397,12 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     /// <inheritdoc />
     public virtual void Dispose()
     {
+        // Unsubscribe from DataFile validation events
+        if (DataFile is not null)
+        {
+            DataFile.OnValidationStateChanged -= HandleDataFileValidationStateChanged;
+        }
+
         OnDataFileChanged = null;
         OnActiveDataTableChanged = null;
         OnFileReadError = null;
@@ -317,6 +410,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
         OnFieldMapperDisplayModeChanged = null;
         OnFieldMappingsChanged = null;
         OnShowTransformPreviewChanged = null;
+        OnValidationStateChanged = null;
 
         GC.SuppressFinalize(this);
     }

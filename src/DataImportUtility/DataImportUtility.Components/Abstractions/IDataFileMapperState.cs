@@ -5,6 +5,7 @@ using DataImportUtility.Components.DataSetComponents;
 using DataImportUtility.Components.FieldMappingComponents.Wrappers;
 using DataImportUtility.Components.Models;
 using DataImportUtility.Models;
+using DataImportUtility.Models.Validation;
 
 namespace DataImportUtility.Components.Abstractions;
 
@@ -22,6 +23,12 @@ public interface IDataFileMapperState : INotifyPropertyChanged, INotifyPropertyC
     /// Event raised when a property on the state class has changed.
     /// </summary>
     event Func<string, Task>? OnStatePropertyChanged;
+    
+    /// <summary>
+    /// Event raised when validation state changes for any field mappings.
+    /// This provides detailed information about validation changes for reactive UI systems.
+    /// </summary>
+    event Func<ValidationStateChangedEventArgs, Task>? OnValidationStateChanged;
     #endregion Events
 
     /// <summary>
@@ -92,6 +99,33 @@ public interface IDataFileMapperState : INotifyPropertyChanged, INotifyPropertyC
     /// The callback for when the show transform preview flag changes.
     /// </summary>
     event Func<Task>? OnShowTransformPreviewChanged;
+
+    #region Validation Integration
+    /// <summary>
+    /// Gets the current validation state for all field mappings in a table.
+    /// This provides access to the centralized validation state managed by the core library.
+    /// </summary>
+    /// <param name="tableName">The table name to get validation state for.</param>
+    /// <returns>Dictionary of field names to their validation states, or empty if no validation state exists.</returns>
+    Dictionary<string, FieldValidationState> GetValidationState(string tableName);
+
+    /// <summary>
+    /// Manually triggers validation for specific fields or all fields in a table.
+    /// This is useful for forcing validation refresh in response to UI events.
+    /// </summary>
+    /// <param name="tableName">The table to validate.</param>
+    /// <param name="fieldNames">Specific fields to validate, or null for all fields.</param>
+    /// <returns>A task representing the asynchronous validation operation.</returns>
+    Task RefreshValidationAsync(string tableName, IEnumerable<string>? fieldNames = null);
+
+    /// <summary>
+    /// Checks if any field mappings have validation errors.
+    /// This provides a quick way for UI components to determine if validation indicators should be shown.
+    /// </summary>
+    /// <param name="tableName">The table to check, or null for all tables.</param>
+    /// <returns>True if there are validation errors, false otherwise.</returns>
+    bool HasAnyValidationErrors(string? tableName = null);
+    #endregion Validation Integration
 
     /// <summary>
     /// Registers the data file mapper component.
