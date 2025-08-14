@@ -320,5 +320,7 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
 
         _setJsHandlersTimer.Stop();
         _setJsHandlersTimer.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

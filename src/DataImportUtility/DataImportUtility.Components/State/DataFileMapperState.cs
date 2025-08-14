@@ -317,5 +317,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
         OnFieldMapperDisplayModeChanged = null;
         OnFieldMappingsChanged = null;
         OnShowTransformPreviewChanged = null;
+
+        GC.SuppressFinalize(this);
     }
 }
