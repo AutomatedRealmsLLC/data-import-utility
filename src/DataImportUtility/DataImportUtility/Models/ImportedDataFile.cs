@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 using DataImportUtility.Abstractions;
 using DataImportUtility.Helpers;
+using DataImportUtility.Models.Validation;
 
 namespace DataImportUtility.Models;
 
@@ -14,7 +15,7 @@ namespace DataImportUtility.Models;
 /// </summary>
 // TODO: Consider making this an interface to be able to create our own implementation in the tests
 //       as opposed to using the helper class
-public class ImportedDataFile
+public class ImportedDataFile : IDisposable
 {
     #region Public Properties
     /// <summary>
@@ -78,7 +79,39 @@ public class ImportedDataFile
         .Tables
         .OfType<DataTable>()
         .Sum(x => x.Rows.Count) ?? 0;
+
+    /// <summary>
+    /// The validation configuration for this imported data file.
+    /// This controls when and how validation is performed during the data import process.
+    /// </summary>
+    public ValidationConfiguration ValidationConfiguration { get; set; } = new();
     #endregion Public Properties
+
+    #region Validation Infrastructure
+    /// <summary>
+    /// Event raised when validation state changes for any field mappings in this data file.
+    /// Provides detailed information about validation changes for reactive systems.
+    /// </summary>
+    public event Func<ValidationStateChangedEventArgs, Task>? OnValidationStateChanged;
+
+    /// <summary>
+    /// Validation states for each table and field combination.
+    /// Organized as [TableName][FieldName] -> FieldValidationState for efficient access.
+    /// </summary>
+    private readonly Dictionary<string, Dictionary<string, FieldValidationState>> _validationStates = [];
+
+    /// <summary>
+    /// Timer for debouncing validation operations in reactive mode.
+    /// Prevents excessive validation during rapid field mapping changes.
+    /// </summary>
+    private System.Timers.Timer? _validationDebounceTimer;
+
+    /// <summary>
+    /// Pending validation requests that will be processed when the debounce timer fires.
+    /// Used to batch validation operations for performance optimization.
+    /// </summary>
+    private readonly HashSet<string> _pendingValidationTables = [];
+    #endregion Validation Infrastructure
 
     #region Private/Protected fields
     /// <summary>
@@ -91,6 +124,214 @@ public class ImportedDataFile
     /// </remarks>
     private ImmutableList<FieldMapping>? _targetTypeFieldMappings;
     #endregion private/protected fields
+
+    #region Constructors and Disposal
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ImportedDataFile"/> class.
+    /// </summary>
+    public ImportedDataFile()
+    {
+        InitializeValidation();
+    }
+
+    /// <summary>
+    /// Finalizer to ensure proper cleanup of validation resources.
+    /// </summary>
+    ~ImportedDataFile()
+    {
+        Dispose(false);
+    }
+
+    /// <summary>
+    /// Disposes of validation resources and unsubscribes from events.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Protected disposal method for proper resource cleanup.
+    /// </summary>
+    /// <param name="disposing">True if disposing managed resources.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _validationDebounceTimer?.Stop();
+            _validationDebounceTimer?.Dispose();
+            _validationDebounceTimer = null;
+            OnValidationStateChanged = null;
+        }
+    }
+    #endregion Constructors and Disposal
+
+    #region Validation Methods
+    /// <summary>
+    /// Gets the current validation state for all field mappings in a table.
+    /// Creates the validation state dictionary if it doesn't exist for the table.
+    /// </summary>
+    /// <param name="tableName">The table name to get validation state for.</param>
+    /// <returns>Dictionary of field names to their validation states.</returns>
+    public Dictionary<string, FieldValidationState> GetValidationState(string tableName)
+    {
+        if (!_validationStates.TryGetValue(tableName, out var tableValidation))
+        {
+            tableValidation = [];
+            _validationStates[tableName] = tableValidation;
+        }
+        return tableValidation;
+    }
+
+    /// <summary>
+    /// Manually triggers validation for specific fields or all fields in a table.
+    /// This method performs the actual validation work and raises change events.
+    /// </summary>
+    /// <param name="tableName">The table to validate.</param>
+    /// <param name="fieldNames">Specific fields to validate, or null for all fields.</param>
+    /// <returns>A task representing the asynchronous validation operation.</returns>
+    public async Task RefreshValidationAsync(string tableName, IEnumerable<string>? fieldNames = null)
+    {
+        if (!TableDefinitions.TryGetFieldMappings(tableName, out var fieldMappings) || fieldMappings is null)
+            return;
+
+        var fieldsToValidate = fieldNames != null 
+            ? new HashSet<string>(fieldNames) 
+            : new HashSet<string>(fieldMappings.Select(fm => fm.FieldName));
+        
+        var validationState = GetValidationState(tableName);
+        var changedStates = new Dictionary<string, FieldValidationState>();
+        var hasErrors = false;
+
+        foreach (var fieldMapping in fieldMappings.Where(fm => fieldsToValidate.Contains(fm.FieldName)))
+        {
+            await fieldMapping.UpdateValidationResults();
+            
+            if (!validationState.TryGetValue(fieldMapping.FieldName, out var fieldValidationState))
+            {
+                fieldValidationState = new FieldValidationState { FieldName = fieldMapping.FieldName };
+                validationState[fieldMapping.FieldName] = fieldValidationState;
+            }
+
+            fieldValidationState.HasErrors = fieldMapping.HasValidationErrors;
+            fieldValidationState.CachedResults.Clear();
+            foreach (var kvp in fieldMapping.ValueValidationResults)
+            {
+                fieldValidationState.CachedResults[kvp.Key] = kvp.Value;
+            }
+            fieldValidationState.MarkAsValidated();
+            
+            changedStates[fieldMapping.FieldName] = fieldValidationState;
+            hasErrors = hasErrors || fieldMapping.HasValidationErrors;
+        }
+
+        if (changedStates.Count > 0)
+        {
+            var eventArgs = new ValidationStateChangedEventArgs
+            {
+                TableName = tableName,
+                FieldNames = changedStates.Keys,
+                HasErrors = hasErrors,
+                ChangedValidationStates = changedStates
+            };
+
+            await (OnValidationStateChanged?.Invoke(eventArgs) ?? Task.CompletedTask);
+        }
+    }
+
+    /// <summary>
+    /// Checks if any field mappings have validation errors.
+    /// </summary>
+    /// <param name="tableName">The table to check, or null for all tables.</param>
+    /// <returns>True if there are validation errors.</returns>
+    public bool HasAnyValidationErrors(string? tableName = null)
+    {
+        if (tableName is not null)
+        {
+            return GetValidationState(tableName).Values.Any(vs => vs.HasErrors);
+        }
+
+        return _validationStates.Values.SelectMany(table => table.Values).Any(vs => vs.HasErrors);
+    }
+
+    /// <summary>
+    /// Initializes the validation system based on the current configuration.
+    /// Sets up reactive validation timer if configured for reactive mode.
+    /// </summary>
+    private void InitializeValidation()
+    {
+        if (ValidationConfiguration.Mode == ValidationMode.Reactive)
+        {
+            _validationDebounceTimer = new System.Timers.Timer(ValidationConfiguration.ReactiveSettings.DebounceDelay.TotalMilliseconds)
+            {
+                AutoReset = false
+            };
+            _validationDebounceTimer.Elapsed += OnValidationDebounceTimerElapsed;
+        }
+    }
+
+    /// <summary>
+    /// Handles the debounce timer elapsed event for reactive validation.
+    /// Processes all pending validation requests in a batched manner.
+    /// </summary>
+    /// <param name="sender">The timer that elapsed.</param>
+    /// <param name="e">The timer elapsed event arguments.</param>
+    private async void OnValidationDebounceTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        _validationDebounceTimer?.Stop();
+        
+        var tablesToValidate = _pendingValidationTables.ToList();
+        _pendingValidationTables.Clear();
+
+        foreach (var tableName in tablesToValidate)
+        {
+            await RefreshValidationAsync(tableName);
+        }
+    }
+
+    /// <summary>
+    /// Marks validation state as stale for specified fields and triggers reactive validation if configured.
+    /// This is called internally when field mappings or data changes occur.
+    /// </summary>
+    /// <param name="tableName">The table name where validation should be marked stale.</param>
+    /// <param name="fieldNames">Specific fields to mark as stale, or null for all fields in the validation state.</param>
+    private void MarkValidationStale(string tableName, IEnumerable<string>? fieldNames = null)
+    {
+        var validationState = GetValidationState(tableName);
+        var fieldsToMark = fieldNames != null 
+            ? new HashSet<string>(fieldNames) 
+            : new HashSet<string>(validationState.Keys);
+
+        foreach (var fieldName in fieldsToMark)
+        {
+            if (validationState.TryGetValue(fieldName, out var fieldValidationState))
+            {
+                fieldValidationState.MarkAsStale();
+            }
+        }
+
+        if (ValidationConfiguration.ShouldValidateOnMappingChange)
+        {
+            _pendingValidationTables.Add(tableName);
+            _validationDebounceTimer?.Stop();
+            _validationDebounceTimer?.Start();
+        }
+    }
+
+    /// <summary>
+    /// Reconfigures the validation system when the ValidationConfiguration changes.
+    /// Recreates the debounce timer with new settings if needed.
+    /// </summary>
+    public void ReconfigureValidation()
+    {
+        _validationDebounceTimer?.Stop();
+        _validationDebounceTimer?.Dispose();
+        _validationDebounceTimer = null;
+        
+        InitializeValidation();
+    }
+    #endregion Validation Methods
 
     #region Public Methods
     /// <summary>
@@ -149,6 +390,15 @@ public class ImportedDataFile
 
         // Refresh the field mappings
         RefreshFieldMappings(preserveValidMappings: false, autoMatchFields: autoMatchFields);
+
+        // Trigger validation if configured for template changes
+        if (ValidationConfiguration.ShouldValidateOnTemplateChange && DataSet is not null)
+        {
+            foreach (var table in DataSet.Tables.OfType<DataTable>())
+            {
+                MarkValidationStale(table.TableName);
+            }
+        }
     }
 
     /// <summary>
@@ -176,7 +426,7 @@ public class ImportedDataFile
     /// <exception cref="ArgumentException">
     /// Thrown when the target type does not have a parameterless constructor.
     /// </exception>
-    public Task SetTargetTypeAsync(Type targetType, IEnumerable<string>? ignoreFields = null, IEnumerable<string>? requireFields = null, bool autoMatchFields = false)
+    public async Task SetTargetTypeAsync(Type targetType, IEnumerable<string>? ignoreFields = null, IEnumerable<string>? requireFields = null, bool autoMatchFields = false)
     {
         TargetType = targetType;
 
@@ -191,7 +441,16 @@ public class ImportedDataFile
         _targetTypeFieldMappings = GenerateFieldsToMapTo(ignoreFields, requireFields);
 
         // Refresh the field mappings
-        return RefreshFieldMappingsAsync(preserveValidMappings: false, autoMatchFields: autoMatchFields);
+        await RefreshFieldMappingsAsync(preserveValidMappings: false, autoMatchFields: autoMatchFields);
+
+        // Trigger validation if configured for template changes
+        if (ValidationConfiguration.ShouldValidateOnTemplateChange && DataSet is not null)
+        {
+            foreach (var table in DataSet.Tables.OfType<DataTable>())
+            {
+                MarkValidationStale(table.TableName);
+            }
+        }
     }
 
     /// <summary>
@@ -226,6 +485,15 @@ public class ImportedDataFile
         }
 
         RefreshFieldMappings(preserveValidMappings, autoMatchFields);
+
+        // Trigger validation if configured for data changes
+        if (ValidationConfiguration.ShouldValidateOnDataChange)
+        {
+            foreach (var table in dataSet.Tables.OfType<DataTable>())
+            {
+                MarkValidationStale(table.TableName);
+            }
+        }
     }
 
     /// <summary>
@@ -247,7 +515,7 @@ public class ImportedDataFile
     /// existing mappings will be preserved unless <paramref name="preserveValidMappings"/>
     /// is false.
     /// </remarks>
-    public virtual Task SetDataAsync(DataSet? dataSet, bool preserveValidMappings = true, bool autoMatchFields = false)
+    public virtual async Task SetDataAsync(DataSet? dataSet, bool preserveValidMappings = true, bool autoMatchFields = false)
     {
         DataSet = dataSet;
         TableDefinitions.Clear();
@@ -256,10 +524,19 @@ public class ImportedDataFile
         if (dataSet is null)
         {
             if (!preserveValidMappings) { TableDefinitions.Clear(); }
-            return Task.CompletedTask;
+            return;
         }
 
-        return RefreshFieldMappingsAsync(preserveValidMappings, autoMatchFields);
+        await RefreshFieldMappingsAsync(preserveValidMappings, autoMatchFields);
+
+        // Trigger validation if configured for data changes
+        if (ValidationConfiguration.ShouldValidateOnDataChange)
+        {
+            foreach (var table in dataSet.Tables.OfType<DataTable>())
+            {
+                MarkValidationStale(table.TableName);
+            }
+        }
     }
 
     /// <summary>
@@ -331,21 +608,24 @@ public class ImportedDataFile
             if (preserveValidMappings && TableDefinitions.TryGetFieldMappings(curTable.TableName, out var existMappings) && existMappings is not null)
             {
                 TableDefinitions.Get(curTable.TableName).FieldMappings = MergeValidFieldMappings(curTable, fieldMappingSet, existMappings);
-                continue;
             }
-
-            if (!TableDefinitions.TryAdd(curTable.TableName, fieldMappings: [.. fieldMappingSet]))
+            else
             {
-                TableDefinitions.Get(curTable.TableName).FieldMappings = [.. fieldMappingSet];
+                if (!TableDefinitions.TryAdd(curTable.TableName, fieldMappings: [.. fieldMappingSet]))
+                {
+                    TableDefinitions.Get(curTable.TableName).FieldMappings = [.. fieldMappingSet];
+                }
             }
 
             if (autoMatchFields)
             {
                 TryMatchingFields(curTable.TableName).Wait();
             }
+
+            // Mark validation as stale since field mappings changed
+            MarkValidationStale(curTable.TableName);
         }
     }
-
 
     /// <summary>
     /// Refreshes the field mappings for the current <see cref="DataSet" />.
@@ -374,18 +654,22 @@ public class ImportedDataFile
             if (preserveValidMappings && TableDefinitions.TryGetFieldMappings(curTable.TableName, out var existMappings) && existMappings is not null)
             {
                 TableDefinitions.Get(curTable.TableName).FieldMappings = MergeValidFieldMappings(curTable, fieldMappingSet, existMappings);
-                continue;
             }
-
-            if (!TableDefinitions.TryAdd(curTable.TableName, fieldMappings: [.. fieldMappingSet]))
+            else
             {
-                TableDefinitions.Get(curTable.TableName).FieldMappings = [.. fieldMappingSet];
+                if (!TableDefinitions.TryAdd(curTable.TableName, fieldMappings: [.. fieldMappingSet]))
+                {
+                    TableDefinitions.Get(curTable.TableName).FieldMappings = [.. fieldMappingSet];
+                }
             }
 
             if (autoMatchFields)
             {
                 await TryMatchingFields(curTable.TableName);
             }
+
+            // Mark validation as stale since field mappings changed
+            MarkValidationStale(curTable.TableName);
         }
     }
 
@@ -417,6 +701,9 @@ public class ImportedDataFile
         {
             throw new ArgumentException($"The table '{tableName}' does not have any field mappings.");
         }
+
+        // Always refresh validation when generating output for preview
+        await RefreshValidationAsync(tableName);
 
         // Uses the helper/extension method to apply the transformation
         return await table.ApplyTransformation(fieldMappings, selectedRecords);
@@ -574,6 +861,9 @@ public class ImportedDataFile
             matchingField.MappingRule.AddFieldTransformation(fieldDescriptor);
         }
 
+        // Mark validation as stale since field mappings were auto-matched
+        MarkValidationStale(tableName);
+
         return Task.CompletedTask;
     }
 
@@ -617,6 +907,9 @@ public class ImportedDataFile
                 sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
             }
         }
+
+        // Mark validation as stale since field mappings were replaced
+        MarkValidationStale(tableName);
     }
 
     /// <summary>
@@ -659,6 +952,9 @@ public class ImportedDataFile
                 sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
             }
         }
+
+        // Mark validation as stale since field mappings were replaced
+        MarkValidationStale(tableName);
     }
     #endregion Private Methods
 }
