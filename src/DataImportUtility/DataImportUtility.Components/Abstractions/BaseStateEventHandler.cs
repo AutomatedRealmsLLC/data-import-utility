@@ -9,6 +9,11 @@ namespace DataImportUtility.Components.Abstractions;
 public abstract class BaseStateEventHandler : INotifyPropertyChanged, INotifyPropertyChanging
 {
     /// <summary>
+    /// The version of the state. This is used to determine if the state has changed.
+    /// </summary>
+    public virtual Guid StateVersion { get; protected set; }
+
+    /// <summary>
     /// Event raised when a property value changes.
     /// </summary>
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -110,6 +115,7 @@ public abstract class BaseStateEventHandler : INotifyPropertyChanged, INotifyPro
         NotifyPropertyChanging(propertyName);
         storage = value;
         NotifyPropertyChanged(propertyName);
+        StateVersion = Guid.NewGuid();
         return true;
     }
 }

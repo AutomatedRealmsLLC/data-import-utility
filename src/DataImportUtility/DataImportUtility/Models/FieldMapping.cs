@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -201,7 +202,7 @@ public class FieldMapping
 
         if (HasValidationErrors)
         {
-            Console.WriteLine(JsonSerializer.Serialize(_valueValidationResults));
+            Debug.WriteLine(JsonSerializer.Serialize(_valueValidationResults));
         }
     }
 

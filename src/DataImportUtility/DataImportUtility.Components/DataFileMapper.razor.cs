@@ -160,8 +160,17 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
         return HandleStateChanged();
     }
 
+    private Guid? _previousStateVersion;
     private Task HandleStateChanged()
-        => InvokeAsync(StateHasChanged);
+    {
+        if (_myDataFileMapperState.StateVersion == _previousStateVersion)
+        {
+            // No state change, no need to update the UI.
+            return Task.CompletedTask;
+        }
+        _previousStateVersion = _myDataFileMapperState.StateVersion;
+        return InvokeAsync(StateHasChanged);
+    }
 
     private Task HandleFileReadError(Exception ex)
     {

@@ -25,6 +25,11 @@ public interface IDataFileMapperState : INotifyPropertyChanged, INotifyPropertyC
     #endregion Events
 
     /// <summary>
+    /// The version of the state. This is used to determine if the state has changed.
+    /// </summary>
+    Guid StateVersion { get; }
+
+    /// <summary>
     /// The active data table.
     /// </summary>
     /// <remarks>

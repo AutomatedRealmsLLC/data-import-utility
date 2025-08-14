@@ -458,5 +458,6 @@ public abstract partial class MappingRuleBase : IDisposable
     public virtual void Dispose()
     {
         OnDefinitionChanged = null;
+        GC.SuppressFinalize(this);
     }
 }

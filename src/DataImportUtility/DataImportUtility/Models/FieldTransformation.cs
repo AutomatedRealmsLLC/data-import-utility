@@ -342,5 +342,6 @@ public class FieldTransformation : IDisposable
         {
             transform.OnDefinitionChanged -= UpdateTransformationResults;
         }
+        GC.SuppressFinalize(this);
     }
 }

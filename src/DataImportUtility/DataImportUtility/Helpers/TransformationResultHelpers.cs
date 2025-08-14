@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 
 using DataImportUtility.Models;
 
@@ -30,7 +31,7 @@ public static class TransformationResultHelpers
         }
         catch (JsonException)
         {
-            Console.WriteLine("The value is not a valid JSON array.");
+            Debug.WriteLine("The value is not a valid JSON array.");
             return false;
         }
     }

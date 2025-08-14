@@ -214,6 +214,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
         }
 
         DataFile.ReplaceFieldMappings(tableName, incomingFieldMappings);
+        StateVersion = Guid.NewGuid();
         OnFieldMappingsChanged?.Invoke();
     }
 
@@ -230,6 +231,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
         }
 
         await DataFile.ReplaceFieldMappingsAsync(tableName, incomingFieldMappings);
+        StateVersion = Guid.NewGuid();
         await (OnFieldMappingsChanged?.Invoke() ?? Task.CompletedTask);
     }
 
@@ -271,8 +273,9 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
         catch (Exception ex)
         {
             FileReadState = FileReadState.Error;
-            OnFileReadError?.Invoke(ex);
             DataFile = null;
+            StateVersion = Guid.NewGuid();
+            OnFileReadError?.Invoke(ex);
 
             if (loggerFactory is null) { return; }
 

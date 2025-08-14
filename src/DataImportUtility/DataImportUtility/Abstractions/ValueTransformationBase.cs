@@ -156,5 +156,6 @@ public abstract partial class ValueTransformationBase : IDisposable
     public virtual void Dispose()
     {
         OnDefinitionChanged = null;
+        GC.SuppressFinalize(this);
     }
 }
