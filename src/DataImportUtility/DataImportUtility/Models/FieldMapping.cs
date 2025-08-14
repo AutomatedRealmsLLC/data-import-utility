@@ -79,7 +79,32 @@ public class FieldMapping
     /// <summary>
     /// The mapping rule to use to get the values.
     /// </summary>
-    public MappingRuleBase? MappingRule { get; set; }
+    public MappingRuleBase? MappingRule 
+    { 
+        get => _mappingRule; 
+        set 
+        { 
+            if (_mappingRule == value) return;
+            
+            // Unsubscribe from old mapping rule events
+            if (_mappingRule is not null)
+            {
+                _mappingRule.OnDefinitionChanged -= HandleMappingRuleDefinitionChanged;
+            }
+            
+            _mappingRule = value;
+            
+            // Subscribe to new mapping rule events
+            if (_mappingRule is not null)
+            {
+                _mappingRule.OnDefinitionChanged += HandleMappingRuleDefinitionChanged;
+            }
+            
+            // Notify that validation may need refresh due to mapping rule change
+            OnValidationMayNeedRefresh?.Invoke(FieldName);
+        } 
+    }
+    private MappingRuleBase? _mappingRule;
 
     /// <summary>
     /// The type of the mapping rule.
@@ -89,13 +114,58 @@ public class FieldMapping
     /// <summary>
     /// Whether the field is required to be mapped.
     /// </summary>
-    public bool Required { get; set; }
+    public bool Required 
+    { 
+        get => _required; 
+        set 
+        { 
+            if (_required == value) return;
+            _required = value;
+            
+            // Required field changes affect validation
+            OnValidationMayNeedRefresh?.Invoke(FieldName);
+        } 
+    }
+    private bool _required;
 
     /// <summary>
     /// Whether to ignore the mapping.
     /// </summary>
     public bool IgnoreMapping => MappingRuleType == MappingRuleType.IgnoreRule
         || (MappingRule?.IsEmpty ?? true);
+
+    #region Event-Driven Validation Integration
+    /// <summary>
+    /// Event raised when this field mapping detects that validation may need to be refreshed.
+    /// This is a lightweight event that allows the ImportedDataFile to make intelligent decisions
+    /// about when and how to perform validation based on its configuration.
+    /// </summary>
+    public event Func<string, Task>? OnValidationMayNeedRefresh;
+
+    /// <summary>
+    /// Handles when the associated mapping rule definition changes.
+    /// Notifies the parent ImportedDataFile that validation may need refreshing.
+    /// </summary>
+    private async Task HandleMappingRuleDefinitionChanged()
+    {
+        if (OnValidationMayNeedRefresh is not null)
+        {
+            await OnValidationMayNeedRefresh.Invoke(FieldName);
+        }
+    }
+
+    /// <summary>
+    /// Manually signals that validation may need to be refreshed for this field mapping.
+    /// This can be called when external factors change that might affect validation.
+    /// </summary>
+    public async Task NotifyValidationMayNeedRefresh()
+    {
+        if (OnValidationMayNeedRefresh is not null)
+        {
+            await OnValidationMayNeedRefresh.Invoke(FieldName);
+        }
+    }
+    #endregion Event-Driven Validation Integration
 
     /// <summary>
     /// Applies the mapping rule to any available data in the child <see cref="MappingRule" />.
@@ -128,6 +198,8 @@ public class FieldMapping
     {
         var forRet = (FieldMapping)MemberwiseClone();
         forRet.MappingRule = MappingRule?.Clone();
+        // Reset event subscriptions - the clone should not inherit event handlers
+        forRet.OnValidationMayNeedRefresh = null;
         return forRet;
     }
 
@@ -177,6 +249,8 @@ public class FieldMapping
 
     /// <summary>
     /// Updates the validation results cache for the field mapping.
+    /// This method performs the actual validation work and is called by the ImportedDataFile
+    /// validation coordination system.
     /// </summary>
     public async Task UpdateValidationResults()
     {

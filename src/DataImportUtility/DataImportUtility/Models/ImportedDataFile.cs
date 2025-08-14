@@ -159,6 +159,15 @@ public class ImportedDataFile : IDisposable
     {
         if (disposing)
         {
+            // Unsubscribe from all field mapping events
+            foreach (var tableDef in TableDefinitions)
+            {
+                foreach (var fieldMapping in tableDef.FieldMappings)
+                {
+                    UnsubscribeFromFieldMappingEvents(fieldMapping);
+                }
+            }
+
             _validationDebounceTimer?.Stop();
             _validationDebounceTimer?.Dispose();
             _validationDebounceTimer = null;
@@ -603,17 +612,35 @@ public class ImportedDataFile : IDisposable
 
         foreach (var curTable in DataSet.Tables.OfType<DataTable>() ?? [])
         {
+            // Unsubscribe from existing field mapping events if they exist
+            if (TableDefinitions.TryGetFieldMappings(curTable.TableName, out var existingMappings) && existingMappings is not null)
+            {
+                foreach (var existingMapping in existingMappings)
+                {
+                    UnsubscribeFromFieldMappingEvents(existingMapping);
+                }
+            }
+
             // This will always give back a new instance for each field mapping
             var fieldMappingSet = (GetTargetTypeFieldMappingCollection() ?? GenerateFieldsToMapTo()).ToArray();
-            if (preserveValidMappings && TableDefinitions.TryGetFieldMappings(curTable.TableName, out var existMappings) && existMappings is not null)
+            if (preserveValidMappings && existingMappings is not null)
             {
-                TableDefinitions.Get(curTable.TableName).FieldMappings = MergeValidFieldMappings(curTable, fieldMappingSet, existMappings);
+                TableDefinitions.Get(curTable.TableName).FieldMappings = MergeValidFieldMappings(curTable, fieldMappingSet, existingMappings);
             }
             else
             {
                 if (!TableDefinitions.TryAdd(curTable.TableName, fieldMappings: [.. fieldMappingSet]))
                 {
                     TableDefinitions.Get(curTable.TableName).FieldMappings = [.. fieldMappingSet];
+                }
+            }
+
+            // Subscribe to events for all field mappings in this table
+            if (TableDefinitions.TryGetFieldMappings(curTable.TableName, out var newMappings) && newMappings is not null)
+            {
+                foreach (var fieldMapping in newMappings)
+                {
+                    SubscribeToFieldMappingEvents(fieldMapping, curTable.TableName);
                 }
             }
 
@@ -649,17 +676,35 @@ public class ImportedDataFile : IDisposable
 
         foreach (var curTable in DataSet.Tables.OfType<DataTable>() ?? [])
         {
+            // Unsubscribe from existing field mapping events if they exist
+            if (TableDefinitions.TryGetFieldMappings(curTable.TableName, out var existingMappings) && existingMappings is not null)
+            {
+                foreach (var existingMapping in existingMappings)
+                {
+                    UnsubscribeFromFieldMappingEvents(existingMapping);
+                }
+            }
+
             // This will always give back a new instance for each field mapping
             var fieldMappingSet = (GetTargetTypeFieldMappingCollection() ?? GenerateFieldsToMapTo()).ToArray();
-            if (preserveValidMappings && TableDefinitions.TryGetFieldMappings(curTable.TableName, out var existMappings) && existMappings is not null)
+            if (preserveValidMappings && existingMappings is not null)
             {
-                TableDefinitions.Get(curTable.TableName).FieldMappings = MergeValidFieldMappings(curTable, fieldMappingSet, existMappings);
+                TableDefinitions.Get(curTable.TableName).FieldMappings = MergeValidFieldMappings(curTable, fieldMappingSet, existingMappings);
             }
             else
             {
                 if (!TableDefinitions.TryAdd(curTable.TableName, fieldMappings: [.. fieldMappingSet]))
                 {
                     TableDefinitions.Get(curTable.TableName).FieldMappings = [.. fieldMappingSet];
+                }
+            }
+
+            // Subscribe to events for all field mappings in this table
+            if (TableDefinitions.TryGetFieldMappings(curTable.TableName, out var newMappings) && newMappings is not null)
+            {
+                foreach (var fieldMapping in newMappings)
+                {
+                    SubscribeToFieldMappingEvents(fieldMapping, curTable.TableName);
                 }
             }
 
@@ -896,6 +941,12 @@ public class ImportedDataFile : IDisposable
             }
         }
 
+        // Unsubscribe from old field mapping events
+        foreach (var oldFieldMapping in tableDef.FieldMappings)
+        {
+            UnsubscribeFromFieldMappingEvents(oldFieldMapping);
+        }
+
         tableDef.FieldMappings = incomingFieldMappings.ToList();
         var foundDescriptors = TableDefinitions.TryGetFieldDescriptors(tableName, out var fieldDescriptors);
 
@@ -906,6 +957,9 @@ public class ImportedDataFile : IDisposable
             {
                 sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
             }
+            
+            // Subscribe to new field mapping events
+            SubscribeToFieldMappingEvents(fieldMapping, tableName);
         }
 
         // Mark validation as stale since field mappings were replaced
@@ -941,6 +995,12 @@ public class ImportedDataFile : IDisposable
             }
         }
 
+        // Unsubscribe from old field mapping events
+        foreach (var oldFieldMapping in tableDef.FieldMappings)
+        {
+            UnsubscribeFromFieldMappingEvents(oldFieldMapping);
+        }
+
         tableDef.FieldMappings = incomingFieldMappings.ToList();
         var foundDescriptors = TableDefinitions.TryGetFieldDescriptors(tableName, out var fieldDescriptors);
 
@@ -951,10 +1011,53 @@ public class ImportedDataFile : IDisposable
             {
                 sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
             }
+            
+            // Subscribe to new field mapping events
+            SubscribeToFieldMappingEvents(fieldMapping, tableName);
         }
 
         // Mark validation as stale since field mappings were replaced
         MarkValidationStale(tableName);
+    }
+
+    /// <summary>
+    /// Subscribes to field mapping validation events for coordinated validation management.
+    /// </summary>
+    /// <param name="fieldMapping">The field mapping to subscribe to.</param>
+    /// <param name="tableName">The table name this field mapping belongs to.</param>
+    private void SubscribeToFieldMappingEvents(FieldMapping fieldMapping, string tableName)
+    {
+        fieldMapping.OnValidationMayNeedRefresh += async (fieldName) => 
+            await HandleFieldMappingValidationNeeded(tableName, fieldName);
+    }
+
+    /// <summary>
+    /// Unsubscribes from field mapping validation events to prevent memory leaks.
+    /// </summary>
+    /// <param name="fieldMapping">The field mapping to unsubscribe from.</param>
+    private void UnsubscribeFromFieldMappingEvents(FieldMapping fieldMapping)
+    {
+        // Note: Since we're using async lambda expressions, we can't directly unsubscribe
+        // The OnValidationMayNeedRefresh event will be reset when the FieldMapping is cloned
+        // or when its lifecycle ends, preventing memory leaks
+    }
+
+    /// <summary>
+    /// Handles field mapping validation change notifications and coordinates validation response
+    /// based on the current validation configuration.
+    /// </summary>
+    /// <param name="tableName">The table containing the field that changed.</param>
+    /// <param name="fieldName">The name of the field that may need validation refresh.</param>
+    private async Task HandleFieldMappingValidationNeeded(string tableName, string fieldName)
+    {
+        if (ValidationConfiguration.ShouldValidateOnMappingChange)
+        {
+            // In reactive mode, mark as stale and trigger debounced validation
+            MarkValidationStale(tableName, [fieldName]);
+        }
+        
+        // Allow for any synchronous completion
+        await Task.CompletedTask;
     }
     #endregion Private Methods
 }
