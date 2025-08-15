@@ -104,13 +104,13 @@
         @if (_myDataFileMapperState.ShowTransformPreview)
         {
             <div class="preview-data-table-wrapper">
-            @if(_previewOutput is null)
+            @if(PreviewOutput is null)
             {
                 <p>Loading... @Icons.PreLoader()</p>
             }
             else
             {
-                <DataTableDisplay DataTable=_previewOutput
+                <DataTableDisplay DataTable=PreviewOutput
                                   ApplyDefaultCss=ApplyDefaultCss
                                   AdditionalCssClasses="preview-output-table"
                                   HoveredRow=_hoveredRowIndex

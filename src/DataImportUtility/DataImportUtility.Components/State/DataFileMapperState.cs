@@ -131,6 +131,20 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     /// </summary>
     protected bool _showTransformPreview;
 
+    /// <summary>
+    /// The generated preview data table from the last preview generation.
+    /// This is automatically updated when preview regeneration occurs in the state layer.
+    /// </summary>
+    public virtual DataTable? PreviewDataTable
+    {
+        get => _previewDataTable;
+        protected set => SetProperty(ref _previewDataTable, value);
+    }
+    /// <summary>
+    /// The backing field for the <see cref="PreviewDataTable" /> property.
+    /// </summary>
+    protected DataTable? _previewDataTable;
+
     /// <inheritdoc />
     public List<int> SelectedImportRows { get; } = [];
 
@@ -240,7 +254,9 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     public virtual async Task UpdateAndShowTransformPreview()
     {
         if (DataFile is null || string.IsNullOrWhiteSpace(ActiveDataTable?.TableName)) { return; }
-        await DataFile.GenerateOutputDataTable(ActiveDataTable.TableName);
+        
+        // Generate the preview data and store it in the state
+        PreviewDataTable = await DataFile.GenerateOutputDataTable(ActiveDataTable.TableName);
         ShowTransformPreview = true;
     }
     #endregion Public Methods
@@ -319,6 +335,13 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
 
         await DataFile.ReplaceFieldMappingsAsync(tableName, incomingFieldMappings);
         StateVersion = Guid.NewGuid();
+        
+        // If preview is showing, automatically regenerate it with new field mappings
+        if (ShowTransformPreview && ActiveDataTable is not null)
+        {
+            PreviewDataTable = await DataFile.GenerateOutputDataTable(ActiveDataTable.TableName);
+        }
+        
         await (OnFieldMappingsChanged?.Invoke() ?? Task.CompletedTask);
     }
 
