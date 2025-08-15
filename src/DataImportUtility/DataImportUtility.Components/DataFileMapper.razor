@@ -37,7 +37,7 @@
         }
         
         <div class="debug">
-            Mapper State ID: @_myDataFileMapperState.MapperStateId (Version: @_myDataFileMapperState.StateVersion.ToString()[^5..]) | Has Validation Errors: @(_myDataFileMapperState.DataFile?.GetTargetTypeFieldMappingCollection()?.Any(x => x.HasValidationErrors) == true)
+            Mapper State ID: @_myDataFileMapperState.MapperStateId (Version: @_myDataFileMapperState.StateVersion.ToString()[^5..]) | Has Validation Errors: @(_myDataFileMapperState.HasAnyValidationErrors(_myDataFileMapperState.ActiveDataTable?.TableName))
         </div>
 
         @DataFilePickerComponent

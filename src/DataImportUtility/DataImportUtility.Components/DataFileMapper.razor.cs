@@ -118,7 +118,7 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
         _myDataFileMapperState.OnFileReadStateChanged += HandleStateChanged;
         _myDataFileMapperState.OnFileReadError += HandleFileReadError;
         _myDataFileMapperState.OnFieldMapperDisplayModeChanged += HandleStateChanged;
-        _myDataFileMapperState.OnFieldMappingsChanged += HandleStateChanged;
+        _myDataFileMapperState.OnFieldMappingsChanged += HandleFieldMappingsChanged;
         _myDataFileMapperState.OnShowTransformPreviewChanged += HandleShowTransformPreviewChanged;
         _myDataFileMapperState.OnStatePropertyChanged += HandleStatePropertyChanged;
         _setJsHandlersTimer.Elapsed += HandleSetJsHandlers;
@@ -170,6 +170,22 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
         }
         _previousStateVersion = _myDataFileMapperState.StateVersion;
         return InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Handles field mappings changes by regenerating the preview data if the preview is currently showing.
+    /// This ensures that preview data stays synchronized with field mapping changes.
+    /// </summary>
+    private async Task HandleFieldMappingsChanged()
+    {
+        // If the preview is showing and we have an active data table, regenerate the preview
+        if (_myDataFileMapperState.ShowTransformPreview && _myDataFileMapperState.ActiveDataTable is not null)
+        {
+            await UpdatePreview(_myDataFileMapperState.ActiveDataTable);
+        }
+
+        // Always trigger UI state change
+        await HandleStateChanged();
     }
 
     private Task HandleFileReadError(Exception ex)
@@ -315,7 +331,7 @@ public partial class DataFileMapper<TTargetType> : FileImportUtilityComponentBas
         _myDataFileMapperState.OnFileReadStateChanged -= HandleStateChanged;
         _myDataFileMapperState.OnFileReadError -= HandleFileReadError;
         _myDataFileMapperState.OnFieldMapperDisplayModeChanged -= HandleStateChanged;
-        _myDataFileMapperState.OnFieldMappingsChanged -= HandleStateChanged;
+        _myDataFileMapperState.OnFieldMappingsChanged -= HandleFieldMappingsChanged;
         _myDataFileMapperState.OnShowTransformPreviewChanged -= HandleShowTransformPreviewChanged;
 
         _setJsHandlersTimer.Stop();
