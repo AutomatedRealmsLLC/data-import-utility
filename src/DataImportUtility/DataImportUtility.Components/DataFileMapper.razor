@@ -35,11 +35,15 @@
                 @((MarkupString)_errorMessage)
             </div>
         }
-        
+@{
+#if DEBUG
+}        
         <div class="debug">
             Mapper State ID: @_myDataFileMapperState.MapperStateId (Version: @_myDataFileMapperState.StateVersion.ToString()[^5..]) | Has Validation Errors: @(_myDataFileMapperState.HasAnyValidationErrors(_myDataFileMapperState.ActiveDataTable?.TableName))
         </div>
-
+@{
+#endif
+}
         @DataFilePickerComponent
 
         @if (_myDataFileMapperState.DataFile is not null)
