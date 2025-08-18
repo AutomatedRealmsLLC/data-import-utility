@@ -1,11 +1,11 @@
-﻿using System.ComponentModel;
-using System.Data;
-
-using DataImportUtility.Components.DataSetComponents;
+﻿using DataImportUtility.Components.DataSetComponents;
 using DataImportUtility.Components.FieldMappingComponents.Wrappers;
 using DataImportUtility.Components.Models;
 using DataImportUtility.Models;
 using DataImportUtility.Models.Validation;
+
+using System.ComponentModel;
+using System.Data;
 
 namespace DataImportUtility.Components.Abstractions;
 
@@ -23,7 +23,7 @@ public interface IDataFileMapperState : INotifyPropertyChanged, INotifyPropertyC
     /// Event raised when a property on the state class has changed.
     /// </summary>
     event Func<string, Task>? OnStatePropertyChanged;
-    
+
     /// <summary>
     /// Event raised when validation state changes for any field mappings.
     /// This provides detailed information about validation changes for reactive UI systems.
@@ -48,6 +48,13 @@ public interface IDataFileMapperState : INotifyPropertyChanged, INotifyPropertyC
     /// </summary>
     ImportedDataFile? DataFile { get; }
     /// <summary>
+    /// The name of the file being imported, if available.
+    /// </summary>
+    /// <remarks>
+    /// This is a convenience property that returns the filename from the <see cref="DataFile" />.
+    /// </remarks>
+    string? Filename { get; }
+    /// <summary>
     /// The state of the file read process.
     /// </summary>
     FileReadState FileReadState { get; }
@@ -55,6 +62,10 @@ public interface IDataFileMapperState : INotifyPropertyChanged, INotifyPropertyC
     /// The flag to show the field mapper dialog.
     /// </summary>
     FieldMapperDisplayMode FieldMapperDisplayMode { get; set; }
+    /// <summary>
+    /// The exception that occurred while reading the file, if any.
+    /// </summary>
+    Exception? FileReadException { get; }
     /// <summary>
     /// The flag to show the transform preview.
     /// </summary>

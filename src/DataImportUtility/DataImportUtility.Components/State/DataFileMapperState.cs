@@ -1,6 +1,4 @@
-﻿using System.Data;
-
-using DataImportUtility.Abstractions;
+﻿using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Components.DataSetComponents;
 using DataImportUtility.Components.FieldMappingComponents.Wrappers;
@@ -12,25 +10,36 @@ using DataImportUtility.Models.Validation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 
+using System.Data;
+using System.Text.Json.Serialization;
+
 namespace DataImportUtility.Components.State;
 
 /// <summary>
 /// The state for the data file mapper components.
 /// </summary>
-/// <param name="dataReaderService">
-/// The data reader service to use.
-/// </param>
-/// <param name="loggerFactory">
-/// The logger factory to use.
-/// </param>
-/// <remarks>
-/// If the <paramref name="dataReaderService" /> is <see langword="null" />, a new instance of the
-/// component library's <see cref="DataReaderService" /> will be created.
-/// </remarks>
-public class DataFileMapperState(IDataReaderService? dataReaderService = null, ILoggerFactory? loggerFactory = null) : BaseStateEventHandler, IDataFileMapperState, IDisposable
+public class DataFileMapperState : BaseStateEventHandler, IDataFileMapperState, IDisposable
 {
-    private readonly IDataReaderService _dataReaderService = dataReaderService ?? new DataReaderService();
+    private readonly IDataReaderService _dataReaderService;
+    private readonly ILoggerFactory? _loggerFactory;
     private readonly ImportDataFileRequest _fileReadRequest = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DataFileMapperState"/> class.
+    /// </summary>
+    /// <param name="dataReaderService">The data reader service to use.</param>
+    /// <param name="loggerFactory">The logger factory to use.</param>
+    /// <remarks>
+    /// If the <paramref name="dataReaderService" /> is <see langword="null" />, a new instance of the
+    /// component library's <see cref="DataReaderService" /> will be created.
+    /// </remarks>
+    public DataFileMapperState(IDataReaderService? dataReaderService = null, ILoggerFactory? loggerFactory = null)
+    {
+        _dataReaderService = dataReaderService ?? new DataReaderService();
+        _loggerFactory = loggerFactory;
+
+        OnFileReadError += HandleFileReadErrorOcurred;
+    }
 
     /// <inheritdoc />
     public virtual string MapperStateId { get; } = Guid.NewGuid().ToString()[^5..];
@@ -61,6 +70,13 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     /// The backing field for the <see cref="DataFile" /> property.
     /// </summary>
     protected ImportedDataFile? _dataFile;
+
+    /// <inheritdoc />
+    public virtual string? Filename => DataFile?.FileName;
+
+    /// <inheritdoc />
+    [JsonIgnore]
+    public Exception? FileReadException { get; private set; }
 
     /// <inheritdoc />
     public virtual DataTable? ActiveDataTable
@@ -254,7 +270,7 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
     public virtual async Task UpdateAndShowTransformPreview()
     {
         if (DataFile is null || string.IsNullOrWhiteSpace(ActiveDataTable?.TableName)) { return; }
-        
+
         // Generate the preview data and store it in the state
         PreviewDataTable = await DataFile.GenerateOutputDataTable(ActiveDataTable.TableName);
         ShowTransformPreview = true;
@@ -304,6 +320,17 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
         return PerformFileReadRequest();
     }
 
+    /// <summary>
+    /// Handles the file read error that occurred during the file reading process.
+    /// </summary>
+    /// <param name="ex">The exception that occurred during file reading.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    protected Task HandleFileReadErrorOcurred(Exception ex)
+    {
+        FileReadException = ex;
+        return Task.CompletedTask;
+    }
+
     /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// Thrown when the <see cref="DataFile" /> or its <see cref="ImportedDataFile.DataSet"/> is <see langword="null" />.
@@ -335,13 +362,13 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
 
         await DataFile.ReplaceFieldMappingsAsync(tableName, incomingFieldMappings);
         StateVersion = Guid.NewGuid();
-        
+
         // If preview is showing, automatically regenerate it with new field mappings
         if (ShowTransformPreview && ActiveDataTable is not null)
         {
             PreviewDataTable = await DataFile.GenerateOutputDataTable(ActiveDataTable.TableName);
         }
-        
+
         await (OnFieldMappingsChanged?.Invoke() ?? Task.CompletedTask);
     }
 
@@ -387,9 +414,9 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
             StateVersion = Guid.NewGuid();
             OnFileReadError?.Invoke(ex);
 
-            if (loggerFactory is null) { return; }
+            if (_loggerFactory is null) { return; }
 
-            var logger = loggerFactory.CreateLogger<DataFileMapperState>();
+            var logger = _loggerFactory.CreateLogger<DataFileMapperState>();
             logger.LogError(ex, "An error occurred while reading the file.");
         }
     }
@@ -425,6 +452,8 @@ public class DataFileMapperState(IDataReaderService? dataReaderService = null, I
         {
             DataFile.OnValidationStateChanged -= HandleDataFileValidationStateChanged;
         }
+
+        OnFileReadError -= HandleFileReadErrorOcurred;
 
         OnDataFileChanged = null;
         OnActiveDataTableChanged = null;
