@@ -205,10 +205,10 @@ public class ImportedDataFile : IDisposable
         if (!TableDefinitions.TryGetFieldMappings(tableName, out var fieldMappings) || fieldMappings is null)
             return;
 
-        var fieldsToValidate = fieldNames != null 
-            ? new HashSet<string>(fieldNames) 
+        var fieldsToValidate = fieldNames != null
+            ? new HashSet<string>(fieldNames)
             : new HashSet<string>(fieldMappings.Select(fm => fm.FieldName));
-        
+
         var validationState = GetValidationState(tableName);
         var changedStates = new Dictionary<string, FieldValidationState>();
         var hasErrors = false;
@@ -216,7 +216,7 @@ public class ImportedDataFile : IDisposable
         foreach (var fieldMapping in fieldMappings.Where(fm => fieldsToValidate.Contains(fm.FieldName)))
         {
             await fieldMapping.UpdateValidationResults();
-            
+
             if (!validationState.TryGetValue(fieldMapping.FieldName, out var fieldValidationState))
             {
                 fieldValidationState = new FieldValidationState { FieldName = fieldMapping.FieldName };
@@ -230,7 +230,7 @@ public class ImportedDataFile : IDisposable
                 fieldValidationState.CachedResults[kvp.Key] = kvp.Value;
             }
             fieldValidationState.MarkAsValidated();
-            
+
             changedStates[fieldMapping.FieldName] = fieldValidationState;
             hasErrors = hasErrors || fieldMapping.HasValidationErrors;
         }
@@ -289,7 +289,7 @@ public class ImportedDataFile : IDisposable
     private async void OnValidationDebounceTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
         _validationDebounceTimer?.Stop();
-        
+
         var tablesToValidate = _pendingValidationTables.ToList();
         _pendingValidationTables.Clear();
 
@@ -308,8 +308,8 @@ public class ImportedDataFile : IDisposable
     private void MarkValidationStale(string tableName, IEnumerable<string>? fieldNames = null)
     {
         var validationState = GetValidationState(tableName);
-        var fieldsToMark = fieldNames != null 
-            ? new HashSet<string>(fieldNames) 
+        var fieldsToMark = fieldNames != null
+            ? new HashSet<string>(fieldNames)
             : new HashSet<string>(validationState.Keys);
 
         foreach (var fieldName in fieldsToMark)
@@ -337,7 +337,7 @@ public class ImportedDataFile : IDisposable
         _validationDebounceTimer?.Stop();
         _validationDebounceTimer?.Dispose();
         _validationDebounceTimer = null;
-        
+
         InitializeValidation();
     }
     #endregion Validation Methods
@@ -957,7 +957,7 @@ public class ImportedDataFile : IDisposable
             {
                 sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
             }
-            
+
             // Subscribe to new field mapping events
             SubscribeToFieldMappingEvents(fieldMapping, tableName);
         }
@@ -1001,7 +1001,7 @@ public class ImportedDataFile : IDisposable
             UnsubscribeFromFieldMappingEvents(oldFieldMapping);
         }
 
-        tableDef.FieldMappings = incomingFieldMappings.ToList();
+        tableDef.FieldMappings = [.. incomingFieldMappings];
         var foundDescriptors = TableDefinitions.TryGetFieldDescriptors(tableName, out var fieldDescriptors);
 
         foreach (var fieldMapping in tableDef.FieldMappings)
@@ -1011,7 +1011,7 @@ public class ImportedDataFile : IDisposable
             {
                 sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
             }
-            
+
             // Subscribe to new field mapping events
             SubscribeToFieldMappingEvents(fieldMapping, tableName);
         }
@@ -1027,7 +1027,7 @@ public class ImportedDataFile : IDisposable
     /// <param name="tableName">The table name this field mapping belongs to.</param>
     private void SubscribeToFieldMappingEvents(FieldMapping fieldMapping, string tableName)
     {
-        fieldMapping.OnValidationMayNeedRefresh += async (fieldName) => 
+        fieldMapping.OnValidationMayNeedRefresh += async (fieldName) =>
             await HandleFieldMappingValidationNeeded(tableName, fieldName);
     }
 
@@ -1055,7 +1055,7 @@ public class ImportedDataFile : IDisposable
             // In reactive mode, mark as stale and trigger debounced validation
             MarkValidationStale(tableName, [fieldName]);
         }
-        
+
         // Allow for any synchronous completion
         await Task.CompletedTask;
     }

@@ -1,4 +1,7 @@
-﻿using DataImportUtility.Abstractions;
+﻿using System.Data;
+using System.Text.Json.Serialization;
+
+using DataImportUtility.Abstractions;
 using DataImportUtility.Components.Abstractions;
 using DataImportUtility.Components.DataSetComponents;
 using DataImportUtility.Components.FieldMappingComponents.Wrappers;
@@ -9,9 +12,6 @@ using DataImportUtility.Models.Validation;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-
-using System.Data;
-using System.Text.Json.Serialization;
 
 namespace DataImportUtility.Components.State;
 

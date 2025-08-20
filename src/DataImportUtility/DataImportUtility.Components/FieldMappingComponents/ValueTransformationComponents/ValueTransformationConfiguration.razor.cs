@@ -44,7 +44,7 @@ public partial class ValueTransformationConfiguration : FileImportUtilityCompone
     /// <summary>
     /// The imported record fields.
     /// </summary>
-    [Parameter, EditorRequired] public ImmutableArray<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = [];
+    [Parameter] public ImmutableArray<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = [];
 
     private ValueTransformationType _selectedTransformationType = ValueTransformationType.SubstringTransformation;
 

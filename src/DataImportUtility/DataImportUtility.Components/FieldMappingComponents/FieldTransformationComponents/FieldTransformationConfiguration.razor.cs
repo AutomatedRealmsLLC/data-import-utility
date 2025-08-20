@@ -42,7 +42,7 @@ public partial class FieldTransformationConfiguration : FileImportUtilityCompone
     /// <summary>
     /// The imported record fields.
     /// </summary>
-    [Parameter, EditorRequired] public ImmutableArray<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = [];
+    [Parameter] public ImmutableArray<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = [];
 
     private object[] AllValues => Field?.ValueSet.ToArray() ?? [];
     private bool HasValues => AllValues.Length > 0;

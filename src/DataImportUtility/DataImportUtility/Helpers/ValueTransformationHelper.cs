@@ -139,7 +139,7 @@ public static partial class ValueTransformationHelper
         }
         catch (Exception ex)
         {
-            Debug.Assert(false, "An exception occurred when one should not have.");
+            Debug.Assert(false, "An exception occurred when one should not have.", ex.ToString());
             throw;
         }
     }

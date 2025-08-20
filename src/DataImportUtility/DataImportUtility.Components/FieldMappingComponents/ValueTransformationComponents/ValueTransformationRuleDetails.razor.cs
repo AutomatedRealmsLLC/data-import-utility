@@ -33,7 +33,7 @@ public partial class ValueTransformationRuleDetails : FileImportUtilityComponent
     /// <summary>
     /// The imported record fields.
     /// </summary>
-    [Parameter, EditorRequired] public ImmutableArray<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = [];
+    [Parameter] public ImmutableArray<ImportedRecordFieldDescriptor> FieldDescriptors { get; set; } = [];
     /// <summary>
     /// The index for the current preview row.
     /// </summary>
