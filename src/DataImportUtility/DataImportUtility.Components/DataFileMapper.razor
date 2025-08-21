@@ -13,6 +13,37 @@
 
 @inherits FileImportUtilityComponentBase
 
+@{
+#if DEBUG
+}
+<style>
+    .debug {
+        position: absolute;
+        top: 0.5rem;
+        right: 0;
+        opacity: 0.25;
+        background-color: #010d0e;
+        padding: .5rem;
+        cursor: move;
+        z-index: 1000;
+        transform: scale(0.7);
+        transition: all 0.1s ease-in-out;
+    }
+
+    .debug:hover {
+        opacity: 0.85;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        transform: scale(1);
+    }
+
+    .debug:not(.show) .debug-info-wrapper {
+        display: none;
+    }
+</style>
+@{
+#endif
+}
+
 <CascadingValue Value="_myDataFileMapperState">
     @if (UseWrappingDiv)
     {
@@ -38,8 +69,14 @@
 @{
 #if DEBUG
 }        
-        <div class="debug">
-            Mapper State ID: @_myDataFileMapperState.MapperStateId (Version: @_myDataFileMapperState.StateVersion.ToString()[^5..]) | Has Validation Errors: @(_myDataFileMapperState.HasAnyValidationErrors(_myDataFileMapperState.ActiveDataTable?.TableName))
+        <div class="debug@(_debugShowing ? " show" : null)">
+            <button class="btn btn-link btn-sm" @onclick="_ => _debugShowing = !_debugShowing" title="Toggle Debug Info">@Icons.InfoIcon()</button>
+            <div class="debug-info-wrapper">
+                <h4>DataFileMapper.razor</h4>
+                <div>
+                    Mapper State ID: @_myDataFileMapperState.MapperStateId (Version: @_myDataFileMapperState.StateVersion.ToString()[^5..]) | Has Validation Errors: @(_myDataFileMapperState.HasAnyValidationErrors(_myDataFileMapperState.ActiveDataTable?.TableName))
+                </div>
+            </div>
         </div>
 @{
 #endif
@@ -203,5 +240,12 @@
               data-component-instance="@InstanceId"
               data-mapper-state="@_myDataFileMapperState.MapperStateId">
         @MainContent
-    </div>;
+    </div>
+    ;
+
+#if DEBUG
+
+    private bool _debugShowing;
+
+#endif
 }
