@@ -1006,7 +1006,7 @@ public class ImportedDataFile : IDisposable
 
         foreach (var fieldMapping in tableDef.FieldMappings)
         {
-            fieldMapping.ValidationAttributes = _targetTypeFieldMappings!.First(x => x.FieldName == fieldMapping.FieldName).ValidationAttributes;
+            fieldMapping.ValidationAttributes = _targetTypeFieldMappings.First(x => x.FieldName == fieldMapping.FieldName).ValidationAttributes;
             foreach (var sourceFieldDef in (fieldMapping.MappingRule?.SourceFieldTransformations ?? []).Where(sfd => sfd?.Field is not null))
             {
                 sourceFieldDef.Field = !foundDescriptors ? null : fieldDescriptors.FirstOrDefault(x => x.FieldName == sourceFieldDef.Field!.FieldName);
