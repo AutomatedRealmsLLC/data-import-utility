@@ -87,6 +87,7 @@ public abstract partial class MappingRuleBase : IDisposable
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonInclude]
+    [JsonConverter(typeof(ImmutableListConverter<FieldTransformation>))]
     public ImmutableList<FieldTransformation> SourceFieldTransformations
     {
         get => _sourceFields;

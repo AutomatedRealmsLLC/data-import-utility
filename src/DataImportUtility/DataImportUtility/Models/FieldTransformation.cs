@@ -3,6 +3,7 @@ using System.Data;
 using System.Text.Json.Serialization;
 
 using DataImportUtility.Abstractions;
+using DataImportUtility.CustomConverters;
 using DataImportUtility.Helpers;
 
 namespace DataImportUtility.Models;
@@ -47,6 +48,7 @@ public class FieldTransformation : IDisposable
     /// The order of the transformations is important. They will be applied in the order they are listed.
     /// </remarks>
     [JsonInclude]
+    [JsonConverter(typeof(ImmutableListConverter<ValueTransformationBase>))]
     public ImmutableList<ValueTransformationBase> ValueTransformations
     {
         get => _valueTransformations;
